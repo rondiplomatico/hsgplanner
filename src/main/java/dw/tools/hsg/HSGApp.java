@@ -244,7 +244,7 @@ public class HSGApp {
                                         e.getValue().forEach(p -> {
                                             // So viele Zuordnungen wie Personen im Dienst hinzufügen
                                             for (int i = 0; i < d.getTyp().getPersonen(); i++) {
-                                                res.add(new Zuordnung(p, d));
+                                                res.add(new Zuordnung(p, d, i));
                                             }
                                         });
                                     }

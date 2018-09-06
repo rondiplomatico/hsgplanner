@@ -105,10 +105,11 @@ public class HSGSolverTest {
     }
 
     public void test3() {
-        List<Person> ps = Arrays.asList(M1A, M1B, M1C);
-        List<Dienst> ds = Arrays.asList(V1100_1300, V1300_1600, V1300_1600, K1200_1600);
+        List<Person> ps = Arrays.asList(M1A, M1B, F1A, F1B);
+        List<Dienst> ds = Arrays.asList(V1300_1600);
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
+        ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d, 2))));
         HSGSolver.solve(jsc.parallelize(all));
     }
 
