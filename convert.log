@@ -1,0 +1,1080 @@
+2018-09-06 22:42:10,658 INFO  [SparkContext] Running Spark version 2.2.0
+2018-09-06 22:42:10,844 WARN  [NativeCodeLoader] Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2018-09-06 22:42:10,884 ERROR [Shell] Failed to locate the winutils binary in the hadoop binary path
+java.io.IOException: Could not locate executable null\bin\winutils.exe in the Hadoop binaries.
+	at org.apache.hadoop.util.Shell.getQualifiedBinPath(Shell.java:378)
+	at org.apache.hadoop.util.Shell.getWinUtilsPath(Shell.java:393)
+	at org.apache.hadoop.util.Shell.<clinit>(Shell.java:386)
+	at org.apache.hadoop.util.StringUtils.<clinit>(StringUtils.java:79)
+	at org.apache.hadoop.security.Groups.parseStaticMapping(Groups.java:116)
+	at org.apache.hadoop.security.Groups.<init>(Groups.java:93)
+	at org.apache.hadoop.security.Groups.<init>(Groups.java:73)
+	at org.apache.hadoop.security.Groups.getUserToGroupsMappingService(Groups.java:293)
+	at org.apache.hadoop.security.UserGroupInformation.initialize(UserGroupInformation.java:283)
+	at org.apache.hadoop.security.UserGroupInformation.ensureInitialized(UserGroupInformation.java:260)
+	at org.apache.hadoop.security.UserGroupInformation.loginUserFromSubject(UserGroupInformation.java:789)
+	at org.apache.hadoop.security.UserGroupInformation.getLoginUser(UserGroupInformation.java:774)
+	at org.apache.hadoop.security.UserGroupInformation.getCurrentUser(UserGroupInformation.java:647)
+	at org.apache.spark.util.Utils$$anonfun$getCurrentUserName$1.apply(Utils.scala:2430)
+	at org.apache.spark.util.Utils$$anonfun$getCurrentUserName$1.apply(Utils.scala:2430)
+	at scala.Option.getOrElse(Option.scala:121)
+	at org.apache.spark.util.Utils$.getCurrentUserName(Utils.scala:2430)
+	at org.apache.spark.SparkContext.<init>(SparkContext.scala:295)
+	at org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+	at hsgplanner.HSGSolverTest.<clinit>(HSGSolverTest.java:69)
+2018-09-06 22:42:10,968 INFO  [SparkContext] Submitted application: HSG Tool
+2018-09-06 22:42:10,981 INFO  [SecurityManager] Changing view acls to: accou
+2018-09-06 22:42:10,981 INFO  [SecurityManager] Changing modify acls to: accou
+2018-09-06 22:42:10,981 INFO  [SecurityManager] Changing view acls groups to: 
+2018-09-06 22:42:10,982 INFO  [SecurityManager] Changing modify acls groups to: 
+2018-09-06 22:42:10,982 INFO  [SecurityManager] SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(accou); groups with view permissions: Set(); users  with modify permissions: Set(accou); groups with modify permissions: Set()
+2018-09-06 22:42:11,301 INFO  [Utils] Successfully started service 'sparkDriver' on port 52036.
+2018-09-06 22:42:11,313 INFO  [SparkEnv] Registering MapOutputTracker
+2018-09-06 22:42:11,324 INFO  [SparkEnv] Registering BlockManagerMaster
+2018-09-06 22:42:11,327 INFO  [BlockManagerMasterEndpoint] Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+2018-09-06 22:42:11,327 INFO  [BlockManagerMasterEndpoint] BlockManagerMasterEndpoint up
+2018-09-06 22:42:11,333 INFO  [DiskBlockManager] Created local directory at C:\Users\accou\AppData\Local\Temp\blockmgr-0008a0c8-9dba-4dc6-9eb3-af11d215e6a2
+2018-09-06 22:42:11,370 INFO  [MemoryStore] MemoryStore started with capacity 4.1 GB
+2018-09-06 22:42:11,410 INFO  [SparkEnv] Registering OutputCommitCoordinator
+2018-09-06 22:42:11,479 INFO  [Executor] Starting executor ID driver on host localhost
+2018-09-06 22:42:11,497 INFO  [Utils] Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 52069.
+2018-09-06 22:42:11,497 INFO  [NettyBlockTransferService] Server created on 192.168.178.60:52069
+2018-09-06 22:42:11,498 INFO  [BlockManager] Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+2018-09-06 22:42:11,499 INFO  [BlockManagerMaster] Registering BlockManager BlockManagerId(driver, 192.168.178.60, 52069, None)
+2018-09-06 22:42:11,501 INFO  [BlockManagerMasterEndpoint] Registering block manager 192.168.178.60:52069 with 4.1 GB RAM, BlockManagerId(driver, 192.168.178.60, 52069, None)
+2018-09-06 22:42:11,502 INFO  [BlockManagerMaster] Registered BlockManager BlockManagerId(driver, 192.168.178.60, 52069, None)
+2018-09-06 22:42:11,503 INFO  [BlockManager] Initialized BlockManager: BlockManagerId(driver, 192.168.178.60, 52069, None)
+2018-09-06 22:42:11,605 INFO  [log] Logging initialized @1371ms
+2018-09-06 22:42:11,898 INFO  [SparkContext] Starting job: collect at HSGSolver.java:53
+2018-09-06 22:42:11,919 INFO  [DAGScheduler] Got job 0 (collect at HSGSolver.java:53) with 8 output partitions
+2018-09-06 22:42:11,919 INFO  [DAGScheduler] Final stage: ResultStage 0 (collect at HSGSolver.java:53)
+2018-09-06 22:42:11,920 INFO  [DAGScheduler] Parents of final stage: List()
+2018-09-06 22:42:11,921 INFO  [DAGScheduler] Missing parents: List()
+2018-09-06 22:42:11,928 INFO  [DAGScheduler] Submitting ResultStage 0 (ParallelCollectionRDD[0] at parallelize at HSGSolverTest.java:112), which has no missing parents
+2018-09-06 22:42:12,006 INFO  [MemoryStore] Block broadcast_0 stored as values in memory (estimated size 1616.0 B, free 4.1 GB)
+2018-09-06 22:42:12,048 INFO  [MemoryStore] Block broadcast_0_piece0 stored as bytes in memory (estimated size 1050.0 B, free 4.1 GB)
+2018-09-06 22:42:12,050 INFO  [BlockManagerInfo] Added broadcast_0_piece0 in memory on 192.168.178.60:52069 (size: 1050.0 B, free: 4.1 GB)
+2018-09-06 22:42:12,053 INFO  [SparkContext] Created broadcast 0 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,068 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 0 (ParallelCollectionRDD[0] at parallelize at HSGSolverTest.java:112) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,068 INFO  [TaskSchedulerImpl] Adding task set 0.0 with 8 tasks
+2018-09-06 22:42:12,115 INFO  [TaskSetManager] Starting task 0.0 in stage 0.0 (TID 0, localhost, executor driver, partition 0, PROCESS_LOCAL, 5464 bytes)
+2018-09-06 22:42:12,117 INFO  [TaskSetManager] Starting task 1.0 in stage 0.0 (TID 1, localhost, executor driver, partition 1, PROCESS_LOCAL, 5484 bytes)
+2018-09-06 22:42:12,117 INFO  [TaskSetManager] Starting task 2.0 in stage 0.0 (TID 2, localhost, executor driver, partition 2, PROCESS_LOCAL, 5462 bytes)
+2018-09-06 22:42:12,118 INFO  [TaskSetManager] Starting task 3.0 in stage 0.0 (TID 3, localhost, executor driver, partition 3, PROCESS_LOCAL, 5517 bytes)
+2018-09-06 22:42:12,118 INFO  [TaskSetManager] Starting task 4.0 in stage 0.0 (TID 4, localhost, executor driver, partition 4, PROCESS_LOCAL, 5464 bytes)
+2018-09-06 22:42:12,119 INFO  [TaskSetManager] Starting task 5.0 in stage 0.0 (TID 5, localhost, executor driver, partition 5, PROCESS_LOCAL, 5548 bytes)
+2018-09-06 22:42:12,119 INFO  [TaskSetManager] Starting task 6.0 in stage 0.0 (TID 6, localhost, executor driver, partition 6, PROCESS_LOCAL, 5464 bytes)
+2018-09-06 22:42:12,120 INFO  [TaskSetManager] Starting task 7.0 in stage 0.0 (TID 7, localhost, executor driver, partition 7, PROCESS_LOCAL, 5526 bytes)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 7.0 in stage 0.0 (TID 7)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 3.0 in stage 0.0 (TID 3)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 2.0 in stage 0.0 (TID 2)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 5.0 in stage 0.0 (TID 5)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 6.0 in stage 0.0 (TID 6)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 0.0 in stage 0.0 (TID 0)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 1.0 in stage 0.0 (TID 1)
+2018-09-06 22:42:12,124 INFO  [Executor] Running task 4.0 in stage 0.0 (TID 4)
+2018-09-06 22:42:12,163 INFO  [Executor] Finished task 7.0 in stage 0.0 (TID 7). 1340 bytes result sent to driver
+2018-09-06 22:42:12,163 INFO  [Executor] Finished task 6.0 in stage 0.0 (TID 6). 1364 bytes result sent to driver
+2018-09-06 22:42:12,163 INFO  [Executor] Finished task 4.0 in stage 0.0 (TID 4). 1278 bytes result sent to driver
+2018-09-06 22:42:12,164 INFO  [Executor] Finished task 5.0 in stage 0.0 (TID 5). 1405 bytes result sent to driver
+2018-09-06 22:42:12,163 INFO  [Executor] Finished task 0.0 in stage 0.0 (TID 0). 1364 bytes result sent to driver
+2018-09-06 22:42:12,164 INFO  [Executor] Finished task 1.0 in stage 0.0 (TID 1). 1384 bytes result sent to driver
+2018-09-06 22:42:12,163 INFO  [Executor] Finished task 2.0 in stage 0.0 (TID 2). 1319 bytes result sent to driver
+2018-09-06 22:42:12,163 INFO  [Executor] Finished task 3.0 in stage 0.0 (TID 3). 1374 bytes result sent to driver
+2018-09-06 22:42:12,171 INFO  [TaskSetManager] Finished task 4.0 in stage 0.0 (TID 4) in 51 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,172 INFO  [TaskSetManager] Finished task 6.0 in stage 0.0 (TID 6) in 53 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,172 INFO  [TaskSetManager] Finished task 7.0 in stage 0.0 (TID 7) in 53 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,173 INFO  [TaskSetManager] Finished task 2.0 in stage 0.0 (TID 2) in 56 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,174 INFO  [TaskSetManager] Finished task 5.0 in stage 0.0 (TID 5) in 56 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,174 INFO  [TaskSetManager] Finished task 1.0 in stage 0.0 (TID 1) in 58 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,174 INFO  [TaskSetManager] Finished task 0.0 in stage 0.0 (TID 0) in 77 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,174 INFO  [TaskSetManager] Finished task 3.0 in stage 0.0 (TID 3) in 57 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,175 INFO  [TaskSchedulerImpl] Removed TaskSet 0.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,178 INFO  [DAGScheduler] ResultStage 0 (collect at HSGSolver.java:53) finished in 0,089 s
+2018-09-06 22:42:12,183 INFO  [DAGScheduler] Job 0 finished: collect at HSGSolver.java:53, took 0,284664 s
+2018-09-06 22:42:12,224 INFO  [SparkContext] Starting job: collect at HSGSolver.java:219
+2018-09-06 22:42:12,228 INFO  [DAGScheduler] Registering RDD 1 (mapToPair at HSGSolver.java:216)
+2018-09-06 22:42:12,228 INFO  [DAGScheduler] Got job 1 (collect at HSGSolver.java:219) with 8 output partitions
+2018-09-06 22:42:12,229 INFO  [DAGScheduler] Final stage: ResultStage 2 (collect at HSGSolver.java:219)
+2018-09-06 22:42:12,229 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 1)
+2018-09-06 22:42:12,229 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 1)
+2018-09-06 22:42:12,229 INFO  [DAGScheduler] Submitting ShuffleMapStage 1 (MapPartitionsRDD[1] at mapToPair at HSGSolver.java:216), which has no missing parents
+2018-09-06 22:42:12,234 INFO  [MemoryStore] Block broadcast_1 stored as values in memory (estimated size 4.3 KB, free 4.1 GB)
+2018-09-06 22:42:12,236 INFO  [MemoryStore] Block broadcast_1_piece0 stored as bytes in memory (estimated size 2.4 KB, free 4.1 GB)
+2018-09-06 22:42:12,237 INFO  [BlockManagerInfo] Added broadcast_1_piece0 in memory on 192.168.178.60:52069 (size: 2.4 KB, free: 4.1 GB)
+2018-09-06 22:42:12,237 INFO  [SparkContext] Created broadcast 1 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,239 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 1 (MapPartitionsRDD[1] at mapToPair at HSGSolver.java:216) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,239 INFO  [TaskSchedulerImpl] Adding task set 1.0 with 8 tasks
+2018-09-06 22:42:12,241 INFO  [TaskSetManager] Starting task 0.0 in stage 1.0 (TID 8, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,241 INFO  [TaskSetManager] Starting task 1.0 in stage 1.0 (TID 9, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:12,241 INFO  [TaskSetManager] Starting task 2.0 in stage 1.0 (TID 10, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:12,242 INFO  [TaskSetManager] Starting task 3.0 in stage 1.0 (TID 11, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:12,242 INFO  [TaskSetManager] Starting task 4.0 in stage 1.0 (TID 12, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,242 INFO  [TaskSetManager] Starting task 5.0 in stage 1.0 (TID 13, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:12,242 INFO  [TaskSetManager] Starting task 6.0 in stage 1.0 (TID 14, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,243 INFO  [TaskSetManager] Starting task 7.0 in stage 1.0 (TID 15, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 1.0 in stage 1.0 (TID 9)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 6.0 in stage 1.0 (TID 14)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 7.0 in stage 1.0 (TID 15)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 3.0 in stage 1.0 (TID 11)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 4.0 in stage 1.0 (TID 12)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 0.0 in stage 1.0 (TID 8)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 2.0 in stage 1.0 (TID 10)
+2018-09-06 22:42:12,243 INFO  [Executor] Running task 5.0 in stage 1.0 (TID 13)
+2018-09-06 22:42:12,335 INFO  [Executor] Finished task 1.0 in stage 1.0 (TID 9). 947 bytes result sent to driver
+2018-09-06 22:42:12,335 INFO  [Executor] Finished task 2.0 in stage 1.0 (TID 10). 947 bytes result sent to driver
+2018-09-06 22:42:12,335 INFO  [Executor] Finished task 4.0 in stage 1.0 (TID 12). 947 bytes result sent to driver
+2018-09-06 22:42:12,335 INFO  [Executor] Finished task 6.0 in stage 1.0 (TID 14). 861 bytes result sent to driver
+2018-09-06 22:42:12,336 INFO  [Executor] Finished task 3.0 in stage 1.0 (TID 11). 904 bytes result sent to driver
+2018-09-06 22:42:12,337 INFO  [TaskSetManager] Finished task 4.0 in stage 1.0 (TID 12) in 95 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,337 INFO  [TaskSetManager] Finished task 6.0 in stage 1.0 (TID 14) in 95 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,338 INFO  [TaskSetManager] Finished task 2.0 in stage 1.0 (TID 10) in 97 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,339 INFO  [TaskSetManager] Finished task 1.0 in stage 1.0 (TID 9) in 97 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,339 INFO  [Executor] Finished task 0.0 in stage 1.0 (TID 8). 904 bytes result sent to driver
+2018-09-06 22:42:12,340 INFO  [Executor] Finished task 7.0 in stage 1.0 (TID 15). 904 bytes result sent to driver
+2018-09-06 22:42:12,340 INFO  [Executor] Finished task 5.0 in stage 1.0 (TID 13). 904 bytes result sent to driver
+2018-09-06 22:42:12,341 INFO  [TaskSetManager] Finished task 0.0 in stage 1.0 (TID 8) in 101 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,341 INFO  [TaskSetManager] Finished task 7.0 in stage 1.0 (TID 15) in 99 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,343 INFO  [TaskSetManager] Finished task 3.0 in stage 1.0 (TID 11) in 102 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,343 INFO  [TaskSetManager] Finished task 5.0 in stage 1.0 (TID 13) in 101 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,344 INFO  [TaskSchedulerImpl] Removed TaskSet 1.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,344 INFO  [DAGScheduler] ShuffleMapStage 1 (mapToPair at HSGSolver.java:216) finished in 0,104 s
+2018-09-06 22:42:12,345 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:12,345 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:12,345 INFO  [DAGScheduler] waiting: Set(ResultStage 2)
+2018-09-06 22:42:12,345 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:12,348 INFO  [DAGScheduler] Submitting ResultStage 2 (MapPartitionsRDD[4] at mapValues at HSGSolver.java:218), which has no missing parents
+2018-09-06 22:42:12,349 INFO  [BlockManagerInfo] Removed broadcast_0_piece0 on 192.168.178.60:52069 in memory (size: 1050.0 B, free: 4.1 GB)
+2018-09-06 22:42:12,352 INFO  [MemoryStore] Block broadcast_2 stored as values in memory (estimated size 5.9 KB, free 4.1 GB)
+2018-09-06 22:42:12,353 INFO  [MemoryStore] Block broadcast_2_piece0 stored as bytes in memory (estimated size 3.0 KB, free 4.1 GB)
+2018-09-06 22:42:12,354 INFO  [BlockManagerInfo] Added broadcast_2_piece0 in memory on 192.168.178.60:52069 (size: 3.0 KB, free: 4.1 GB)
+2018-09-06 22:42:12,354 INFO  [SparkContext] Created broadcast 2 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,354 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 2 (MapPartitionsRDD[4] at mapValues at HSGSolver.java:218) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,354 INFO  [TaskSchedulerImpl] Adding task set 2.0 with 8 tasks
+2018-09-06 22:42:12,357 INFO  [TaskSetManager] Starting task 0.0 in stage 2.0 (TID 16, localhost, executor driver, partition 0, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,357 INFO  [TaskSetManager] Starting task 1.0 in stage 2.0 (TID 17, localhost, executor driver, partition 1, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,357 INFO  [TaskSetManager] Starting task 2.0 in stage 2.0 (TID 18, localhost, executor driver, partition 2, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,357 INFO  [TaskSetManager] Starting task 3.0 in stage 2.0 (TID 19, localhost, executor driver, partition 3, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,358 INFO  [TaskSetManager] Starting task 7.0 in stage 2.0 (TID 20, localhost, executor driver, partition 7, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,358 INFO  [TaskSetManager] Starting task 4.0 in stage 2.0 (TID 21, localhost, executor driver, partition 4, ANY, 4621 bytes)
+2018-09-06 22:42:12,358 INFO  [TaskSetManager] Starting task 5.0 in stage 2.0 (TID 22, localhost, executor driver, partition 5, ANY, 4621 bytes)
+2018-09-06 22:42:12,358 INFO  [TaskSetManager] Starting task 6.0 in stage 2.0 (TID 23, localhost, executor driver, partition 6, ANY, 4621 bytes)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 0.0 in stage 2.0 (TID 16)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 3.0 in stage 2.0 (TID 19)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 2.0 in stage 2.0 (TID 18)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 4.0 in stage 2.0 (TID 21)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 1.0 in stage 2.0 (TID 17)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 6.0 in stage 2.0 (TID 23)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 5.0 in stage 2.0 (TID 22)
+2018-09-06 22:42:12,358 INFO  [Executor] Running task 7.0 in stage 2.0 (TID 20)
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,369 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,370 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,382 INFO  [Executor] Finished task 0.0 in stage 2.0 (TID 16). 1005 bytes result sent to driver
+2018-09-06 22:42:12,382 INFO  [Executor] Finished task 2.0 in stage 2.0 (TID 18). 1005 bytes result sent to driver
+2018-09-06 22:42:12,382 INFO  [Executor] Finished task 7.0 in stage 2.0 (TID 20). 1048 bytes result sent to driver
+2018-09-06 22:42:12,383 INFO  [Executor] Finished task 3.0 in stage 2.0 (TID 19). 1005 bytes result sent to driver
+2018-09-06 22:42:12,383 INFO  [Executor] Finished task 1.0 in stage 2.0 (TID 17). 1048 bytes result sent to driver
+2018-09-06 22:42:12,384 INFO  [TaskSetManager] Finished task 3.0 in stage 2.0 (TID 19) in 27 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,384 INFO  [TaskSetManager] Finished task 7.0 in stage 2.0 (TID 20) in 26 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,385 INFO  [TaskSetManager] Finished task 1.0 in stage 2.0 (TID 17) in 28 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,385 INFO  [TaskSetManager] Finished task 2.0 in stage 2.0 (TID 18) in 28 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,385 INFO  [TaskSetManager] Finished task 0.0 in stage 2.0 (TID 16) in 29 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,388 INFO  [Executor] Finished task 6.0 in stage 2.0 (TID 23). 1455 bytes result sent to driver
+2018-09-06 22:42:12,388 INFO  [Executor] Finished task 5.0 in stage 2.0 (TID 22). 1496 bytes result sent to driver
+2018-09-06 22:42:12,388 INFO  [Executor] Finished task 4.0 in stage 2.0 (TID 21). 1496 bytes result sent to driver
+2018-09-06 22:42:12,389 INFO  [TaskSetManager] Finished task 6.0 in stage 2.0 (TID 23) in 31 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,389 INFO  [TaskSetManager] Finished task 5.0 in stage 2.0 (TID 22) in 31 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,389 INFO  [TaskSetManager] Finished task 4.0 in stage 2.0 (TID 21) in 31 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,389 INFO  [TaskSchedulerImpl] Removed TaskSet 2.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,390 INFO  [DAGScheduler] ResultStage 2 (collect at HSGSolver.java:219) finished in 0,034 s
+2018-09-06 22:42:12,390 INFO  [DAGScheduler] Job 1 finished: collect at HSGSolver.java:219, took 0,165746 s
+2018-09-06 22:42:12,416 INFO  [SparkContext] Starting job: collectAsMap at HSGSolver.java:195
+2018-09-06 22:42:12,417 INFO  [DAGScheduler] Registering RDD 5 (mapToPair at HSGSolver.java:192)
+2018-09-06 22:42:12,417 INFO  [DAGScheduler] Got job 2 (collectAsMap at HSGSolver.java:195) with 8 output partitions
+2018-09-06 22:42:12,417 INFO  [DAGScheduler] Final stage: ResultStage 4 (collectAsMap at HSGSolver.java:195)
+2018-09-06 22:42:12,417 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 3)
+2018-09-06 22:42:12,417 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 3)
+2018-09-06 22:42:12,417 INFO  [DAGScheduler] Submitting ShuffleMapStage 3 (MapPartitionsRDD[5] at mapToPair at HSGSolver.java:192), which has no missing parents
+2018-09-06 22:42:12,419 INFO  [MemoryStore] Block broadcast_3 stored as values in memory (estimated size 4.3 KB, free 4.1 GB)
+2018-09-06 22:42:12,420 INFO  [MemoryStore] Block broadcast_3_piece0 stored as bytes in memory (estimated size 2.4 KB, free 4.1 GB)
+2018-09-06 22:42:12,420 INFO  [BlockManagerInfo] Added broadcast_3_piece0 in memory on 192.168.178.60:52069 (size: 2.4 KB, free: 4.1 GB)
+2018-09-06 22:42:12,420 INFO  [SparkContext] Created broadcast 3 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,421 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 3 (MapPartitionsRDD[5] at mapToPair at HSGSolver.java:192) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,421 INFO  [TaskSchedulerImpl] Adding task set 3.0 with 8 tasks
+2018-09-06 22:42:12,422 INFO  [TaskSetManager] Starting task 0.0 in stage 3.0 (TID 24, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,422 INFO  [TaskSetManager] Starting task 1.0 in stage 3.0 (TID 25, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:12,422 INFO  [TaskSetManager] Starting task 2.0 in stage 3.0 (TID 26, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:12,422 INFO  [TaskSetManager] Starting task 3.0 in stage 3.0 (TID 27, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:12,422 INFO  [TaskSetManager] Starting task 4.0 in stage 3.0 (TID 28, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,423 INFO  [TaskSetManager] Starting task 5.0 in stage 3.0 (TID 29, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:12,423 INFO  [TaskSetManager] Starting task 6.0 in stage 3.0 (TID 30, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,423 INFO  [TaskSetManager] Starting task 7.0 in stage 3.0 (TID 31, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 1.0 in stage 3.0 (TID 25)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 0.0 in stage 3.0 (TID 24)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 5.0 in stage 3.0 (TID 29)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 4.0 in stage 3.0 (TID 28)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 7.0 in stage 3.0 (TID 31)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 3.0 in stage 3.0 (TID 27)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 2.0 in stage 3.0 (TID 26)
+2018-09-06 22:42:12,423 INFO  [Executor] Running task 6.0 in stage 3.0 (TID 30)
+2018-09-06 22:42:12,448 INFO  [Executor] Finished task 1.0 in stage 3.0 (TID 25). 861 bytes result sent to driver
+2018-09-06 22:42:12,449 INFO  [Executor] Finished task 4.0 in stage 3.0 (TID 28). 818 bytes result sent to driver
+2018-09-06 22:42:12,449 INFO  [Executor] Finished task 6.0 in stage 3.0 (TID 30). 861 bytes result sent to driver
+2018-09-06 22:42:12,450 INFO  [TaskSetManager] Finished task 4.0 in stage 3.0 (TID 28) in 28 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,450 INFO  [TaskSetManager] Finished task 1.0 in stage 3.0 (TID 25) in 28 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,450 INFO  [TaskSetManager] Finished task 6.0 in stage 3.0 (TID 30) in 27 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,454 INFO  [Executor] Finished task 2.0 in stage 3.0 (TID 26). 861 bytes result sent to driver
+2018-09-06 22:42:12,455 INFO  [TaskSetManager] Finished task 2.0 in stage 3.0 (TID 26) in 33 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,459 INFO  [Executor] Finished task 7.0 in stage 3.0 (TID 31). 818 bytes result sent to driver
+2018-09-06 22:42:12,460 INFO  [Executor] Finished task 0.0 in stage 3.0 (TID 24). 818 bytes result sent to driver
+2018-09-06 22:42:12,460 INFO  [TaskSetManager] Finished task 7.0 in stage 3.0 (TID 31) in 37 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,460 INFO  [TaskSetManager] Finished task 0.0 in stage 3.0 (TID 24) in 39 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,461 INFO  [Executor] Finished task 3.0 in stage 3.0 (TID 27). 818 bytes result sent to driver
+2018-09-06 22:42:12,461 INFO  [TaskSetManager] Finished task 3.0 in stage 3.0 (TID 27) in 39 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,464 INFO  [Executor] Finished task 5.0 in stage 3.0 (TID 29). 818 bytes result sent to driver
+2018-09-06 22:42:12,464 INFO  [TaskSetManager] Finished task 5.0 in stage 3.0 (TID 29) in 42 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,465 INFO  [TaskSchedulerImpl] Removed TaskSet 3.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,465 INFO  [DAGScheduler] ShuffleMapStage 3 (mapToPair at HSGSolver.java:192) finished in 0,044 s
+2018-09-06 22:42:12,465 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:12,465 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:12,465 INFO  [DAGScheduler] waiting: Set(ResultStage 4)
+2018-09-06 22:42:12,465 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:12,465 INFO  [DAGScheduler] Submitting ResultStage 4 (MapPartitionsRDD[8] at mapValues at HSGSolver.java:194), which has no missing parents
+2018-09-06 22:42:12,468 INFO  [MemoryStore] Block broadcast_4 stored as values in memory (estimated size 5.9 KB, free 4.1 GB)
+2018-09-06 22:42:12,469 INFO  [MemoryStore] Block broadcast_4_piece0 stored as bytes in memory (estimated size 3.0 KB, free 4.1 GB)
+2018-09-06 22:42:12,469 INFO  [BlockManagerInfo] Added broadcast_4_piece0 in memory on 192.168.178.60:52069 (size: 3.0 KB, free: 4.1 GB)
+2018-09-06 22:42:12,469 INFO  [SparkContext] Created broadcast 4 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,470 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 4 (MapPartitionsRDD[8] at mapValues at HSGSolver.java:194) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,470 INFO  [TaskSchedulerImpl] Adding task set 4.0 with 8 tasks
+2018-09-06 22:42:12,470 INFO  [TaskSetManager] Starting task 1.0 in stage 4.0 (TID 32, localhost, executor driver, partition 1, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,470 INFO  [TaskSetManager] Starting task 3.0 in stage 4.0 (TID 33, localhost, executor driver, partition 3, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,471 INFO  [TaskSetManager] Starting task 4.0 in stage 4.0 (TID 34, localhost, executor driver, partition 4, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,471 INFO  [TaskSetManager] Starting task 6.0 in stage 4.0 (TID 35, localhost, executor driver, partition 6, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,471 INFO  [TaskSetManager] Starting task 7.0 in stage 4.0 (TID 36, localhost, executor driver, partition 7, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,471 INFO  [TaskSetManager] Starting task 0.0 in stage 4.0 (TID 37, localhost, executor driver, partition 0, ANY, 4621 bytes)
+2018-09-06 22:42:12,471 INFO  [TaskSetManager] Starting task 2.0 in stage 4.0 (TID 38, localhost, executor driver, partition 2, ANY, 4621 bytes)
+2018-09-06 22:42:12,471 INFO  [TaskSetManager] Starting task 5.0 in stage 4.0 (TID 39, localhost, executor driver, partition 5, ANY, 4621 bytes)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 3.0 in stage 4.0 (TID 33)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 6.0 in stage 4.0 (TID 35)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 5.0 in stage 4.0 (TID 39)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 7.0 in stage 4.0 (TID 36)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 0.0 in stage 4.0 (TID 37)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 4.0 in stage 4.0 (TID 34)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 1.0 in stage 4.0 (TID 32)
+2018-09-06 22:42:12,471 INFO  [Executor] Running task 2.0 in stage 4.0 (TID 38)
+2018-09-06 22:42:12,473 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,473 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,474 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,474 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,474 INFO  [ShuffleBlockFetcherIterator] Getting 5 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,474 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,474 INFO  [Executor] Finished task 1.0 in stage 4.0 (TID 32). 1005 bytes result sent to driver
+2018-09-06 22:42:12,475 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,475 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:12,476 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,476 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,477 INFO  [Executor] Finished task 7.0 in stage 4.0 (TID 36). 1005 bytes result sent to driver
+2018-09-06 22:42:12,477 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,477 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,478 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,478 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,478 INFO  [Executor] Finished task 4.0 in stage 4.0 (TID 34). 1005 bytes result sent to driver
+2018-09-06 22:42:12,476 INFO  [TaskSetManager] Finished task 1.0 in stage 4.0 (TID 32) in 6 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,478 INFO  [Executor] Finished task 2.0 in stage 4.0 (TID 38). 1692 bytes result sent to driver
+2018-09-06 22:42:12,479 INFO  [Executor] Finished task 6.0 in stage 4.0 (TID 35). 1048 bytes result sent to driver
+2018-09-06 22:42:12,479 INFO  [TaskSetManager] Finished task 7.0 in stage 4.0 (TID 36) in 8 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,479 INFO  [TaskSetManager] Finished task 4.0 in stage 4.0 (TID 34) in 9 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,478 INFO  [Executor] Finished task 0.0 in stage 4.0 (TID 37). 1624 bytes result sent to driver
+2018-09-06 22:42:12,477 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,480 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,481 INFO  [TaskSetManager] Finished task 6.0 in stage 4.0 (TID 35) in 10 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,481 INFO  [TaskSetManager] Finished task 0.0 in stage 4.0 (TID 37) in 10 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,481 INFO  [Executor] Finished task 3.0 in stage 4.0 (TID 33). 1005 bytes result sent to driver
+2018-09-06 22:42:12,481 INFO  [TaskSetManager] Finished task 2.0 in stage 4.0 (TID 38) in 10 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,482 INFO  [TaskSetManager] Finished task 3.0 in stage 4.0 (TID 33) in 12 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,483 INFO  [Executor] Finished task 5.0 in stage 4.0 (TID 39). 1668 bytes result sent to driver
+2018-09-06 22:42:12,483 INFO  [TaskSetManager] Finished task 5.0 in stage 4.0 (TID 39) in 12 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,483 INFO  [TaskSchedulerImpl] Removed TaskSet 4.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,483 INFO  [DAGScheduler] ResultStage 4 (collectAsMap at HSGSolver.java:195) finished in 0,013 s
+2018-09-06 22:42:12,484 INFO  [DAGScheduler] Job 2 finished: collectAsMap at HSGSolver.java:195, took 0,068424 s
+2018-09-06 22:42:12,509 INFO  [SparkContext] Starting job: collect at HSGSolver.java:173
+2018-09-06 22:42:12,510 INFO  [DAGScheduler] Registering RDD 9 (mapToPair at HSGSolver.java:155)
+2018-09-06 22:42:12,510 INFO  [DAGScheduler] Got job 3 (collect at HSGSolver.java:173) with 8 output partitions
+2018-09-06 22:42:12,510 INFO  [DAGScheduler] Final stage: ResultStage 6 (collect at HSGSolver.java:173)
+2018-09-06 22:42:12,510 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 5)
+2018-09-06 22:42:12,510 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 5)
+2018-09-06 22:42:12,511 INFO  [DAGScheduler] Submitting ShuffleMapStage 5 (MapPartitionsRDD[9] at mapToPair at HSGSolver.java:155), which has no missing parents
+2018-09-06 22:42:12,512 INFO  [MemoryStore] Block broadcast_5 stored as values in memory (estimated size 4.3 KB, free 4.1 GB)
+2018-09-06 22:42:12,513 INFO  [MemoryStore] Block broadcast_5_piece0 stored as bytes in memory (estimated size 2.4 KB, free 4.1 GB)
+2018-09-06 22:42:12,513 INFO  [BlockManagerInfo] Added broadcast_5_piece0 in memory on 192.168.178.60:52069 (size: 2.4 KB, free: 4.1 GB)
+2018-09-06 22:42:12,514 INFO  [SparkContext] Created broadcast 5 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,514 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 5 (MapPartitionsRDD[9] at mapToPair at HSGSolver.java:155) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,514 INFO  [TaskSchedulerImpl] Adding task set 5.0 with 8 tasks
+2018-09-06 22:42:12,515 INFO  [TaskSetManager] Starting task 0.0 in stage 5.0 (TID 40, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,515 INFO  [TaskSetManager] Starting task 1.0 in stage 5.0 (TID 41, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:12,515 INFO  [TaskSetManager] Starting task 2.0 in stage 5.0 (TID 42, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:12,515 INFO  [TaskSetManager] Starting task 3.0 in stage 5.0 (TID 43, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:12,515 INFO  [TaskSetManager] Starting task 4.0 in stage 5.0 (TID 44, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,515 INFO  [TaskSetManager] Starting task 5.0 in stage 5.0 (TID 45, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:12,515 INFO  [TaskSetManager] Starting task 6.0 in stage 5.0 (TID 46, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,516 INFO  [TaskSetManager] Starting task 7.0 in stage 5.0 (TID 47, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 0.0 in stage 5.0 (TID 40)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 1.0 in stage 5.0 (TID 41)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 3.0 in stage 5.0 (TID 43)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 6.0 in stage 5.0 (TID 46)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 5.0 in stage 5.0 (TID 45)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 2.0 in stage 5.0 (TID 42)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 4.0 in stage 5.0 (TID 44)
+2018-09-06 22:42:12,516 INFO  [Executor] Running task 7.0 in stage 5.0 (TID 47)
+2018-09-06 22:42:12,538 INFO  [Executor] Finished task 3.0 in stage 5.0 (TID 43). 818 bytes result sent to driver
+2018-09-06 22:42:12,539 INFO  [TaskSetManager] Finished task 3.0 in stage 5.0 (TID 43) in 24 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,544 INFO  [Executor] Finished task 0.0 in stage 5.0 (TID 40). 818 bytes result sent to driver
+2018-09-06 22:42:12,545 INFO  [Executor] Finished task 4.0 in stage 5.0 (TID 44). 818 bytes result sent to driver
+2018-09-06 22:42:12,545 INFO  [TaskSetManager] Finished task 0.0 in stage 5.0 (TID 40) in 31 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,546 INFO  [TaskSetManager] Finished task 4.0 in stage 5.0 (TID 44) in 31 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,546 INFO  [Executor] Finished task 1.0 in stage 5.0 (TID 41). 818 bytes result sent to driver
+2018-09-06 22:42:12,547 INFO  [TaskSetManager] Finished task 1.0 in stage 5.0 (TID 41) in 32 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,548 INFO  [Executor] Finished task 7.0 in stage 5.0 (TID 47). 818 bytes result sent to driver
+2018-09-06 22:42:12,548 INFO  [TaskSetManager] Finished task 7.0 in stage 5.0 (TID 47) in 33 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,549 INFO  [Executor] Finished task 6.0 in stage 5.0 (TID 46). 818 bytes result sent to driver
+2018-09-06 22:42:12,550 INFO  [TaskSetManager] Finished task 6.0 in stage 5.0 (TID 46) in 35 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,550 INFO  [Executor] Finished task 2.0 in stage 5.0 (TID 42). 775 bytes result sent to driver
+2018-09-06 22:42:12,551 INFO  [TaskSetManager] Finished task 2.0 in stage 5.0 (TID 42) in 36 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,559 INFO  [Executor] Finished task 5.0 in stage 5.0 (TID 45). 861 bytes result sent to driver
+2018-09-06 22:42:12,560 INFO  [TaskSetManager] Finished task 5.0 in stage 5.0 (TID 45) in 45 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,560 INFO  [TaskSchedulerImpl] Removed TaskSet 5.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,560 INFO  [DAGScheduler] ShuffleMapStage 5 (mapToPair at HSGSolver.java:155) finished in 0,046 s
+2018-09-06 22:42:12,560 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:12,560 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:12,560 INFO  [DAGScheduler] waiting: Set(ResultStage 6)
+2018-09-06 22:42:12,561 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:12,561 INFO  [DAGScheduler] Submitting ResultStage 6 (MapPartitionsRDD[12] at mapValues at HSGSolver.java:157), which has no missing parents
+2018-09-06 22:42:12,563 INFO  [MemoryStore] Block broadcast_6 stored as values in memory (estimated size 5.9 KB, free 4.1 GB)
+2018-09-06 22:42:12,564 INFO  [MemoryStore] Block broadcast_6_piece0 stored as bytes in memory (estimated size 3.0 KB, free 4.1 GB)
+2018-09-06 22:42:12,565 INFO  [BlockManagerInfo] Added broadcast_6_piece0 in memory on 192.168.178.60:52069 (size: 3.0 KB, free: 4.1 GB)
+2018-09-06 22:42:12,566 INFO  [SparkContext] Created broadcast 6 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,566 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 6 (MapPartitionsRDD[12] at mapValues at HSGSolver.java:157) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,566 INFO  [TaskSchedulerImpl] Adding task set 6.0 with 8 tasks
+2018-09-06 22:42:12,567 INFO  [TaskSetManager] Starting task 0.0 in stage 6.0 (TID 48, localhost, executor driver, partition 0, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,567 INFO  [TaskSetManager] Starting task 2.0 in stage 6.0 (TID 49, localhost, executor driver, partition 2, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,567 INFO  [TaskSetManager] Starting task 3.0 in stage 6.0 (TID 50, localhost, executor driver, partition 3, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,567 INFO  [TaskSetManager] Starting task 4.0 in stage 6.0 (TID 51, localhost, executor driver, partition 4, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,567 INFO  [TaskSetManager] Starting task 5.0 in stage 6.0 (TID 52, localhost, executor driver, partition 5, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,568 INFO  [TaskSetManager] Starting task 7.0 in stage 6.0 (TID 53, localhost, executor driver, partition 7, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,568 INFO  [TaskSetManager] Starting task 1.0 in stage 6.0 (TID 54, localhost, executor driver, partition 1, ANY, 4621 bytes)
+2018-09-06 22:42:12,568 INFO  [TaskSetManager] Starting task 6.0 in stage 6.0 (TID 55, localhost, executor driver, partition 6, ANY, 4621 bytes)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 0.0 in stage 6.0 (TID 48)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 4.0 in stage 6.0 (TID 51)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 7.0 in stage 6.0 (TID 53)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 2.0 in stage 6.0 (TID 49)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 3.0 in stage 6.0 (TID 50)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 6.0 in stage 6.0 (TID 55)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 1.0 in stage 6.0 (TID 54)
+2018-09-06 22:42:12,568 INFO  [Executor] Running task 5.0 in stage 6.0 (TID 52)
+2018-09-06 22:42:12,570 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,571 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:12,571 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,571 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,572 INFO  [Executor] Finished task 7.0 in stage 6.0 (TID 53). 1005 bytes result sent to driver
+2018-09-06 22:42:12,572 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,572 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 2 ms
+2018-09-06 22:42:12,572 INFO  [Executor] Finished task 5.0 in stage 6.0 (TID 52). 1005 bytes result sent to driver
+2018-09-06 22:42:12,573 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,573 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,573 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,573 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,574 INFO  [Executor] Finished task 3.0 in stage 6.0 (TID 50). 1048 bytes result sent to driver
+2018-09-06 22:42:12,575 INFO  [ShuffleBlockFetcherIterator] Getting 6 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,575 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,576 INFO  [TaskSetManager] Finished task 5.0 in stage 6.0 (TID 52) in 9 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,576 INFO  [TaskSetManager] Finished task 3.0 in stage 6.0 (TID 50) in 9 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,573 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,576 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 3 ms
+2018-09-06 22:42:12,577 INFO  [TaskSetManager] Finished task 7.0 in stage 6.0 (TID 53) in 10 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,573 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:12,577 INFO  [Executor] Finished task 0.0 in stage 6.0 (TID 48). 1005 bytes result sent to driver
+2018-09-06 22:42:12,578 INFO  [Executor] Finished task 4.0 in stage 6.0 (TID 51). 1005 bytes result sent to driver
+2018-09-06 22:42:12,573 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,579 INFO  [TaskSetManager] Finished task 0.0 in stage 6.0 (TID 48) in 12 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,579 INFO  [TaskSetManager] Finished task 4.0 in stage 6.0 (TID 51) in 12 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,579 INFO  [Executor] Finished task 2.0 in stage 6.0 (TID 49). 1048 bytes result sent to driver
+2018-09-06 22:42:12,580 INFO  [TaskSetManager] Finished task 2.0 in stage 6.0 (TID 49) in 13 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,585 INFO  [Executor] Finished task 6.0 in stage 6.0 (TID 55). 1542 bytes result sent to driver
+2018-09-06 22:42:12,585 INFO  [Executor] Finished task 1.0 in stage 6.0 (TID 54). 1718 bytes result sent to driver
+2018-09-06 22:42:12,586 INFO  [TaskSetManager] Finished task 6.0 in stage 6.0 (TID 55) in 17 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,586 INFO  [TaskSetManager] Finished task 1.0 in stage 6.0 (TID 54) in 18 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,586 INFO  [TaskSchedulerImpl] Removed TaskSet 6.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,586 INFO  [DAGScheduler] ResultStage 6 (collect at HSGSolver.java:173) finished in 0,019 s
+2018-09-06 22:42:12,586 INFO  [DAGScheduler] Job 3 finished: collect at HSGSolver.java:173, took 0,077279 s
+2018-09-06 22:42:12,610 INFO  [SparkContext] Starting job: collect at HSGSolver.java:135
+2018-09-06 22:42:12,612 INFO  [DAGScheduler] Registering RDD 13 (mapToPair at HSGSolver.java:123)
+2018-09-06 22:42:12,613 INFO  [DAGScheduler] Got job 4 (collect at HSGSolver.java:135) with 8 output partitions
+2018-09-06 22:42:12,613 INFO  [DAGScheduler] Final stage: ResultStage 8 (collect at HSGSolver.java:135)
+2018-09-06 22:42:12,613 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 7)
+2018-09-06 22:42:12,613 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 7)
+2018-09-06 22:42:12,613 INFO  [DAGScheduler] Submitting ShuffleMapStage 7 (MapPartitionsRDD[13] at mapToPair at HSGSolver.java:123), which has no missing parents
+2018-09-06 22:42:12,614 INFO  [MemoryStore] Block broadcast_7 stored as values in memory (estimated size 5.1 KB, free 4.1 GB)
+2018-09-06 22:42:12,616 INFO  [MemoryStore] Block broadcast_7_piece0 stored as bytes in memory (estimated size 2.8 KB, free 4.1 GB)
+2018-09-06 22:42:12,616 INFO  [BlockManagerInfo] Added broadcast_7_piece0 in memory on 192.168.178.60:52069 (size: 2.8 KB, free: 4.1 GB)
+2018-09-06 22:42:12,616 INFO  [SparkContext] Created broadcast 7 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,617 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 7 (MapPartitionsRDD[13] at mapToPair at HSGSolver.java:123) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,617 INFO  [TaskSchedulerImpl] Adding task set 7.0 with 8 tasks
+2018-09-06 22:42:12,618 INFO  [TaskSetManager] Starting task 0.0 in stage 7.0 (TID 56, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,618 INFO  [TaskSetManager] Starting task 1.0 in stage 7.0 (TID 57, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:12,618 INFO  [TaskSetManager] Starting task 2.0 in stage 7.0 (TID 58, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:12,618 INFO  [TaskSetManager] Starting task 3.0 in stage 7.0 (TID 59, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:12,618 INFO  [TaskSetManager] Starting task 4.0 in stage 7.0 (TID 60, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,619 INFO  [TaskSetManager] Starting task 5.0 in stage 7.0 (TID 61, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:12,619 INFO  [TaskSetManager] Starting task 6.0 in stage 7.0 (TID 62, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:12,619 INFO  [TaskSetManager] Starting task 7.0 in stage 7.0 (TID 63, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 1.0 in stage 7.0 (TID 57)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 3.0 in stage 7.0 (TID 59)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 7.0 in stage 7.0 (TID 63)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 2.0 in stage 7.0 (TID 58)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 0.0 in stage 7.0 (TID 56)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 6.0 in stage 7.0 (TID 62)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 5.0 in stage 7.0 (TID 61)
+2018-09-06 22:42:12,619 INFO  [Executor] Running task 4.0 in stage 7.0 (TID 60)
+2018-09-06 22:42:12,649 INFO  [Executor] Finished task 3.0 in stage 7.0 (TID 59). 1033 bytes result sent to driver
+2018-09-06 22:42:12,649 INFO  [Executor] Finished task 4.0 in stage 7.0 (TID 60). 947 bytes result sent to driver
+2018-09-06 22:42:12,650 INFO  [TaskSetManager] Finished task 3.0 in stage 7.0 (TID 59) in 32 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,650 INFO  [TaskSetManager] Finished task 4.0 in stage 7.0 (TID 60) in 32 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,653 INFO  [Executor] Finished task 6.0 in stage 7.0 (TID 62). 990 bytes result sent to driver
+2018-09-06 22:42:12,654 INFO  [Executor] Finished task 7.0 in stage 7.0 (TID 63). 1033 bytes result sent to driver
+2018-09-06 22:42:12,655 INFO  [TaskSetManager] Finished task 7.0 in stage 7.0 (TID 63) in 36 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,655 INFO  [TaskSetManager] Finished task 6.0 in stage 7.0 (TID 62) in 36 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,657 INFO  [Executor] Finished task 0.0 in stage 7.0 (TID 56). 947 bytes result sent to driver
+2018-09-06 22:42:12,658 INFO  [TaskSetManager] Finished task 0.0 in stage 7.0 (TID 56) in 41 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,658 INFO  [Executor] Finished task 5.0 in stage 7.0 (TID 61). 947 bytes result sent to driver
+2018-09-06 22:42:12,659 INFO  [TaskSetManager] Finished task 5.0 in stage 7.0 (TID 61) in 41 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,662 INFO  [Executor] Finished task 1.0 in stage 7.0 (TID 57). 1033 bytes result sent to driver
+2018-09-06 22:42:12,662 INFO  [TaskSetManager] Finished task 1.0 in stage 7.0 (TID 57) in 44 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,665 INFO  [Executor] Finished task 2.0 in stage 7.0 (TID 58). 990 bytes result sent to driver
+2018-09-06 22:42:12,666 INFO  [TaskSetManager] Finished task 2.0 in stage 7.0 (TID 58) in 48 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,666 INFO  [TaskSchedulerImpl] Removed TaskSet 7.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,666 INFO  [DAGScheduler] ShuffleMapStage 7 (mapToPair at HSGSolver.java:123) finished in 0,049 s
+2018-09-06 22:42:12,666 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:12,666 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:12,666 INFO  [DAGScheduler] waiting: Set(ResultStage 8)
+2018-09-06 22:42:12,666 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:12,667 INFO  [DAGScheduler] Submitting ResultStage 8 (MapPartitionsRDD[16] at filter at HSGSolver.java:134), which has no missing parents
+2018-09-06 22:42:12,669 INFO  [MemoryStore] Block broadcast_8 stored as values in memory (estimated size 6.4 KB, free 4.1 GB)
+2018-09-06 22:42:12,670 INFO  [MemoryStore] Block broadcast_8_piece0 stored as bytes in memory (estimated size 3.3 KB, free 4.1 GB)
+2018-09-06 22:42:12,670 INFO  [BlockManagerInfo] Added broadcast_8_piece0 in memory on 192.168.178.60:52069 (size: 3.3 KB, free: 4.1 GB)
+2018-09-06 22:42:12,671 INFO  [SparkContext] Created broadcast 8 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:12,671 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 8 (MapPartitionsRDD[16] at filter at HSGSolver.java:134) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:12,671 INFO  [TaskSchedulerImpl] Adding task set 8.0 with 8 tasks
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 5.0 in stage 8.0 (TID 64, localhost, executor driver, partition 5, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 6.0 in stage 8.0 (TID 65, localhost, executor driver, partition 6, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 7.0 in stage 8.0 (TID 66, localhost, executor driver, partition 7, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 0.0 in stage 8.0 (TID 67, localhost, executor driver, partition 0, ANY, 4621 bytes)
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 1.0 in stage 8.0 (TID 68, localhost, executor driver, partition 1, ANY, 4621 bytes)
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 2.0 in stage 8.0 (TID 69, localhost, executor driver, partition 2, ANY, 4621 bytes)
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 3.0 in stage 8.0 (TID 70, localhost, executor driver, partition 3, ANY, 4621 bytes)
+2018-09-06 22:42:12,672 INFO  [TaskSetManager] Starting task 4.0 in stage 8.0 (TID 71, localhost, executor driver, partition 4, ANY, 4621 bytes)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 7.0 in stage 8.0 (TID 66)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 5.0 in stage 8.0 (TID 64)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 2.0 in stage 8.0 (TID 69)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 1.0 in stage 8.0 (TID 68)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 3.0 in stage 8.0 (TID 70)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 6.0 in stage 8.0 (TID 65)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 4.0 in stage 8.0 (TID 71)
+2018-09-06 22:42:12,673 INFO  [Executor] Running task 0.0 in stage 8.0 (TID 67)
+2018-09-06 22:42:12,675 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,676 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:12,676 INFO  [ShuffleBlockFetcherIterator] Getting 1 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,676 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:12,676 INFO  [ShuffleBlockFetcherIterator] Getting 1 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,676 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,676 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,676 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,677 INFO  [ShuffleBlockFetcherIterator] Getting 4 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,677 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,677 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,677 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,677 INFO  [Executor] Finished task 7.0 in stage 8.0 (TID 66). 1009 bytes result sent to driver
+2018-09-06 22:42:12,678 INFO  [Executor] Finished task 6.0 in stage 8.0 (TID 65). 1009 bytes result sent to driver
+2018-09-06 22:42:12,678 INFO  [ShuffleBlockFetcherIterator] Getting 2 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,678 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,678 INFO  [Executor] Finished task 2.0 in stage 8.0 (TID 69). 1107 bytes result sent to driver
+2018-09-06 22:42:12,679 INFO  [Executor] Finished task 5.0 in stage 8.0 (TID 64). 1009 bytes result sent to driver
+2018-09-06 22:42:12,679 INFO  [ShuffleBlockFetcherIterator] Getting 2 non-empty blocks out of 8 blocks
+2018-09-06 22:42:12,679 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:12,680 INFO  [TaskSetManager] Finished task 7.0 in stage 8.0 (TID 66) in 8 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:12,680 INFO  [TaskSetManager] Finished task 2.0 in stage 8.0 (TID 69) in 8 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:12,680 INFO  [TaskSetManager] Finished task 5.0 in stage 8.0 (TID 64) in 9 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:12,680 INFO  [TaskSetManager] Finished task 6.0 in stage 8.0 (TID 65) in 8 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:12,681 INFO  [Executor] Finished task 4.0 in stage 8.0 (TID 71). 1107 bytes result sent to driver
+2018-09-06 22:42:12,681 INFO  [Executor] Finished task 1.0 in stage 8.0 (TID 68). 1009 bytes result sent to driver
+2018-09-06 22:42:12,682 INFO  [TaskSetManager] Finished task 4.0 in stage 8.0 (TID 71) in 10 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:12,682 INFO  [Executor] Finished task 3.0 in stage 8.0 (TID 70). 1108 bytes result sent to driver
+2018-09-06 22:42:12,683 INFO  [TaskSetManager] Finished task 1.0 in stage 8.0 (TID 68) in 11 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:12,683 INFO  [Executor] Finished task 0.0 in stage 8.0 (TID 67). 1052 bytes result sent to driver
+2018-09-06 22:42:12,683 INFO  [TaskSetManager] Finished task 3.0 in stage 8.0 (TID 70) in 11 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:12,683 INFO  [TaskSetManager] Finished task 0.0 in stage 8.0 (TID 67) in 11 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:12,683 INFO  [TaskSchedulerImpl] Removed TaskSet 8.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:12,684 INFO  [DAGScheduler] ResultStage 8 (collect at HSGSolver.java:135) finished in 0,013 s
+2018-09-06 22:42:12,684 INFO  [DAGScheduler] Job 4 finished: collect at HSGSolver.java:135, took 0,073359 s
+2018-09-06 22:42:12,691 INFO  [SparkContext] Invoking stop() from shutdown hook
+2018-09-06 22:42:12,698 INFO  [MapOutputTrackerMasterEndpoint] MapOutputTrackerMasterEndpoint stopped!
+2018-09-06 22:42:12,729 INFO  [MemoryStore] MemoryStore cleared
+2018-09-06 22:42:12,730 INFO  [BlockManager] BlockManager stopped
+2018-09-06 22:42:12,731 INFO  [BlockManagerMaster] BlockManagerMaster stopped
+2018-09-06 22:42:12,733 INFO  [OutputCommitCoordinator$OutputCommitCoordinatorEndpoint] OutputCommitCoordinator stopped!
+2018-09-06 22:42:12,734 INFO  [SparkContext] Successfully stopped SparkContext
+2018-09-06 22:42:12,735 INFO  [ShutdownHookManager] Shutdown hook called
+2018-09-06 22:42:12,735 INFO  [ShutdownHookManager] Deleting directory C:\Users\accou\AppData\Local\Temp\spark-924d31e2-4c94-4784-a65c-c7a3bd3dca2e
+2018-09-06 22:42:39,768 INFO  [SparkContext] Running Spark version 2.2.0
+2018-09-06 22:42:39,929 WARN  [NativeCodeLoader] Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+2018-09-06 22:42:39,961 ERROR [Shell] Failed to locate the winutils binary in the hadoop binary path
+java.io.IOException: Could not locate executable null\bin\winutils.exe in the Hadoop binaries.
+	at org.apache.hadoop.util.Shell.getQualifiedBinPath(Shell.java:378)
+	at org.apache.hadoop.util.Shell.getWinUtilsPath(Shell.java:393)
+	at org.apache.hadoop.util.Shell.<clinit>(Shell.java:386)
+	at org.apache.hadoop.util.StringUtils.<clinit>(StringUtils.java:79)
+	at org.apache.hadoop.security.Groups.parseStaticMapping(Groups.java:116)
+	at org.apache.hadoop.security.Groups.<init>(Groups.java:93)
+	at org.apache.hadoop.security.Groups.<init>(Groups.java:73)
+	at org.apache.hadoop.security.Groups.getUserToGroupsMappingService(Groups.java:293)
+	at org.apache.hadoop.security.UserGroupInformation.initialize(UserGroupInformation.java:283)
+	at org.apache.hadoop.security.UserGroupInformation.ensureInitialized(UserGroupInformation.java:260)
+	at org.apache.hadoop.security.UserGroupInformation.loginUserFromSubject(UserGroupInformation.java:789)
+	at org.apache.hadoop.security.UserGroupInformation.getLoginUser(UserGroupInformation.java:774)
+	at org.apache.hadoop.security.UserGroupInformation.getCurrentUser(UserGroupInformation.java:647)
+	at org.apache.spark.util.Utils$$anonfun$getCurrentUserName$1.apply(Utils.scala:2430)
+	at org.apache.spark.util.Utils$$anonfun$getCurrentUserName$1.apply(Utils.scala:2430)
+	at scala.Option.getOrElse(Option.scala:121)
+	at org.apache.spark.util.Utils$.getCurrentUserName(Utils.scala:2430)
+	at org.apache.spark.SparkContext.<init>(SparkContext.scala:295)
+	at org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:58)
+	at hsgplanner.HSGSolverTest.<clinit>(HSGSolverTest.java:69)
+2018-09-06 22:42:40,030 INFO  [SparkContext] Submitted application: HSG Tool
+2018-09-06 22:42:40,044 INFO  [SecurityManager] Changing view acls to: accou
+2018-09-06 22:42:40,045 INFO  [SecurityManager] Changing modify acls to: accou
+2018-09-06 22:42:40,045 INFO  [SecurityManager] Changing view acls groups to: 
+2018-09-06 22:42:40,045 INFO  [SecurityManager] Changing modify acls groups to: 
+2018-09-06 22:42:40,045 INFO  [SecurityManager] SecurityManager: authentication disabled; ui acls disabled; users  with view permissions: Set(accou); groups with view permissions: Set(); users  with modify permissions: Set(accou); groups with modify permissions: Set()
+2018-09-06 22:42:40,328 INFO  [Utils] Successfully started service 'sparkDriver' on port 52102.
+2018-09-06 22:42:40,338 INFO  [SparkEnv] Registering MapOutputTracker
+2018-09-06 22:42:40,348 INFO  [SparkEnv] Registering BlockManagerMaster
+2018-09-06 22:42:40,350 INFO  [BlockManagerMasterEndpoint] Using org.apache.spark.storage.DefaultTopologyMapper for getting topology information
+2018-09-06 22:42:40,350 INFO  [BlockManagerMasterEndpoint] BlockManagerMasterEndpoint up
+2018-09-06 22:42:40,356 INFO  [DiskBlockManager] Created local directory at C:\Users\accou\AppData\Local\Temp\blockmgr-05612f95-8b35-4695-883c-3eced0115f94
+2018-09-06 22:42:40,385 INFO  [MemoryStore] MemoryStore started with capacity 4.1 GB
+2018-09-06 22:42:40,413 INFO  [SparkEnv] Registering OutputCommitCoordinator
+2018-09-06 22:42:40,468 INFO  [Executor] Starting executor ID driver on host localhost
+2018-09-06 22:42:40,485 INFO  [Utils] Successfully started service 'org.apache.spark.network.netty.NettyBlockTransferService' on port 52135.
+2018-09-06 22:42:40,486 INFO  [NettyBlockTransferService] Server created on 192.168.178.60:52135
+2018-09-06 22:42:40,487 INFO  [BlockManager] Using org.apache.spark.storage.RandomBlockReplicationPolicy for block replication policy
+2018-09-06 22:42:40,487 INFO  [BlockManagerMaster] Registering BlockManager BlockManagerId(driver, 192.168.178.60, 52135, None)
+2018-09-06 22:42:40,489 INFO  [BlockManagerMasterEndpoint] Registering block manager 192.168.178.60:52135 with 4.1 GB RAM, BlockManagerId(driver, 192.168.178.60, 52135, None)
+2018-09-06 22:42:40,491 INFO  [BlockManagerMaster] Registered BlockManager BlockManagerId(driver, 192.168.178.60, 52135, None)
+2018-09-06 22:42:40,491 INFO  [BlockManager] Initialized BlockManager: BlockManagerId(driver, 192.168.178.60, 52135, None)
+2018-09-06 22:42:40,589 INFO  [log] Logging initialized @1223ms
+2018-09-06 22:42:40,812 INFO  [SparkContext] Starting job: collect at HSGSolver.java:53
+2018-09-06 22:42:40,826 INFO  [DAGScheduler] Got job 0 (collect at HSGSolver.java:53) with 8 output partitions
+2018-09-06 22:42:40,827 INFO  [DAGScheduler] Final stage: ResultStage 0 (collect at HSGSolver.java:53)
+2018-09-06 22:42:40,827 INFO  [DAGScheduler] Parents of final stage: List()
+2018-09-06 22:42:40,828 INFO  [DAGScheduler] Missing parents: List()
+2018-09-06 22:42:40,833 INFO  [DAGScheduler] Submitting ResultStage 0 (ParallelCollectionRDD[0] at parallelize at HSGSolverTest.java:112), which has no missing parents
+2018-09-06 22:42:40,903 INFO  [MemoryStore] Block broadcast_0 stored as values in memory (estimated size 1616.0 B, free 4.1 GB)
+2018-09-06 22:42:40,941 INFO  [MemoryStore] Block broadcast_0_piece0 stored as bytes in memory (estimated size 1050.0 B, free 4.1 GB)
+2018-09-06 22:42:40,942 INFO  [BlockManagerInfo] Added broadcast_0_piece0 in memory on 192.168.178.60:52135 (size: 1050.0 B, free: 4.1 GB)
+2018-09-06 22:42:40,944 INFO  [SparkContext] Created broadcast 0 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:40,955 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 0 (ParallelCollectionRDD[0] at parallelize at HSGSolverTest.java:112) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:40,955 INFO  [TaskSchedulerImpl] Adding task set 0.0 with 8 tasks
+2018-09-06 22:42:41,006 INFO  [TaskSetManager] Starting task 0.0 in stage 0.0 (TID 0, localhost, executor driver, partition 0, PROCESS_LOCAL, 5464 bytes)
+2018-09-06 22:42:41,008 INFO  [TaskSetManager] Starting task 1.0 in stage 0.0 (TID 1, localhost, executor driver, partition 1, PROCESS_LOCAL, 5484 bytes)
+2018-09-06 22:42:41,008 INFO  [TaskSetManager] Starting task 2.0 in stage 0.0 (TID 2, localhost, executor driver, partition 2, PROCESS_LOCAL, 5462 bytes)
+2018-09-06 22:42:41,009 INFO  [TaskSetManager] Starting task 3.0 in stage 0.0 (TID 3, localhost, executor driver, partition 3, PROCESS_LOCAL, 5517 bytes)
+2018-09-06 22:42:41,009 INFO  [TaskSetManager] Starting task 4.0 in stage 0.0 (TID 4, localhost, executor driver, partition 4, PROCESS_LOCAL, 5464 bytes)
+2018-09-06 22:42:41,009 INFO  [TaskSetManager] Starting task 5.0 in stage 0.0 (TID 5, localhost, executor driver, partition 5, PROCESS_LOCAL, 5548 bytes)
+2018-09-06 22:42:41,010 INFO  [TaskSetManager] Starting task 6.0 in stage 0.0 (TID 6, localhost, executor driver, partition 6, PROCESS_LOCAL, 5464 bytes)
+2018-09-06 22:42:41,010 INFO  [TaskSetManager] Starting task 7.0 in stage 0.0 (TID 7, localhost, executor driver, partition 7, PROCESS_LOCAL, 5526 bytes)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 4.0 in stage 0.0 (TID 4)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 7.0 in stage 0.0 (TID 7)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 0.0 in stage 0.0 (TID 0)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 3.0 in stage 0.0 (TID 3)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 1.0 in stage 0.0 (TID 1)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 5.0 in stage 0.0 (TID 5)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 2.0 in stage 0.0 (TID 2)
+2018-09-06 22:42:41,015 INFO  [Executor] Running task 6.0 in stage 0.0 (TID 6)
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 4.0 in stage 0.0 (TID 4). 1364 bytes result sent to driver
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 1.0 in stage 0.0 (TID 1). 1341 bytes result sent to driver
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 6.0 in stage 0.0 (TID 6). 1364 bytes result sent to driver
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 7.0 in stage 0.0 (TID 7). 1426 bytes result sent to driver
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 0.0 in stage 0.0 (TID 0). 1321 bytes result sent to driver
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 3.0 in stage 0.0 (TID 3). 1417 bytes result sent to driver
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 2.0 in stage 0.0 (TID 2). 1362 bytes result sent to driver
+2018-09-06 22:42:41,048 INFO  [Executor] Finished task 5.0 in stage 0.0 (TID 5). 1448 bytes result sent to driver
+2018-09-06 22:42:41,054 INFO  [TaskSetManager] Finished task 1.0 in stage 0.0 (TID 1) in 46 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,055 INFO  [TaskSetManager] Finished task 4.0 in stage 0.0 (TID 4) in 46 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,056 INFO  [TaskSetManager] Finished task 7.0 in stage 0.0 (TID 7) in 46 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,056 INFO  [TaskSetManager] Finished task 6.0 in stage 0.0 (TID 6) in 47 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,056 INFO  [TaskSetManager] Finished task 0.0 in stage 0.0 (TID 0) in 68 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,057 INFO  [TaskSetManager] Finished task 3.0 in stage 0.0 (TID 3) in 49 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,057 INFO  [TaskSetManager] Finished task 2.0 in stage 0.0 (TID 2) in 49 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,057 INFO  [TaskSetManager] Finished task 5.0 in stage 0.0 (TID 5) in 48 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,058 INFO  [TaskSchedulerImpl] Removed TaskSet 0.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,061 INFO  [DAGScheduler] ResultStage 0 (collect at HSGSolver.java:53) finished in 0,084 s
+2018-09-06 22:42:41,065 INFO  [DAGScheduler] Job 0 finished: collect at HSGSolver.java:53, took 0,251592 s
+2018-09-06 22:42:41,105 INFO  [SparkContext] Starting job: collect at HSGSolver.java:219
+2018-09-06 22:42:41,108 INFO  [DAGScheduler] Registering RDD 1 (mapToPair at HSGSolver.java:216)
+2018-09-06 22:42:41,108 INFO  [DAGScheduler] Got job 1 (collect at HSGSolver.java:219) with 8 output partitions
+2018-09-06 22:42:41,108 INFO  [DAGScheduler] Final stage: ResultStage 2 (collect at HSGSolver.java:219)
+2018-09-06 22:42:41,108 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 1)
+2018-09-06 22:42:41,108 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 1)
+2018-09-06 22:42:41,109 INFO  [DAGScheduler] Submitting ShuffleMapStage 1 (MapPartitionsRDD[1] at mapToPair at HSGSolver.java:216), which has no missing parents
+2018-09-06 22:42:41,113 INFO  [MemoryStore] Block broadcast_1 stored as values in memory (estimated size 4.3 KB, free 4.1 GB)
+2018-09-06 22:42:41,114 INFO  [MemoryStore] Block broadcast_1_piece0 stored as bytes in memory (estimated size 2.4 KB, free 4.1 GB)
+2018-09-06 22:42:41,115 INFO  [BlockManagerInfo] Added broadcast_1_piece0 in memory on 192.168.178.60:52135 (size: 2.4 KB, free: 4.1 GB)
+2018-09-06 22:42:41,115 INFO  [SparkContext] Created broadcast 1 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,117 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 1 (MapPartitionsRDD[1] at mapToPair at HSGSolver.java:216) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,117 INFO  [TaskSchedulerImpl] Adding task set 1.0 with 8 tasks
+2018-09-06 22:42:41,118 INFO  [TaskSetManager] Starting task 0.0 in stage 1.0 (TID 8, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,119 INFO  [TaskSetManager] Starting task 1.0 in stage 1.0 (TID 9, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:41,119 INFO  [TaskSetManager] Starting task 2.0 in stage 1.0 (TID 10, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:41,120 INFO  [TaskSetManager] Starting task 3.0 in stage 1.0 (TID 11, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:41,120 INFO  [TaskSetManager] Starting task 4.0 in stage 1.0 (TID 12, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,120 INFO  [TaskSetManager] Starting task 5.0 in stage 1.0 (TID 13, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:41,120 INFO  [TaskSetManager] Starting task 6.0 in stage 1.0 (TID 14, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,121 INFO  [TaskSetManager] Starting task 7.0 in stage 1.0 (TID 15, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 0.0 in stage 1.0 (TID 8)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 2.0 in stage 1.0 (TID 10)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 6.0 in stage 1.0 (TID 14)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 4.0 in stage 1.0 (TID 12)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 1.0 in stage 1.0 (TID 9)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 3.0 in stage 1.0 (TID 11)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 5.0 in stage 1.0 (TID 13)
+2018-09-06 22:42:41,121 INFO  [Executor] Running task 7.0 in stage 1.0 (TID 15)
+2018-09-06 22:42:41,195 INFO  [Executor] Finished task 6.0 in stage 1.0 (TID 14). 904 bytes result sent to driver
+2018-09-06 22:42:41,195 INFO  [Executor] Finished task 0.0 in stage 1.0 (TID 8). 904 bytes result sent to driver
+2018-09-06 22:42:41,195 INFO  [Executor] Finished task 1.0 in stage 1.0 (TID 9). 904 bytes result sent to driver
+2018-09-06 22:42:41,195 INFO  [Executor] Finished task 2.0 in stage 1.0 (TID 10). 904 bytes result sent to driver
+2018-09-06 22:42:41,195 INFO  [Executor] Finished task 7.0 in stage 1.0 (TID 15). 904 bytes result sent to driver
+2018-09-06 22:42:41,196 INFO  [TaskSetManager] Finished task 6.0 in stage 1.0 (TID 14) in 76 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,196 INFO  [TaskSetManager] Finished task 1.0 in stage 1.0 (TID 9) in 77 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,196 INFO  [TaskSetManager] Finished task 7.0 in stage 1.0 (TID 15) in 76 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,197 INFO  [TaskSetManager] Finished task 2.0 in stage 1.0 (TID 10) in 78 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,197 INFO  [Executor] Finished task 4.0 in stage 1.0 (TID 12). 861 bytes result sent to driver
+2018-09-06 22:42:41,197 INFO  [TaskSetManager] Finished task 0.0 in stage 1.0 (TID 8) in 80 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,197 INFO  [TaskSetManager] Finished task 4.0 in stage 1.0 (TID 12) in 77 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,198 INFO  [Executor] Finished task 3.0 in stage 1.0 (TID 11). 904 bytes result sent to driver
+2018-09-06 22:42:41,199 INFO  [TaskSetManager] Finished task 3.0 in stage 1.0 (TID 11) in 80 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,199 INFO  [Executor] Finished task 5.0 in stage 1.0 (TID 13). 904 bytes result sent to driver
+2018-09-06 22:42:41,200 INFO  [TaskSetManager] Finished task 5.0 in stage 1.0 (TID 13) in 80 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,200 INFO  [TaskSchedulerImpl] Removed TaskSet 1.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,201 INFO  [DAGScheduler] ShuffleMapStage 1 (mapToPair at HSGSolver.java:216) finished in 0,084 s
+2018-09-06 22:42:41,201 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:41,201 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:41,202 INFO  [DAGScheduler] waiting: Set(ResultStage 2)
+2018-09-06 22:42:41,202 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:41,204 INFO  [BlockManagerInfo] Removed broadcast_0_piece0 on 192.168.178.60:52135 in memory (size: 1050.0 B, free: 4.1 GB)
+2018-09-06 22:42:41,204 INFO  [DAGScheduler] Submitting ResultStage 2 (MapPartitionsRDD[4] at mapValues at HSGSolver.java:218), which has no missing parents
+2018-09-06 22:42:41,209 INFO  [MemoryStore] Block broadcast_2 stored as values in memory (estimated size 5.9 KB, free 4.1 GB)
+2018-09-06 22:42:41,210 INFO  [MemoryStore] Block broadcast_2_piece0 stored as bytes in memory (estimated size 3.0 KB, free 4.1 GB)
+2018-09-06 22:42:41,211 INFO  [BlockManagerInfo] Added broadcast_2_piece0 in memory on 192.168.178.60:52135 (size: 3.0 KB, free: 4.1 GB)
+2018-09-06 22:42:41,212 INFO  [SparkContext] Created broadcast 2 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,212 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 2 (MapPartitionsRDD[4] at mapValues at HSGSolver.java:218) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,212 INFO  [TaskSchedulerImpl] Adding task set 2.0 with 8 tasks
+2018-09-06 22:42:41,215 INFO  [TaskSetManager] Starting task 0.0 in stage 2.0 (TID 16, localhost, executor driver, partition 0, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,215 INFO  [TaskSetManager] Starting task 1.0 in stage 2.0 (TID 17, localhost, executor driver, partition 1, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,215 INFO  [TaskSetManager] Starting task 2.0 in stage 2.0 (TID 18, localhost, executor driver, partition 2, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,215 INFO  [TaskSetManager] Starting task 3.0 in stage 2.0 (TID 19, localhost, executor driver, partition 3, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,216 INFO  [TaskSetManager] Starting task 7.0 in stage 2.0 (TID 20, localhost, executor driver, partition 7, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,216 INFO  [TaskSetManager] Starting task 4.0 in stage 2.0 (TID 21, localhost, executor driver, partition 4, ANY, 4621 bytes)
+2018-09-06 22:42:41,216 INFO  [TaskSetManager] Starting task 5.0 in stage 2.0 (TID 22, localhost, executor driver, partition 5, ANY, 4621 bytes)
+2018-09-06 22:42:41,216 INFO  [TaskSetManager] Starting task 6.0 in stage 2.0 (TID 23, localhost, executor driver, partition 6, ANY, 4621 bytes)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 2.0 in stage 2.0 (TID 18)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 3.0 in stage 2.0 (TID 19)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 5.0 in stage 2.0 (TID 22)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 0.0 in stage 2.0 (TID 16)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 1.0 in stage 2.0 (TID 17)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 6.0 in stage 2.0 (TID 23)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 7.0 in stage 2.0 (TID 20)
+2018-09-06 22:42:41,216 INFO  [Executor] Running task 4.0 in stage 2.0 (TID 21)
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,231 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,232 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,245 INFO  [Executor] Finished task 3.0 in stage 2.0 (TID 19). 1048 bytes result sent to driver
+2018-09-06 22:42:41,246 INFO  [Executor] Finished task 1.0 in stage 2.0 (TID 17). 1048 bytes result sent to driver
+2018-09-06 22:42:41,246 INFO  [Executor] Finished task 2.0 in stage 2.0 (TID 18). 1048 bytes result sent to driver
+2018-09-06 22:42:41,246 INFO  [Executor] Finished task 7.0 in stage 2.0 (TID 20). 1005 bytes result sent to driver
+2018-09-06 22:42:41,246 INFO  [Executor] Finished task 0.0 in stage 2.0 (TID 16). 1048 bytes result sent to driver
+2018-09-06 22:42:41,247 INFO  [TaskSetManager] Finished task 2.0 in stage 2.0 (TID 18) in 32 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,247 INFO  [TaskSetManager] Finished task 3.0 in stage 2.0 (TID 19) in 32 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,247 INFO  [TaskSetManager] Finished task 1.0 in stage 2.0 (TID 17) in 32 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,248 INFO  [TaskSetManager] Finished task 7.0 in stage 2.0 (TID 20) in 32 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,249 INFO  [TaskSetManager] Finished task 0.0 in stage 2.0 (TID 16) in 35 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,252 INFO  [Executor] Finished task 4.0 in stage 2.0 (TID 21). 1496 bytes result sent to driver
+2018-09-06 22:42:41,253 INFO  [Executor] Finished task 5.0 in stage 2.0 (TID 22). 1496 bytes result sent to driver
+2018-09-06 22:42:41,253 INFO  [Executor] Finished task 6.0 in stage 2.0 (TID 23). 1498 bytes result sent to driver
+2018-09-06 22:42:41,253 INFO  [TaskSetManager] Finished task 4.0 in stage 2.0 (TID 21) in 37 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,254 INFO  [TaskSetManager] Finished task 5.0 in stage 2.0 (TID 22) in 38 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,254 INFO  [TaskSetManager] Finished task 6.0 in stage 2.0 (TID 23) in 38 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,254 INFO  [TaskSchedulerImpl] Removed TaskSet 2.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,255 INFO  [DAGScheduler] ResultStage 2 (collect at HSGSolver.java:219) finished in 0,040 s
+2018-09-06 22:42:41,255 INFO  [DAGScheduler] Job 1 finished: collect at HSGSolver.java:219, took 0,150657 s
+2018-09-06 22:42:41,280 INFO  [SparkContext] Starting job: collectAsMap at HSGSolver.java:195
+2018-09-06 22:42:41,281 INFO  [DAGScheduler] Registering RDD 5 (mapToPair at HSGSolver.java:192)
+2018-09-06 22:42:41,281 INFO  [DAGScheduler] Got job 2 (collectAsMap at HSGSolver.java:195) with 8 output partitions
+2018-09-06 22:42:41,281 INFO  [DAGScheduler] Final stage: ResultStage 4 (collectAsMap at HSGSolver.java:195)
+2018-09-06 22:42:41,281 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 3)
+2018-09-06 22:42:41,281 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 3)
+2018-09-06 22:42:41,281 INFO  [DAGScheduler] Submitting ShuffleMapStage 3 (MapPartitionsRDD[5] at mapToPair at HSGSolver.java:192), which has no missing parents
+2018-09-06 22:42:41,283 INFO  [MemoryStore] Block broadcast_3 stored as values in memory (estimated size 4.3 KB, free 4.1 GB)
+2018-09-06 22:42:41,284 INFO  [MemoryStore] Block broadcast_3_piece0 stored as bytes in memory (estimated size 2.4 KB, free 4.1 GB)
+2018-09-06 22:42:41,284 INFO  [BlockManagerInfo] Added broadcast_3_piece0 in memory on 192.168.178.60:52135 (size: 2.4 KB, free: 4.1 GB)
+2018-09-06 22:42:41,285 INFO  [SparkContext] Created broadcast 3 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,285 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 3 (MapPartitionsRDD[5] at mapToPair at HSGSolver.java:192) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,285 INFO  [TaskSchedulerImpl] Adding task set 3.0 with 8 tasks
+2018-09-06 22:42:41,286 INFO  [TaskSetManager] Starting task 0.0 in stage 3.0 (TID 24, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,286 INFO  [TaskSetManager] Starting task 1.0 in stage 3.0 (TID 25, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:41,286 INFO  [TaskSetManager] Starting task 2.0 in stage 3.0 (TID 26, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:41,286 INFO  [TaskSetManager] Starting task 3.0 in stage 3.0 (TID 27, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:41,286 INFO  [TaskSetManager] Starting task 4.0 in stage 3.0 (TID 28, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,287 INFO  [TaskSetManager] Starting task 5.0 in stage 3.0 (TID 29, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:41,287 INFO  [TaskSetManager] Starting task 6.0 in stage 3.0 (TID 30, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,287 INFO  [TaskSetManager] Starting task 7.0 in stage 3.0 (TID 31, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:41,287 INFO  [Executor] Running task 0.0 in stage 3.0 (TID 24)
+2018-09-06 22:42:41,287 INFO  [Executor] Running task 3.0 in stage 3.0 (TID 27)
+2018-09-06 22:42:41,287 INFO  [Executor] Running task 2.0 in stage 3.0 (TID 26)
+2018-09-06 22:42:41,287 INFO  [Executor] Running task 5.0 in stage 3.0 (TID 29)
+2018-09-06 22:42:41,288 INFO  [Executor] Running task 4.0 in stage 3.0 (TID 28)
+2018-09-06 22:42:41,288 INFO  [Executor] Running task 6.0 in stage 3.0 (TID 30)
+2018-09-06 22:42:41,287 INFO  [Executor] Running task 1.0 in stage 3.0 (TID 25)
+2018-09-06 22:42:41,288 INFO  [Executor] Running task 7.0 in stage 3.0 (TID 31)
+2018-09-06 22:42:41,301 INFO  [Executor] Finished task 1.0 in stage 3.0 (TID 25). 861 bytes result sent to driver
+2018-09-06 22:42:41,302 INFO  [TaskSetManager] Finished task 1.0 in stage 3.0 (TID 25) in 16 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,303 INFO  [Executor] Finished task 4.0 in stage 3.0 (TID 28). 818 bytes result sent to driver
+2018-09-06 22:42:41,303 INFO  [TaskSetManager] Finished task 4.0 in stage 3.0 (TID 28) in 17 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,306 INFO  [Executor] Finished task 6.0 in stage 3.0 (TID 30). 818 bytes result sent to driver
+2018-09-06 22:42:41,307 INFO  [TaskSetManager] Finished task 6.0 in stage 3.0 (TID 30) in 20 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,307 INFO  [Executor] Finished task 0.0 in stage 3.0 (TID 24). 861 bytes result sent to driver
+2018-09-06 22:42:41,308 INFO  [TaskSetManager] Finished task 0.0 in stage 3.0 (TID 24) in 22 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,310 INFO  [Executor] Finished task 7.0 in stage 3.0 (TID 31). 861 bytes result sent to driver
+2018-09-06 22:42:41,311 INFO  [Executor] Finished task 5.0 in stage 3.0 (TID 29). 861 bytes result sent to driver
+2018-09-06 22:42:41,312 INFO  [TaskSetManager] Finished task 7.0 in stage 3.0 (TID 31) in 25 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,313 INFO  [TaskSetManager] Finished task 5.0 in stage 3.0 (TID 29) in 26 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,313 INFO  [Executor] Finished task 2.0 in stage 3.0 (TID 26). 818 bytes result sent to driver
+2018-09-06 22:42:41,314 INFO  [TaskSetManager] Finished task 2.0 in stage 3.0 (TID 26) in 28 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,316 INFO  [Executor] Finished task 3.0 in stage 3.0 (TID 27). 818 bytes result sent to driver
+2018-09-06 22:42:41,316 INFO  [TaskSetManager] Finished task 3.0 in stage 3.0 (TID 27) in 30 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,316 INFO  [TaskSchedulerImpl] Removed TaskSet 3.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,317 INFO  [DAGScheduler] ShuffleMapStage 3 (mapToPair at HSGSolver.java:192) finished in 0,032 s
+2018-09-06 22:42:41,317 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:41,317 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:41,317 INFO  [DAGScheduler] waiting: Set(ResultStage 4)
+2018-09-06 22:42:41,317 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:41,317 INFO  [DAGScheduler] Submitting ResultStage 4 (MapPartitionsRDD[8] at mapValues at HSGSolver.java:194), which has no missing parents
+2018-09-06 22:42:41,319 INFO  [MemoryStore] Block broadcast_4 stored as values in memory (estimated size 5.9 KB, free 4.1 GB)
+2018-09-06 22:42:41,320 INFO  [MemoryStore] Block broadcast_4_piece0 stored as bytes in memory (estimated size 3.0 KB, free 4.1 GB)
+2018-09-06 22:42:41,320 INFO  [BlockManagerInfo] Added broadcast_4_piece0 in memory on 192.168.178.60:52135 (size: 3.0 KB, free: 4.1 GB)
+2018-09-06 22:42:41,321 INFO  [SparkContext] Created broadcast 4 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,321 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 4 (MapPartitionsRDD[8] at mapValues at HSGSolver.java:194) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,321 INFO  [TaskSchedulerImpl] Adding task set 4.0 with 8 tasks
+2018-09-06 22:42:41,322 INFO  [TaskSetManager] Starting task 0.0 in stage 4.0 (TID 32, localhost, executor driver, partition 0, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,322 INFO  [TaskSetManager] Starting task 3.0 in stage 4.0 (TID 33, localhost, executor driver, partition 3, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,322 INFO  [TaskSetManager] Starting task 4.0 in stage 4.0 (TID 34, localhost, executor driver, partition 4, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,322 INFO  [TaskSetManager] Starting task 5.0 in stage 4.0 (TID 35, localhost, executor driver, partition 5, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,322 INFO  [TaskSetManager] Starting task 6.0 in stage 4.0 (TID 36, localhost, executor driver, partition 6, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,322 INFO  [TaskSetManager] Starting task 1.0 in stage 4.0 (TID 37, localhost, executor driver, partition 1, ANY, 4621 bytes)
+2018-09-06 22:42:41,323 INFO  [TaskSetManager] Starting task 2.0 in stage 4.0 (TID 38, localhost, executor driver, partition 2, ANY, 4621 bytes)
+2018-09-06 22:42:41,323 INFO  [TaskSetManager] Starting task 7.0 in stage 4.0 (TID 39, localhost, executor driver, partition 7, ANY, 4621 bytes)
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 0.0 in stage 4.0 (TID 32)
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 1.0 in stage 4.0 (TID 37)
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 7.0 in stage 4.0 (TID 39)
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 5.0 in stage 4.0 (TID 35)
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 3.0 in stage 4.0 (TID 33)
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 4.0 in stage 4.0 (TID 34)
+2018-09-06 22:42:41,326 INFO  [ShuffleBlockFetcherIterator] Getting 5 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,326 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 6.0 in stage 4.0 (TID 36)
+2018-09-06 22:42:41,328 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,328 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,328 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,329 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,329 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,329 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,330 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:41,331 INFO  [Executor] Finished task 6.0 in stage 4.0 (TID 36). 1048 bytes result sent to driver
+2018-09-06 22:42:41,323 INFO  [Executor] Running task 2.0 in stage 4.0 (TID 38)
+2018-09-06 22:42:41,333 INFO  [Executor] Finished task 5.0 in stage 4.0 (TID 35). 1005 bytes result sent to driver
+2018-09-06 22:42:41,328 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,336 INFO  [Executor] Finished task 3.0 in stage 4.0 (TID 33). 1005 bytes result sent to driver
+2018-09-06 22:42:41,337 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,337 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 11 ms
+2018-09-06 22:42:41,338 INFO  [Executor] Finished task 0.0 in stage 4.0 (TID 32). 1005 bytes result sent to driver
+2018-09-06 22:42:41,340 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,340 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,341 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,341 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:41,344 INFO  [Executor] Finished task 1.0 in stage 4.0 (TID 37). 1624 bytes result sent to driver
+2018-09-06 22:42:41,346 INFO  [Executor] Finished task 7.0 in stage 4.0 (TID 39). 1692 bytes result sent to driver
+2018-09-06 22:42:41,349 INFO  [Executor] Finished task 4.0 in stage 4.0 (TID 34). 1005 bytes result sent to driver
+2018-09-06 22:42:41,350 INFO  [TaskSetManager] Finished task 3.0 in stage 4.0 (TID 33) in 28 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,350 INFO  [TaskSetManager] Finished task 1.0 in stage 4.0 (TID 37) in 28 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,351 INFO  [TaskSetManager] Finished task 4.0 in stage 4.0 (TID 34) in 29 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,354 INFO  [Executor] Finished task 2.0 in stage 4.0 (TID 38). 1668 bytes result sent to driver
+2018-09-06 22:42:41,356 INFO  [TaskSetManager] Finished task 5.0 in stage 4.0 (TID 35) in 34 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,359 INFO  [TaskSetManager] Finished task 2.0 in stage 4.0 (TID 38) in 36 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,366 INFO  [TaskSetManager] Finished task 6.0 in stage 4.0 (TID 36) in 44 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,366 INFO  [TaskSetManager] Finished task 7.0 in stage 4.0 (TID 39) in 43 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,366 INFO  [TaskSetManager] Finished task 0.0 in stage 4.0 (TID 32) in 44 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,366 INFO  [TaskSchedulerImpl] Removed TaskSet 4.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,369 INFO  [DAGScheduler] ResultStage 4 (collectAsMap at HSGSolver.java:195) finished in 0,047 s
+2018-09-06 22:42:41,370 INFO  [DAGScheduler] Job 2 finished: collectAsMap at HSGSolver.java:195, took 0,089278 s
+2018-09-06 22:42:41,407 INFO  [SparkContext] Starting job: collect at HSGSolver.java:173
+2018-09-06 22:42:41,408 INFO  [DAGScheduler] Registering RDD 9 (mapToPair at HSGSolver.java:155)
+2018-09-06 22:42:41,409 INFO  [DAGScheduler] Got job 3 (collect at HSGSolver.java:173) with 8 output partitions
+2018-09-06 22:42:41,409 INFO  [DAGScheduler] Final stage: ResultStage 6 (collect at HSGSolver.java:173)
+2018-09-06 22:42:41,409 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 5)
+2018-09-06 22:42:41,409 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 5)
+2018-09-06 22:42:41,410 INFO  [DAGScheduler] Submitting ShuffleMapStage 5 (MapPartitionsRDD[9] at mapToPair at HSGSolver.java:155), which has no missing parents
+2018-09-06 22:42:41,413 INFO  [MemoryStore] Block broadcast_5 stored as values in memory (estimated size 4.3 KB, free 4.1 GB)
+2018-09-06 22:42:41,415 INFO  [MemoryStore] Block broadcast_5_piece0 stored as bytes in memory (estimated size 2.4 KB, free 4.1 GB)
+2018-09-06 22:42:41,415 INFO  [BlockManagerInfo] Added broadcast_5_piece0 in memory on 192.168.178.60:52135 (size: 2.4 KB, free: 4.1 GB)
+2018-09-06 22:42:41,416 INFO  [SparkContext] Created broadcast 5 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,417 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 5 (MapPartitionsRDD[9] at mapToPair at HSGSolver.java:155) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,417 INFO  [TaskSchedulerImpl] Adding task set 5.0 with 8 tasks
+2018-09-06 22:42:41,419 INFO  [TaskSetManager] Starting task 0.0 in stage 5.0 (TID 40, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,419 INFO  [TaskSetManager] Starting task 1.0 in stage 5.0 (TID 41, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:41,419 INFO  [TaskSetManager] Starting task 2.0 in stage 5.0 (TID 42, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:41,419 INFO  [TaskSetManager] Starting task 3.0 in stage 5.0 (TID 43, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:41,420 INFO  [TaskSetManager] Starting task 4.0 in stage 5.0 (TID 44, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,420 INFO  [TaskSetManager] Starting task 5.0 in stage 5.0 (TID 45, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:41,420 INFO  [TaskSetManager] Starting task 6.0 in stage 5.0 (TID 46, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,420 INFO  [TaskSetManager] Starting task 7.0 in stage 5.0 (TID 47, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:41,420 INFO  [Executor] Running task 2.0 in stage 5.0 (TID 42)
+2018-09-06 22:42:41,421 INFO  [Executor] Running task 7.0 in stage 5.0 (TID 47)
+2018-09-06 22:42:41,421 INFO  [Executor] Running task 4.0 in stage 5.0 (TID 44)
+2018-09-06 22:42:41,421 INFO  [Executor] Running task 1.0 in stage 5.0 (TID 41)
+2018-09-06 22:42:41,420 INFO  [Executor] Running task 3.0 in stage 5.0 (TID 43)
+2018-09-06 22:42:41,421 INFO  [Executor] Running task 0.0 in stage 5.0 (TID 40)
+2018-09-06 22:42:41,420 INFO  [Executor] Running task 6.0 in stage 5.0 (TID 46)
+2018-09-06 22:42:41,421 INFO  [Executor] Running task 5.0 in stage 5.0 (TID 45)
+2018-09-06 22:42:41,445 INFO  [Executor] Finished task 4.0 in stage 5.0 (TID 44). 818 bytes result sent to driver
+2018-09-06 22:42:41,446 INFO  [TaskSetManager] Finished task 4.0 in stage 5.0 (TID 44) in 26 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,453 INFO  [Executor] Finished task 0.0 in stage 5.0 (TID 40). 818 bytes result sent to driver
+2018-09-06 22:42:41,454 INFO  [Executor] Finished task 3.0 in stage 5.0 (TID 43). 904 bytes result sent to driver
+2018-09-06 22:42:41,457 INFO  [TaskSetManager] Finished task 0.0 in stage 5.0 (TID 40) in 39 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,457 INFO  [TaskSetManager] Finished task 3.0 in stage 5.0 (TID 43) in 38 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,459 INFO  [Executor] Finished task 1.0 in stage 5.0 (TID 41). 818 bytes result sent to driver
+2018-09-06 22:42:41,461 INFO  [Executor] Finished task 7.0 in stage 5.0 (TID 47). 818 bytes result sent to driver
+2018-09-06 22:42:41,461 INFO  [Executor] Finished task 2.0 in stage 5.0 (TID 42). 818 bytes result sent to driver
+2018-09-06 22:42:41,463 INFO  [TaskSetManager] Finished task 1.0 in stage 5.0 (TID 41) in 44 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,464 INFO  [TaskSetManager] Finished task 2.0 in stage 5.0 (TID 42) in 45 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,464 INFO  [TaskSetManager] Finished task 7.0 in stage 5.0 (TID 47) in 44 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,466 INFO  [Executor] Finished task 6.0 in stage 5.0 (TID 46). 861 bytes result sent to driver
+2018-09-06 22:42:41,466 INFO  [TaskSetManager] Finished task 6.0 in stage 5.0 (TID 46) in 46 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,467 INFO  [Executor] Finished task 5.0 in stage 5.0 (TID 45). 861 bytes result sent to driver
+2018-09-06 22:42:41,467 INFO  [TaskSetManager] Finished task 5.0 in stage 5.0 (TID 45) in 47 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,467 INFO  [TaskSchedulerImpl] Removed TaskSet 5.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,467 INFO  [DAGScheduler] ShuffleMapStage 5 (mapToPair at HSGSolver.java:155) finished in 0,049 s
+2018-09-06 22:42:41,467 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:41,467 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:41,467 INFO  [DAGScheduler] waiting: Set(ResultStage 6)
+2018-09-06 22:42:41,467 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:41,468 INFO  [DAGScheduler] Submitting ResultStage 6 (MapPartitionsRDD[12] at mapValues at HSGSolver.java:157), which has no missing parents
+2018-09-06 22:42:41,469 INFO  [MemoryStore] Block broadcast_6 stored as values in memory (estimated size 5.9 KB, free 4.1 GB)
+2018-09-06 22:42:41,470 INFO  [MemoryStore] Block broadcast_6_piece0 stored as bytes in memory (estimated size 3.0 KB, free 4.1 GB)
+2018-09-06 22:42:41,471 INFO  [BlockManagerInfo] Added broadcast_6_piece0 in memory on 192.168.178.60:52135 (size: 3.0 KB, free: 4.1 GB)
+2018-09-06 22:42:41,471 INFO  [SparkContext] Created broadcast 6 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,472 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 6 (MapPartitionsRDD[12] at mapValues at HSGSolver.java:157) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,472 INFO  [TaskSchedulerImpl] Adding task set 6.0 with 8 tasks
+2018-09-06 22:42:41,472 INFO  [TaskSetManager] Starting task 0.0 in stage 6.0 (TID 48, localhost, executor driver, partition 0, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [TaskSetManager] Starting task 2.0 in stage 6.0 (TID 49, localhost, executor driver, partition 2, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [TaskSetManager] Starting task 3.0 in stage 6.0 (TID 50, localhost, executor driver, partition 3, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [TaskSetManager] Starting task 4.0 in stage 6.0 (TID 51, localhost, executor driver, partition 4, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [TaskSetManager] Starting task 5.0 in stage 6.0 (TID 52, localhost, executor driver, partition 5, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [TaskSetManager] Starting task 7.0 in stage 6.0 (TID 53, localhost, executor driver, partition 7, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [TaskSetManager] Starting task 1.0 in stage 6.0 (TID 54, localhost, executor driver, partition 1, ANY, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [TaskSetManager] Starting task 6.0 in stage 6.0 (TID 55, localhost, executor driver, partition 6, ANY, 4621 bytes)
+2018-09-06 22:42:41,473 INFO  [Executor] Running task 0.0 in stage 6.0 (TID 48)
+2018-09-06 22:42:41,473 INFO  [Executor] Running task 5.0 in stage 6.0 (TID 52)
+2018-09-06 22:42:41,474 INFO  [Executor] Running task 4.0 in stage 6.0 (TID 51)
+2018-09-06 22:42:41,474 INFO  [Executor] Running task 1.0 in stage 6.0 (TID 54)
+2018-09-06 22:42:41,473 INFO  [Executor] Running task 3.0 in stage 6.0 (TID 50)
+2018-09-06 22:42:41,474 INFO  [Executor] Running task 6.0 in stage 6.0 (TID 55)
+2018-09-06 22:42:41,473 INFO  [Executor] Running task 2.0 in stage 6.0 (TID 49)
+2018-09-06 22:42:41,473 INFO  [Executor] Running task 7.0 in stage 6.0 (TID 53)
+2018-09-06 22:42:41,476 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,476 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,477 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,477 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,477 INFO  [Executor] Finished task 3.0 in stage 6.0 (TID 50). 1005 bytes result sent to driver
+2018-09-06 22:42:41,478 INFO  [Executor] Finished task 5.0 in stage 6.0 (TID 52). 1005 bytes result sent to driver
+2018-09-06 22:42:41,478 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,478 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,479 INFO  [Executor] Finished task 0.0 in stage 6.0 (TID 48). 1005 bytes result sent to driver
+2018-09-06 22:42:41,479 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,480 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:41,480 INFO  [ShuffleBlockFetcherIterator] Getting 6 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,480 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 1 ms
+2018-09-06 22:42:41,480 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,480 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,481 INFO  [Executor] Finished task 2.0 in stage 6.0 (TID 49). 1048 bytes result sent to driver
+2018-09-06 22:42:41,481 INFO  [TaskSetManager] Finished task 5.0 in stage 6.0 (TID 52) in 8 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,482 INFO  [TaskSetManager] Finished task 0.0 in stage 6.0 (TID 48) in 10 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,482 INFO  [TaskSetManager] Finished task 3.0 in stage 6.0 (TID 50) in 9 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,483 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,483 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,483 INFO  [Executor] Finished task 4.0 in stage 6.0 (TID 51). 1048 bytes result sent to driver
+2018-09-06 22:42:41,484 INFO  [Executor] Finished task 7.0 in stage 6.0 (TID 53). 1005 bytes result sent to driver
+2018-09-06 22:42:41,484 INFO  [ShuffleBlockFetcherIterator] Getting 3 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,484 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,485 INFO  [TaskSetManager] Finished task 2.0 in stage 6.0 (TID 49) in 13 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,485 INFO  [TaskSetManager] Finished task 4.0 in stage 6.0 (TID 51) in 12 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,485 INFO  [TaskSetManager] Finished task 7.0 in stage 6.0 (TID 53) in 12 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,495 INFO  [Executor] Finished task 1.0 in stage 6.0 (TID 54). 1761 bytes result sent to driver
+2018-09-06 22:42:41,495 INFO  [Executor] Finished task 6.0 in stage 6.0 (TID 55). 1585 bytes result sent to driver
+2018-09-06 22:42:41,496 INFO  [TaskSetManager] Finished task 1.0 in stage 6.0 (TID 54) in 23 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,496 INFO  [TaskSetManager] Finished task 6.0 in stage 6.0 (TID 55) in 23 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,496 INFO  [TaskSchedulerImpl] Removed TaskSet 6.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,497 INFO  [DAGScheduler] ResultStage 6 (collect at HSGSolver.java:173) finished in 0,025 s
+2018-09-06 22:42:41,498 INFO  [DAGScheduler] Job 3 finished: collect at HSGSolver.java:173, took 0,090526 s
+2018-09-06 22:42:41,530 INFO  [SparkContext] Starting job: collect at HSGSolver.java:135
+2018-09-06 22:42:41,532 INFO  [DAGScheduler] Registering RDD 13 (mapToPair at HSGSolver.java:123)
+2018-09-06 22:42:41,533 INFO  [DAGScheduler] Got job 4 (collect at HSGSolver.java:135) with 8 output partitions
+2018-09-06 22:42:41,533 INFO  [DAGScheduler] Final stage: ResultStage 8 (collect at HSGSolver.java:135)
+2018-09-06 22:42:41,533 INFO  [DAGScheduler] Parents of final stage: List(ShuffleMapStage 7)
+2018-09-06 22:42:41,533 INFO  [DAGScheduler] Missing parents: List(ShuffleMapStage 7)
+2018-09-06 22:42:41,533 INFO  [DAGScheduler] Submitting ShuffleMapStage 7 (MapPartitionsRDD[13] at mapToPair at HSGSolver.java:123), which has no missing parents
+2018-09-06 22:42:41,534 INFO  [MemoryStore] Block broadcast_7 stored as values in memory (estimated size 5.1 KB, free 4.1 GB)
+2018-09-06 22:42:41,535 INFO  [MemoryStore] Block broadcast_7_piece0 stored as bytes in memory (estimated size 2.8 KB, free 4.1 GB)
+2018-09-06 22:42:41,535 INFO  [BlockManagerInfo] Added broadcast_7_piece0 in memory on 192.168.178.60:52135 (size: 2.8 KB, free: 4.1 GB)
+2018-09-06 22:42:41,536 INFO  [SparkContext] Created broadcast 7 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,536 INFO  [DAGScheduler] Submitting 8 missing tasks from ShuffleMapStage 7 (MapPartitionsRDD[13] at mapToPair at HSGSolver.java:123) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,536 INFO  [TaskSchedulerImpl] Adding task set 7.0 with 8 tasks
+2018-09-06 22:42:41,537 INFO  [TaskSetManager] Starting task 0.0 in stage 7.0 (TID 56, localhost, executor driver, partition 0, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,537 INFO  [TaskSetManager] Starting task 1.0 in stage 7.0 (TID 57, localhost, executor driver, partition 1, PROCESS_LOCAL, 5473 bytes)
+2018-09-06 22:42:41,537 INFO  [TaskSetManager] Starting task 2.0 in stage 7.0 (TID 58, localhost, executor driver, partition 2, PROCESS_LOCAL, 5451 bytes)
+2018-09-06 22:42:41,537 INFO  [TaskSetManager] Starting task 3.0 in stage 7.0 (TID 59, localhost, executor driver, partition 3, PROCESS_LOCAL, 5506 bytes)
+2018-09-06 22:42:41,537 INFO  [TaskSetManager] Starting task 4.0 in stage 7.0 (TID 60, localhost, executor driver, partition 4, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,537 INFO  [TaskSetManager] Starting task 5.0 in stage 7.0 (TID 61, localhost, executor driver, partition 5, PROCESS_LOCAL, 5537 bytes)
+2018-09-06 22:42:41,537 INFO  [TaskSetManager] Starting task 6.0 in stage 7.0 (TID 62, localhost, executor driver, partition 6, PROCESS_LOCAL, 5453 bytes)
+2018-09-06 22:42:41,538 INFO  [TaskSetManager] Starting task 7.0 in stage 7.0 (TID 63, localhost, executor driver, partition 7, PROCESS_LOCAL, 5515 bytes)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 0.0 in stage 7.0 (TID 56)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 3.0 in stage 7.0 (TID 59)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 5.0 in stage 7.0 (TID 61)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 7.0 in stage 7.0 (TID 63)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 2.0 in stage 7.0 (TID 58)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 1.0 in stage 7.0 (TID 57)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 6.0 in stage 7.0 (TID 62)
+2018-09-06 22:42:41,538 INFO  [Executor] Running task 4.0 in stage 7.0 (TID 60)
+2018-09-06 22:42:41,561 INFO  [Executor] Finished task 4.0 in stage 7.0 (TID 60). 990 bytes result sent to driver
+2018-09-06 22:42:41,562 INFO  [Executor] Finished task 6.0 in stage 7.0 (TID 62). 947 bytes result sent to driver
+2018-09-06 22:42:41,562 INFO  [TaskSetManager] Finished task 4.0 in stage 7.0 (TID 60) in 25 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,562 INFO  [TaskSetManager] Finished task 6.0 in stage 7.0 (TID 62) in 25 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,563 INFO  [Executor] Finished task 1.0 in stage 7.0 (TID 57). 990 bytes result sent to driver
+2018-09-06 22:42:41,564 INFO  [TaskSetManager] Finished task 1.0 in stage 7.0 (TID 57) in 27 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,566 INFO  [Executor] Finished task 0.0 in stage 7.0 (TID 56). 990 bytes result sent to driver
+2018-09-06 22:42:41,567 INFO  [Executor] Finished task 2.0 in stage 7.0 (TID 58). 947 bytes result sent to driver
+2018-09-06 22:42:41,567 INFO  [TaskSetManager] Finished task 0.0 in stage 7.0 (TID 56) in 31 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,567 INFO  [TaskSetManager] Finished task 2.0 in stage 7.0 (TID 58) in 30 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,570 INFO  [Executor] Finished task 3.0 in stage 7.0 (TID 59). 947 bytes result sent to driver
+2018-09-06 22:42:41,570 INFO  [TaskSetManager] Finished task 3.0 in stage 7.0 (TID 59) in 33 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,573 INFO  [Executor] Finished task 7.0 in stage 7.0 (TID 63). 947 bytes result sent to driver
+2018-09-06 22:42:41,573 INFO  [Executor] Finished task 5.0 in stage 7.0 (TID 61). 1033 bytes result sent to driver
+2018-09-06 22:42:41,573 INFO  [TaskSetManager] Finished task 7.0 in stage 7.0 (TID 63) in 36 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,574 INFO  [TaskSetManager] Finished task 5.0 in stage 7.0 (TID 61) in 37 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,574 INFO  [TaskSchedulerImpl] Removed TaskSet 7.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,574 INFO  [DAGScheduler] ShuffleMapStage 7 (mapToPair at HSGSolver.java:123) finished in 0,038 s
+2018-09-06 22:42:41,574 INFO  [DAGScheduler] looking for newly runnable stages
+2018-09-06 22:42:41,574 INFO  [DAGScheduler] running: Set()
+2018-09-06 22:42:41,574 INFO  [DAGScheduler] waiting: Set(ResultStage 8)
+2018-09-06 22:42:41,574 INFO  [DAGScheduler] failed: Set()
+2018-09-06 22:42:41,574 INFO  [DAGScheduler] Submitting ResultStage 8 (MapPartitionsRDD[16] at filter at HSGSolver.java:134), which has no missing parents
+2018-09-06 22:42:41,576 INFO  [MemoryStore] Block broadcast_8 stored as values in memory (estimated size 6.4 KB, free 4.1 GB)
+2018-09-06 22:42:41,577 INFO  [MemoryStore] Block broadcast_8_piece0 stored as bytes in memory (estimated size 3.3 KB, free 4.1 GB)
+2018-09-06 22:42:41,578 INFO  [BlockManagerInfo] Added broadcast_8_piece0 in memory on 192.168.178.60:52135 (size: 3.3 KB, free: 4.1 GB)
+2018-09-06 22:42:41,578 INFO  [SparkContext] Created broadcast 8 from broadcast at DAGScheduler.scala:1006
+2018-09-06 22:42:41,578 INFO  [DAGScheduler] Submitting 8 missing tasks from ResultStage 8 (MapPartitionsRDD[16] at filter at HSGSolver.java:134) (first 15 tasks are for partitions Vector(0, 1, 2, 3, 4, 5, 6, 7))
+2018-09-06 22:42:41,578 INFO  [TaskSchedulerImpl] Adding task set 8.0 with 8 tasks
+2018-09-06 22:42:41,579 INFO  [TaskSetManager] Starting task 0.0 in stage 8.0 (TID 64, localhost, executor driver, partition 0, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,579 INFO  [TaskSetManager] Starting task 2.0 in stage 8.0 (TID 65, localhost, executor driver, partition 2, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,579 INFO  [TaskSetManager] Starting task 4.0 in stage 8.0 (TID 66, localhost, executor driver, partition 4, PROCESS_LOCAL, 4621 bytes)
+2018-09-06 22:42:41,579 INFO  [TaskSetManager] Starting task 1.0 in stage 8.0 (TID 67, localhost, executor driver, partition 1, ANY, 4621 bytes)
+2018-09-06 22:42:41,579 INFO  [TaskSetManager] Starting task 3.0 in stage 8.0 (TID 68, localhost, executor driver, partition 3, ANY, 4621 bytes)
+2018-09-06 22:42:41,579 INFO  [TaskSetManager] Starting task 5.0 in stage 8.0 (TID 69, localhost, executor driver, partition 5, ANY, 4621 bytes)
+2018-09-06 22:42:41,579 INFO  [TaskSetManager] Starting task 6.0 in stage 8.0 (TID 70, localhost, executor driver, partition 6, ANY, 4621 bytes)
+2018-09-06 22:42:41,580 INFO  [TaskSetManager] Starting task 7.0 in stage 8.0 (TID 71, localhost, executor driver, partition 7, ANY, 4621 bytes)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 0.0 in stage 8.0 (TID 64)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 1.0 in stage 8.0 (TID 67)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 5.0 in stage 8.0 (TID 69)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 2.0 in stage 8.0 (TID 65)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 4.0 in stage 8.0 (TID 66)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 7.0 in stage 8.0 (TID 71)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 3.0 in stage 8.0 (TID 68)
+2018-09-06 22:42:41,580 INFO  [Executor] Running task 6.0 in stage 8.0 (TID 70)
+2018-09-06 22:42:41,582 INFO  [ShuffleBlockFetcherIterator] Getting 2 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,582 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,583 INFO  [ShuffleBlockFetcherIterator] Getting 4 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,583 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,583 INFO  [ShuffleBlockFetcherIterator] Getting 2 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,583 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,583 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,584 INFO  [Executor] Finished task 2.0 in stage 8.0 (TID 65). 1009 bytes result sent to driver
+2018-09-06 22:42:41,585 INFO  [ShuffleBlockFetcherIterator] Getting 1 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,585 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,586 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,586 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 4 ms
+2018-09-06 22:42:41,586 INFO  [Executor] Finished task 7.0 in stage 8.0 (TID 71). 1009 bytes result sent to driver
+2018-09-06 22:42:41,586 INFO  [ShuffleBlockFetcherIterator] Getting 0 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,586 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,586 INFO  [Executor] Finished task 5.0 in stage 8.0 (TID 69). 1169 bytes result sent to driver
+2018-09-06 22:42:41,587 INFO  [Executor] Finished task 0.0 in stage 8.0 (TID 64). 1009 bytes result sent to driver
+2018-09-06 22:42:41,583 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 0 ms
+2018-09-06 22:42:41,583 INFO  [ShuffleBlockFetcherIterator] Getting 2 non-empty blocks out of 8 blocks
+2018-09-06 22:42:41,587 INFO  [ShuffleBlockFetcherIterator] Started 0 remote fetches in 5 ms
+2018-09-06 22:42:41,587 INFO  [Executor] Finished task 4.0 in stage 8.0 (TID 66). 1009 bytes result sent to driver
+2018-09-06 22:42:41,587 INFO  [Executor] Finished task 1.0 in stage 8.0 (TID 67). 1009 bytes result sent to driver
+2018-09-06 22:42:41,587 INFO  [TaskSetManager] Finished task 2.0 in stage 8.0 (TID 65) in 8 ms on localhost (executor driver) (1/8)
+2018-09-06 22:42:41,587 INFO  [TaskSetManager] Finished task 0.0 in stage 8.0 (TID 64) in 8 ms on localhost (executor driver) (2/8)
+2018-09-06 22:42:41,588 INFO  [TaskSetManager] Finished task 5.0 in stage 8.0 (TID 69) in 9 ms on localhost (executor driver) (3/8)
+2018-09-06 22:42:41,588 INFO  [TaskSetManager] Finished task 7.0 in stage 8.0 (TID 71) in 8 ms on localhost (executor driver) (4/8)
+2018-09-06 22:42:41,588 INFO  [TaskSetManager] Finished task 4.0 in stage 8.0 (TID 66) in 9 ms on localhost (executor driver) (5/8)
+2018-09-06 22:42:41,588 INFO  [TaskSetManager] Finished task 1.0 in stage 8.0 (TID 67) in 9 ms on localhost (executor driver) (6/8)
+2018-09-06 22:42:41,589 INFO  [Executor] Finished task 6.0 in stage 8.0 (TID 70). 1052 bytes result sent to driver
+2018-09-06 22:42:41,589 INFO  [Executor] Finished task 3.0 in stage 8.0 (TID 68). 1150 bytes result sent to driver
+2018-09-06 22:42:41,590 INFO  [TaskSetManager] Finished task 6.0 in stage 8.0 (TID 70) in 11 ms on localhost (executor driver) (7/8)
+2018-09-06 22:42:41,590 INFO  [TaskSetManager] Finished task 3.0 in stage 8.0 (TID 68) in 11 ms on localhost (executor driver) (8/8)
+2018-09-06 22:42:41,590 INFO  [TaskSchedulerImpl] Removed TaskSet 8.0, whose tasks have all completed, from pool 
+2018-09-06 22:42:41,590 INFO  [DAGScheduler] ResultStage 8 (collect at HSGSolver.java:135) finished in 0,011 s
+2018-09-06 22:42:41,591 INFO  [DAGScheduler] Job 4 finished: collect at HSGSolver.java:135, took 0,060958 s
+2018-09-06 22:42:41,621 INFO  [SparkContext] Invoking stop() from shutdown hook
+2018-09-06 22:42:41,630 INFO  [MapOutputTrackerMasterEndpoint] MapOutputTrackerMasterEndpoint stopped!
+2018-09-06 22:42:41,667 INFO  [MemoryStore] MemoryStore cleared
+2018-09-06 22:42:41,667 INFO  [BlockManager] BlockManager stopped
+2018-09-06 22:42:41,668 INFO  [BlockManagerMaster] BlockManagerMaster stopped
+2018-09-06 22:42:41,669 INFO  [OutputCommitCoordinator$OutputCommitCoordinatorEndpoint] OutputCommitCoordinator stopped!
+2018-09-06 22:42:41,671 INFO  [SparkContext] Successfully stopped SparkContext
+2018-09-06 22:42:41,671 INFO  [ShutdownHookManager] Shutdown hook called
+2018-09-06 22:42:41,671 INFO  [ShutdownHookManager] Deleting directory C:\Users\accou\AppData\Local\Temp\spark-67f8640a-634a-40c4-91f1-8cbf83a9dcce
