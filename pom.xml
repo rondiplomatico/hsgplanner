@@ -68,6 +68,80 @@
             <artifactId>org.ow2.sat4j.pb</artifactId>
             <version>2.3.4</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+        </dependency>
+
+        <!-- CPLEX Windows 12.6.2 libraries -->
+        <dependency>
+            <groupId>com.ibm.ilog</groupId>
+            <artifactId>cplex</artifactId>
+            <version>12.6.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ilog</groupId>
+            <artifactId>cplex1262</artifactId>
+            <version>12.6.2</version>
+            <classifier>x64_win64</classifier>
+            <type>dll</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ilog</groupId>
+            <artifactId>cplex1262processtransport</artifactId>
+            <version>12.6.2</version>
+            <classifier>x64_win64</classifier>
+            <type>dll</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ilog</groupId>
+            <artifactId>cplex1262remote</artifactId>
+            <version>12.6.2</version>
+            <classifier>x64_win64</classifier>
+            <type>dll</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ilog</groupId>
+            <artifactId>cplex1262remotejni</artifactId>
+            <version>12.6.2</version>
+            <classifier>x64_win64</classifier>
+            <type>dll</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.ilog</groupId>
+            <artifactId>cplex1262tcpiptransport</artifactId>
+            <version>12.6.2</version>
+            <classifier>x64_win64</classifier>
+            <type>dll</type>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>solvers</groupId>
+            <artifactId>glpk</artifactId>
+            <version>1</version>
+             <scope>system</scope>
+            <systemPath>${project.basedir}/lib/glpk-java.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>solvers</groupId>
+            <artifactId>gourobi</artifactId>
+            <version>8</version>
+             <scope>system</scope>
+            <systemPath>${project.basedir}/lib/gurobi.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>solvers</groupId>
+            <artifactId>mosek</artifactId>
+            <version>1</version>
+             <scope>system</scope>
+            <systemPath>${project.basedir}/lib/mosek.jar</systemPath>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

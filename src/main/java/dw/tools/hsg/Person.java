@@ -20,10 +20,10 @@ package dw.tools.hsg;
 import java.io.Serializable;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * TODO Replace with class description.
@@ -34,23 +34,33 @@ import lombok.NoArgsConstructor;
  */
 @Data
 @EqualsAndHashCode
-@NoArgsConstructor(access=AccessLevel.PRIVATE)
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Person implements Serializable {
 
     private static final long serialVersionUID = 3556391185364393215L;
 
     private String name;
+    @Setter(AccessLevel.PRIVATE) private String shortName;
     private String teamId;
     private int gearbeitetM;
+
+    public Person(final String name, final String teamId, final int worked) {
+        setName(name);
+        this.teamId = teamId;
+        gearbeitetM = worked;
+    }
+
+    public void setName(final String value) {
+        String[] parts = value.split(" ");
+        shortName = parts[0].substring(0, 1) + (parts.length > 1 ? parts[1].substring(0, 1) : "");
+    }
 
     public static Person parse(final String line) {
         String[] elems = line.split(";");
         Person res = new Person();
-        res.name = elems[0];
+        res.setName(elems[0]);
         res.teamId = elems[2];
         res.gearbeitetM = (int) Math.round(Double.parseDouble(elems[1].replace(",", ".")) * 60);
         return res;
     }
-
 }

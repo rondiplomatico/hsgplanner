@@ -34,30 +34,28 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class Zuordnung implements Serializable {
 
-	private static final long serialVersionUID = 6500267604562155991L;
-	private static int ID = 0;
+    private static final long serialVersionUID = 6500267604562155991L;
+    private static int ID = 0;
 
-	private final Person person;
-	private final Dienst dienst;
-	private final int nr;
-	// private final UUID id;
-	private final int id;
+    private final Person person;
+    private final Dienst dienst;
+    private final int nr;
+    // private final UUID id;
+    private final int id;
 
-	public String varName() {
-		// return id.toString();
-		// return "V"+id;
-		return person.getName() + "@" + dienst.zeit + "[" + nr + "]";
-	}
+    public String varName() {
+        return person.getShortName() + "@" + dienst.zeit + "/" + nr + "/" + id;
+    }
 
-	public Zuordnung(final Person p, final Dienst d, final int nr) {
-		person = p;
-		dienst = d;
-		this.nr = nr;
-		// id = UUID.randomUUID();
-		id = ID++;
-	}
+    public Zuordnung(final Person p, final Dienst d, final int nr) {
+        person = p;
+        dienst = d;
+        this.nr = nr;
+        // id = UUID.randomUUID();
+        id = ID++;
+    }
 
-	public Zuordnung(final Person p, final Dienst d) {
-		this(p, d, 1);
-	}
+    public Zuordnung(final Person p, final Dienst d) {
+        this(p, d, 1);
+    }
 }
