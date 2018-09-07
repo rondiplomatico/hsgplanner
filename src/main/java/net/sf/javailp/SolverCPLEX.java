@@ -20,10 +20,21 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+
 import java.util.Map.Entry;
 
 /**
@@ -163,14 +174,22 @@ public class SolverCPLEX extends AbstractSolver {
             for (Hook hook : hooks) {
                 hook.call(cplex, varToNum);
             }
+            
+            File f = new File("cplex_problem.txt");
+        	try {
+				FileUtils.writeStringToFile(f, cplex.toString());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 
             if (!cplex.solve()) {
-                //System.err.println(cplex);
-                // cplex.getStatus()
+//            	System.out.println(cplex.toString());
+            	System.out.println("CPLEX Status:" + cplex.getStatus());
+            	System.out.println("CPLEX Status:" + cplex.getCplexStatus() + " / Sub:" + cplex.getCplexSubStatus());
+            	
                 cplex.end();
                 return null;
             }
-            //System.err.println(cplex);
 
             final Result result;
             if (problem.getObjective() != null) {

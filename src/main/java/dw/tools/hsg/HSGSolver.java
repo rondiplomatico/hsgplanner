@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaRDD;
 
+import dw.tools.hsg.Dienst.Typ;
 import net.sf.javailp.Constraint;
 import net.sf.javailp.Linear;
 import net.sf.javailp.NativeLoaderCplex;
@@ -34,11 +35,14 @@ import net.sf.javailp.Operator;
 import net.sf.javailp.OptType;
 import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
+import net.sf.javailp.SOS;
+import net.sf.javailp.SOS.SOSType;
 import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
 import net.sf.javailp.SolverParameter;
 import net.sf.javailp.Term;
+import net.sf.javailp.VarType;
 import scala.Tuple2;
 
 /**
@@ -49,6 +53,7 @@ import scala.Tuple2;
 public class HSGSolver {
 
     private static final String AVERAGE_WORK_TIME = "AverageWorkTime";
+    private static final String AVERAGE_WORK_TIME_AUFSICHT = "AverageWorkTimeOverseer";
     private static int substCnt = 1;
 
     public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all) {
@@ -66,7 +71,9 @@ public class HSGSolver {
         for (Zuordnung z : allList) {
             problem.setVarType(z.varName(), Boolean.class);
         }
-        addZ1GleichVielArbeitsZeit(all, problem, target);
+        // Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten 
+        addZ1GleichVielArbeitsZeit(all, problem, target, true);
+        addZ1GleichVielArbeitsZeit(all, problem, target, false);
 
         // addZ2GleichesTeamFavorisiertZusammen()
         // addZ3DienstKurzVorEigenemSpiel()
@@ -98,7 +105,7 @@ public class HSGSolver {
          */
 
         System.out.println("Problem:");
-        problem.print();
+//        problem.print();
 
         System.out.println("Löse");
         // SolverFactory factory = new SolverFactoryGurobi();
@@ -133,7 +140,7 @@ public class HSGSolver {
         solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH, 3);
         solver.setParameter(SolverParameter.MEMORY_EMPHASIS, true);
         solver.setParameter(SolverParameter.ADVANCED_START_SWITCH, 0);
-        solver.setParameter(SolverParameter.VERBOSE, 3);
+        solver.setParameter(SolverParameter.VERBOSE, 5);
 
         List<Zuordnung> selected = Collections.emptyList();
         Result result = solver.solve(problem);
@@ -143,9 +150,9 @@ public class HSGSolver {
             System.out.println("Ergebnis:");
             selected = allList.stream().filter(z -> result.getBoolean(z.varName()))
                               .collect(Collectors.toList());
-            selected.forEach(System.out::println);
 
             System.out.println("Durchschnittliche Arbeitszeit:" + result.getPrimalValue(AVERAGE_WORK_TIME));
+            System.out.println("Durchschnittliche Arbeitszeit Aufsicht:" + result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
         } else {
             System.out.println("Solve fehlgeschlagen.");
         }
@@ -215,57 +222,58 @@ public class HSGSolver {
            .collectAsMap().forEach((d, zall) -> {
                Linear l = new Linear();
                zall.forEach(z -> l.add(1, z));
-               // problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
-               problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
+                problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
+//               problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));	
            });
     }
 
     private static void addZ1GleichVielArbeitsZeit(final JavaRDD<Zuordnung> all, final Problem problem,
-                    final Linear target) {
+                    final Linear target, final boolean isAufsicht) {
         /*
          * Alle gleich viel Arbeitszeit. Die gesamtarbeitszeit soll pro person nicht von
          * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
          */
         final List<String> allTotalTimesPerPerson = new ArrayList<>();
-        all.mapToPair(z -> new Tuple2<>(z.getPerson(), new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin())))
+        all.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp() : Typ.Aufsicht != z.getDienst().getTyp())
+           .mapToPair(z -> new Tuple2<>(z.getPerson(), new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin())))
            .groupByKey().mapValues(IterableUtil::toList).collect().forEach(d -> {
                Linear linear = new Linear();
                d._2.forEach(t -> linear.add(t._2, t._1));
                String sumVarName = "TotalZeit" + d._1.getName();
                linear.add(-1, sumVarName);
-               problem.setVarType(sumVarName, Integer.class);
+               problem.setVarType(sumVarName, VarType.INT);
                problem.setVarLowerBound(sumVarName, 0);
-               problem.add(new Constraint(linear, Operator.EQ, -d._1.getGearbeitetM()));
+               problem.add(new Constraint(sumVarName, linear, Operator.EQ, -d._1.getGearbeitetM()));
                allTotalTimesPerPerson.add(sumVarName);
            });
         Linear avg = new Linear();
         double numPInv = 1 / (double) allTotalTimesPerPerson.size();
         allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s));
-        createSubstitute(problem, avg, AVERAGE_WORK_TIME);
+        createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT:AVERAGE_WORK_TIME);
 
         allTotalTimesPerPerson.forEach(s -> {
             Linear l = new Linear();
             String plus = s + "+";
             String minus = s + "-";
-            l.add(new Term(s, 1), new Term(AVERAGE_WORK_TIME, -1), new Term(plus, 1), new Term(minus, -1));
-            problem.add(new Constraint(l, Operator.EQ, 0));
-            problem.setVarType(plus, Integer.class);
-            problem.setVarType(minus, Integer.class);
+            l.add(new Term(s, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT:AVERAGE_WORK_TIME, -1), new Term(plus, 1), new Term(minus, -1));
+            problem.add(new Constraint(s+"Slack", l, Operator.EQ, 0));
+            problem.setVarType(plus, VarType.REAL);
+            problem.setVarType(minus, VarType.REAL);
             problem.setVarLowerBound(plus, 0);
             problem.setVarLowerBound(minus, 0);
             target.add(new Term(plus, 1), new Term(minus, 1));
         });
     }
 
-    private static String createSubstitute(final Problem p, final Linear linear) {
+    private static String createSubstitute(final Problem p, final Linear linear, final VarType type) {
         String name = "sub" + substCnt++;
-        createSubstitute(p, linear, name);
+        createSubstitute(p, linear, type, name);
         return name;
     }
 
-    private static void createSubstitute(final Problem p, final Linear linear, final String name) {
+    private static void createSubstitute(final Problem p, final Linear linear, final VarType type, final String name) {
         linear.add(-1, name);
-        p.setVarType(name, Integer.class);
-        p.add(new Constraint(linear, Operator.EQ, 0));
+        p.setVarType(name, type);
+        p.add(new Constraint(name, linear, Operator.EQ, 0));
     }
 }

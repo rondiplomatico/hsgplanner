@@ -79,6 +79,8 @@
             <groupId>com.ibm.ilog</groupId>
             <artifactId>cplex</artifactId>
             <version>12.6.2</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/cplex-12.7.1.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.ibm.ilog</groupId>

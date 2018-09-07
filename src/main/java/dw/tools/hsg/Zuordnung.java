@@ -42,7 +42,7 @@ public class Zuordnung implements Serializable {
     private final int id;
 
     public String varName() {
-        return person.getShortName() + "@" + dienst.zeit + "/" + nr + "/" + id;
+        return person.getShortName() + "@" + dienst.getTyp().getKurz() + dienst.zeit + "/" + nr + "/" + id;
     }
 
     public Zuordnung(final Person p, final Dienst d, final int nr) {
@@ -59,6 +59,6 @@ public class Zuordnung implements Serializable {
 
     @Override
     public String toString() {
-        return varName();
+    	return varName();
     }
 }

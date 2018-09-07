@@ -23,8 +23,11 @@ import java.time.format.DateTimeFormatter;
 
 import org.spark_project.guava.base.Strings;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
@@ -37,6 +40,8 @@ import lombok.ToString;
 @Data
 @ToString
 @EqualsAndHashCode
+@AllArgsConstructor
+@NoArgsConstructor(access=AccessLevel.PRIVATE)
 public class Game implements Serializable {
 
     private static final long serialVersionUID = -2732016441985251070L;
