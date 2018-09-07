@@ -34,11 +34,10 @@ import net.sf.javailp.Operator;
 import net.sf.javailp.OptType;
 import net.sf.javailp.Problem;
 import net.sf.javailp.Result;
-import net.sf.javailp.SOS;
-import net.sf.javailp.SOS.SOSType;
 import net.sf.javailp.Solver;
 import net.sf.javailp.SolverFactory;
 import net.sf.javailp.SolverFactoryCPLEX;
+import net.sf.javailp.SolverParameter;
 import net.sf.javailp.Term;
 import scala.Tuple2;
 
@@ -124,10 +123,17 @@ public class HSGSolver {
          * FULL (6) All messages are reported. Useful for debugging purposes and small models.
          */
         // SolverFactory factory = new SolverFactoryLpSolve();
-        factory.setParameter(Solver.VERBOSE, 3);
-
         factory.setParameter(Solver.TIMEOUT, 10000); // set timeout to 100 seconds
         Solver solver = factory.get(); // you should use this solver only once for one problem
+
+        solver.setParameter(SolverParameter.RAND_SEED, 1);
+        solver.setParameter(SolverParameter.NUMBER_OF_THREADS, 8);
+        solver.setParameter(SolverParameter.WORK_DIRECTORY, ".");
+        solver.setParameter(SolverParameter.WORKING_MEMORY, 2048);
+        solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH, 3);
+        solver.setParameter(SolverParameter.MEMORY_EMPHASIS, true);
+        solver.setParameter(SolverParameter.ADVANCED_START_SWITCH, 0);
+        solver.setParameter(SolverParameter.VERBOSE, 3);
 
         List<Zuordnung> selected = Collections.emptyList();
         Result result = solver.solve(problem);
@@ -209,7 +215,8 @@ public class HSGSolver {
            .collectAsMap().forEach((d, zall) -> {
                Linear l = new Linear();
                zall.forEach(z -> l.add(1, z));
-               problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
+               // problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
+               problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
            });
     }
 

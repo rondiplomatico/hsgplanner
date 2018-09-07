@@ -23,8 +23,6 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * TODO Replace with class description.
- *
  * @version $Revision$
  * @author wirtzd
  * @since 05.09.2018
@@ -57,5 +55,10 @@ public class Zuordnung implements Serializable {
 
     public Zuordnung(final Person p, final Dienst d) {
         this(p, d, 1);
+    }
+
+    @Override
+    public String toString() {
+        return varName();
     }
 }

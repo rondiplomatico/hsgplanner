@@ -20,9 +20,6 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
-import ilog.cplex.IloCplex.Param;
-
-import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -91,20 +88,6 @@ public class SolverCPLEX extends AbstractSolver {
 
         try {
             IloCplex cplex = new IloCplex();
-            cplex.setOut(System.err);
-
-            solver.setParameter(SolverParameter.RAND_SEED, configuration.getInt(SynthesisParam.RAND_SEED));
-            solver.setParameter(SolverParameter.NUMBER_OF_THREADS,
-                                configuration.getInt(SynthesisParam.NUMBER_OF_THREADS));
-            solver.setParameter(SolverParameter.WORK_DIRECTORY, workDir);
-            solver.setParameter(SolverParameter.WORKING_MEMORY, configuration.getDouble(SynthesisParam.SOLVER_SUB_MAX_MEMORY));
-            solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH,
-                                configuration.getInt(SynthesisParam.NODE_STORAGE_FILE_SWITCH));
-            solver.setParameter(SolverParameter.MEMORY_EMPHASIS,
-                                configuration.getBoolean(SynthesisParam.MEMORY_EMPHASIS));
-            solver.setParameter(SolverParameter.ADVANCED_START_SWITCH,
-                                configuration.getInt(SynthesisParam.ADVANCED_START_SWITCH));
-            solver.setParameter(SolverParameter.VERBOSE, 3);
 
             initWithParameters(cplex);
 
@@ -249,62 +232,6 @@ public class SolverCPLEX extends AbstractSolver {
 
             IloNumVar num = varToNum.get(variable);
             lin.addTerm(coeff.doubleValue(), num);
-        }
-    }
-
-    @Override
-    public void setParameter(final SolverParameter param, final Object value) throws SolverException {
-        try {
-            switch (param) {
-            case TIMEOUT:
-                cplex.setParam(DoubleParam.TiLim, (Integer) value);
-                break;
-            case VERBOSE:
-                int level = Math.abs((Integer) value);
-                cplex.setParam(Param.Tune.Display, Math.min(3, level));
-                cplex.setParam(Param.Simplex.Display, Math.min(2, level));
-                cplex.setParam(Param.MIP.Display, Math.min(5, level));
-                cplex.setParam(Param.Conflict.Display, Math.min(2, level));
-                break;
-            case ALGORITHM_TYPE:
-                Algorithm algo = (Algorithm) value;
-                if (Algorithm.PRIMAL == algo) {
-                    cplex.setParam(IloCplex.IntParam.RootAlg, IloCplex.Algorithm.Primal);
-                }
-                break;
-            case OUTSTREAM:
-                cplex.setOut((OutputStream) value);
-                break;
-            case WORK_DIRECTORY:
-                cplex.setParam(IloCplex.StringParam.WorkDir, (String) value);
-                break;
-            case NUMBER_OF_THREADS:
-                cplex.setParam(IloCplex.IntParam.Threads, (Integer) value);
-                break;
-            case RAND_SEED:
-                cplex.setParam(IloCplex.IntParam.RandomSeed, (Integer) value);
-                break;
-            case NODE_STORAGE_FILE_SWITCH:
-                cplex.setParam(IloCplex.IntParam.NodeFileInd, (Integer) value);
-                break;
-            case MEMORY_EMPHASIS:
-                cplex.setParam(IloCplex.BooleanParam.MemoryEmphasis, (Boolean) value);
-                break;
-            case ADVANCED_START_SWITCH:
-                cplex.setParam(IloCplex.IntParam.AdvInd, (Integer) value);
-                break;
-            case BRANCH_AND_CUT_MEMORY_LIMIT:
-                cplex.setParam(IloCplex.DoubleParam.TreLim, (Integer) value);
-                break;
-            case WORKING_MEMORY:
-                cplex.setParam(IloCplex.Param.WorkMem, (Double) value);
-                break;
-            default:
-            }
-        } catch (IloException e) {
-            throw new SolverException("Failed setting parameter " + param + " to " + value, e);
-        } catch (ClassCastException e) {
-            throw new SolverException("Wrong parameter type " + value.getClass().getSimpleName() + " for parameter " + param, e);
         }
     }
 
