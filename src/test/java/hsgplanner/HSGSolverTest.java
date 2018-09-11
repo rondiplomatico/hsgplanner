@@ -34,6 +34,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -146,7 +147,11 @@ public class HSGSolverTest {
 		List<Person> ps = Arrays.asList(M1A, M1B, M1C, F1A, A1, A2);
 		List<Game> gs = Arrays.asList(F21, F11);
 		
-		assertTrue(HSGApp.run(jsc.parallelize(gs), jsc.parallelize(ps)));
+		JavaRDD<Game> gsRDD = jsc.parallelize(gs);
+		List<Zuordnung> res = HSGApp.compute(gsRDD, jsc.parallelize(ps));
+		assertTrue(res.size() > 0);
+		List<String> csv = HSGApp.toCSV(gsRDD, jsc.parallelize(res)).collect();
+		System.out.println(csv);
 	}
 	
 	@Test
@@ -154,7 +159,7 @@ public class HSGSolverTest {
 		//HSGApp.main(new String[] {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_10.csv" , "F:\\Software\\hsgplanner\\src\\test\\resources\\PersonenM1F1.csv"});
 		//HSGApp.main(new String[] {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_10.csv" , "F:\\Software\\hsgplanner\\src\\test\\resources\\PersonenM1F1F2.csv"});
 		//HSGApp.main(new String[] {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_10.csv" , "F:\\Software\\hsgplanner\\src\\test\\resources\\Personen.csv"});
-		//HSGApp.main(new String[] {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_20.csv" , "F:\\Software\\hsgplanner\\src\\test\\resources\\Personen.csv"});
+		HSGApp.main(new String[] {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_20.csv" , "F:\\Software\\hsgplanner\\src\\test\\resources\\Personen.csv"});
 	}
 
 }

@@ -34,6 +34,7 @@ public class Zuordnung implements Serializable {
 
     private static final long serialVersionUID = 6500267604562155991L;
     private static int ID = 0;
+    
 
     private final Person person;
     private final Dienst dienst;
@@ -60,5 +61,10 @@ public class Zuordnung implements Serializable {
     @Override
     public String toString() {
     	return varName();
+    }
+    
+    public String toCSV() {
+    	return String.join(HSGApp.CSV_DELIM, dienst.zeit.getStart().toString(), dienst.zeit.getEnd().toString(),
+    			Character.toString(dienst.typ.getKurz()), person.getTeamId(), person.getName());
     }
 }

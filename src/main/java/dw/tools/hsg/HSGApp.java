@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -13,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -80,7 +82,7 @@ import scala.Tuple2;
  * 
  * - Aktive und Jugend werden berücksichtigt
  *   Alle Teams im Personenimport werden berücksichtigt. Konvertierung der Teamnamen (mit Hilfe der Staffel) in M1, F1, F2, etc
- *   
+ * 
  * </pre>
  */
 public class HSGApp {
@@ -90,6 +92,7 @@ public class HSGApp {
 	private static final long SPERRSTD_VORLAUF_AUSWÄRTSSPIEL = 2L;
 	private static final long SPERRSTD_VORLAUF_HEIMSPIEL = 1L;
 	public static final String GA = "4066";
+	public static final String CSV_DELIM = ";";
 	public static final List<String> mitKasse = new ArrayList<>(Arrays.asList("F1", "F2", "M1"));
 
 	public static void main(final String[] args) throws IOException, ParseException {
@@ -164,13 +167,28 @@ public class HSGApp {
 		JavaRDD<Game> games = jsc.textFile(in.toString()).map(Game::parse).filter(
 				g -> HSGDate.TODAY.beforeOrEquals(g.getDate())).cache();
 
-		run(games, personen);
+		JavaRDD<Zuordnung> zu = jsc.parallelize(compute(games, personen));
+
+		JavaRDD<String> content = toCSV(games, zu);
+
+		Path out = new Path(in.getParent(), "dienste.csv");
+		saveAsFile(content, out);
 
 		jsc.close();
 
 	}
 
-	public static boolean run(JavaRDD<Game> games, JavaRDD<Person> personen) {
+	public static JavaRDD<String> toCSV(JavaRDD<Game> games, JavaRDD<Zuordnung> zu) {
+		JavaRDD<String> content = zu.keyBy(z -> z.getDienst().getDatum()).join(
+				games.keyBy(g -> g.getDate()).groupByKey().mapValues(v -> {
+					List<Game> res = IterableUtil.toList(v);
+					Collections.sort(res);
+					return res;
+				})).sortByKey().map(t -> String.join(CSV_DELIM, t._1.toddMMyyyy(), t._2._1.toCSV(), t._2._2.toString()));
+		return content;
+	}
+
+	public static List<Zuordnung> compute(JavaRDD<Game> games, JavaRDD<Person> personen) {
 
 		HashMap<String, List<Person>> teams = new HashMap<>(
 				personen.keyBy(p -> p.getTeamId()).groupByKey().mapValues(IterableUtil::toList).collectAsMap());
@@ -246,8 +264,8 @@ public class HSGApp {
 					v._1.dienste.forEach(d -> d.setDatum(v._1.datum));
 					return res;
 				});
-		System.out.println("Spieltage mit eigenen (parallelen) Spielen:");
-		spieltage.foreach(s -> System.out.println(s));
+//		System.out.println("Spieltage mit eigenen (parallelen) Spielen:");
+//		spieltage.foreach(s -> System.out.println(s));
 
 		/*
 		 * TODO - Zuordnungen für Jugendtrainer bei Auswärtsspielen vermeiden
@@ -294,7 +312,7 @@ public class HSGApp {
 				Collectors.groupingBy(t -> t._1)).entrySet().stream().map(e -> new Tuple2<>(e.getKey(),
 						e.getKey().getGearbeitetM() + e.getValue().stream().mapToInt(Tuple2::_2).sum())).forEach(
 								t -> System.out.println(t));
-		return selected.size() > 0;
+		return selected;
 	}
 
 	private static HSGInterval berechneGesamtzeit(final HSGInterval minMax, final Typ typ) {

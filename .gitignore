@@ -2,3 +2,4 @@
 convert.log
 hs_err_pid*.log
 cplex_problem.txt
+*dienste.csv*
