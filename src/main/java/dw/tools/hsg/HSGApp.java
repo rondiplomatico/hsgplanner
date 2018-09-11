@@ -33,54 +33,58 @@ import scala.Tuple2;
 /**
  * <pre>
  * Anforderungen:
- *    - Auswertung der Arbeitszeit pro Team (aufgeschlüsselt nach Einsatz vor Saisonbeginn und Personenanzahl) 
+ *    - Auswertung der Arbeitszeit pro Team (aufgeschlüsselt nach Einsatz vor Saisonbeginn und Personenanzahl)
  *    - Spieler und Hallenaufsichten können für beliebige Zeitintervalle nicht verfügbar sein
- *    - Hallendienste am Besten vor eigenen Heimspielen 
- *    - Die Dienstzeit an Tagen ohne eigenes Heimspiel ist minimal/es gibt keine 
- *    - Festlegbare Initialstunden für Teams (gleichmäßige Verteilung auf Mitglieder) 
+ *    - Hallendienste am Besten vor eigenen Heimspielen
+ *    - Die Dienstzeit an Tagen ohne eigenes Heimspiel ist minimal/es gibt keine
+ *    - Festlegbare Initialstunden für Teams (gleichmäßige Verteilung auf Mitglieder)
  *    - Keine Dienste bei Spielen von Jugendtrainern
- *    
+ *    - Aufsicht und Dienste bevorzugt vor eigenen Heimspielen. Je bevorzugter desto besser der Anschluss passt (x-17:00, 17:00 Treffpunkt).
+ *      Jede selber aktive Aufsichtsperson sollte "gleich viel Vorteil" haben.
+ *    - Nur festgelegte Teams haben Hallendienste (m/wB, m/wA, F1-3, M1-4)
+ *    - Max. Hallendienstzeiten für bestimmte Teams einstellbar
+ *
  * Done:
  * - Erstellung von Verkaufs- und Kassendienst-Einteilungen für alle Spieler aus allen Teams
  *   Programm berechnet Dienste automatisch aus Spielplan.
- *   
+ *
  * - Einstellbare Default-Arbeitszeiten (Verkauf, Kasse, Aufsicht)
  *   Halbstündige Intervalle können über {@link Dienst.Typ#getTimesHS()} pro Typ festgelegt werden.
  *   Das Intervall mit der besten Auflösung der Gesamtzeit des Dienstes an dem Tag wird gewählt.
- * 
+ *
  * - Keine Dienste 1 Stunde vorm/nach eigenen Heimspielen, 2 Stunden vor/nach eigenen Auswärtsspielen
  *   Über Konstanten {@link #SPERRSTD_VORLAUF_HEIMSPIEL}, {@link #SPERRSTD_NACHLAUF_HEIMSPIEL}, {@link #SPERRSTD_VORLAUF_AUSWÄRTSSPIEL} und {@link #SPERRSTD_NACHLAUF_AUSWÄRTSSPIEL} geregelt
  *   Heimspiel-Feststellung über Hallennummer in {@link #GA}
- * 
+ *
  * - Kassendienste nur für Spiele von festlegbaren Teams
  *   Statische Liste mit Teamnamen in {@link HSGApp#mitKasse}
- * 
+ *
  * - Einstellbare Vor/Nachlaufzeiten für Kassendienste, Default 1h vorher bis 30Min nach Spielbeginn
  *   Wird per {@link Dienst.Typ#getVorlaufHS()} und {@link Dienst.Typ#getNachlaufHS()} hartcodiert
- * 
+ *
  * - Anzahl der Helfer pro Dienst ist festlegbar, abhängig vom Typ (K/V) und Tageszeit
  *   Wird per {@link Dienst.Typ#getPersonen()} hartcodiert
- * 
+ *
  * - Gesamtarbeitszeit pro Teammitglied ist ungefähr gleich über die Saison
  * 	 Ziel 1: Gleiche Arbeitszeit für Spieler und Aufsicht über Gesamtsaison
- * 
+ *
  * - Berücksichtigung von schon geleisteten Arbeitszeiten vorher (Krautfest, EF, ..)
  * 	 Wird über Ziel1 erreicht: Die Gesamtarbeitszeit enthält neben der potentiellen Neuen auch die importierte aus der Personenliste
- * 
+ *
  * - Festlegbare Personen für Hallenaufsichten
  *   Personenimportliste kennt "HA" als "Aufsichtsteam", und vierte Spalte mit "x" als Aufsichtsmarkierung.
  *   Aufsichtspersonen werden exklusiv Aufsichtsdiensten zugeordnet. Durch den Teambezug werden unmögliche
  *   Aufsichtsdienste durch Auswärtsspiele ebenfalls vermieden.
- *   
+ *
  * - Arbeitszeit der Hallenaufsichten ist auch ca. gleich
  *   Analoges Vorgehen über Ziel1, eingeschränkt auf Aufsichtsdienste
- *   
+ *
  * - Hallenaufsichten können Teammitglieder sein
  *   Gesonderte Markierung im Personenimport erlaubt doppelte Zugehörigkeit und Behandlung aller Konstellationen.
- * 
+ *
  * - Aktive und Jugend werden berücksichtigt
  *   Alle Teams im Personenimport werden berücksichtigt. Konvertierung der Teamnamen (mit Hilfe der Staffel) in M1, F1, F2, etc
- *   
+ *
  * </pre>
  */
 public class HSGApp {
@@ -170,7 +174,7 @@ public class HSGApp {
 
 	}
 
-	public static boolean run(JavaRDD<Game> games, JavaRDD<Person> personen) {
+	public static boolean run(final JavaRDD<Game> games, final JavaRDD<Person> personen) {
 
 		HashMap<String, List<Person>> teams = new HashMap<>(
 				personen.keyBy(p -> p.getTeamId()).groupByKey().mapValues(IterableUtil::toList).collectAsMap());
@@ -262,8 +266,8 @@ public class HSGApp {
 						e.getValue().forEach(p -> {
 							// Aufsichtspersonen nur Aufsichtsdiensten zuordnen, und nicht-aufsichter nur
 							// nicht-aufsichtsdiensten
-							if ((Typ.Aufsicht == d.getTyp() && p.isAufsicht())
-									|| (Typ.Aufsicht != d.getTyp() && !p.isAufsicht())) {
+							if (Typ.Aufsicht == d.getTyp() && p.isAufsicht()
+									|| Typ.Aufsicht != d.getTyp() && !p.isAufsicht()) {
 								// So viele Zuordnungen wie Personen im Dienst hinzufügen
 								for (int i = 0; i < d.getTyp().getPersonen(); i++) {
 									res.add(new Zuordnung(p, d, i));
