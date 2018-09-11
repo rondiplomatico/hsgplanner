@@ -19,6 +19,9 @@ package dw.tools.hsg;
 
 import java.io.Serializable;
 
+import org.apache.parquet.Strings;
+
+import dw.tools.hsg.Dienst.Typ;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,38 +41,64 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Person implements Serializable {
 
-	private static final long serialVersionUID = 3556391185364393215L;
+    private static final long serialVersionUID = 3556391185364393215L;
 
-	private static final String AUFSICHT_MARKER = "x";
-	private static final String AUFSICHT_TEAM_ID = "HA";
+    private static final String AUFSICHT_MARKER = "x";
 
-	private String name;
-	private String shortName;
-	private String teamId;
-	private int gearbeitetM;
-	private boolean aufsicht;
+    private String name;
+    private String shortName;
+    private Team team;
+    private int gearbeitetM;
+    private boolean aufsicht;
+    private String trainerVon = null;
 
-	public Person(final String name, final String teamId, final int worked, final boolean aufsicht) {
-		this(name, createShort(name), teamId, worked, aufsicht);
-	}
+    public Person(final String name, final Team team, final int worked,
+                    final boolean aufsicht, final String trainerVon) {
+        this(name, createShort(name), team, worked, aufsicht, trainerVon);
+    }
 
-	public Person(final String name, final String teamId, final int worked) {
-		this(name, teamId, worked, false);
-	}
+    public Person(final String name, final String teamId, final int worked,
+                    final boolean aufsicht, final String trainerVon) {
+        this(name, createShort(name), new Team(teamId), worked, aufsicht, trainerVon);
+    }
 
-	private static String createShort(String name) {
-		if (name.contains(" ")) {
-			String[] parts = name.split(" ");
-			return parts[0].substring(0, 1) + parts[1].substring(0, 1);
-		}
-		return name;
-	}
+    public Person(final String name, final String teamId, final int worked) {
+        this(name, new Team(teamId), worked, false, null);
+    }
 
-	public static Person parse(final String line) {
-		String[] elems = line.split(";");
-		boolean aufsicht = AUFSICHT_TEAM_ID.equals(elems[2])
-				|| elems.length > 3 && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
-		return new Person(elems[0], elems[2],
-				aufsicht ? 0 : (int) Math.round(Double.parseDouble(elems[1].replace(",", ".")) * 60), aufsicht);
-	}
+    /*
+     * Jemand ist zulässig für Arbeitsdienste wenn ihr Team in der Liste der arbeitenden Teams ist oder sie als Aufsicht
+     * markiert ist.
+     */
+    public boolean isValid() {
+        return team.mayWork() || aufsicht;
+    }
+
+    public boolean mayWorkAt(final Dienst d) {
+        return Typ.Aufsicht == d.getTyp() && isAufsicht()
+                        || team.mayWorkAt(d) && Typ.Aufsicht != d.getTyp() && !isAufsicht();
+    }
+
+    private static String createShort(final String name) {
+        if (name.contains(" ")) {
+            String[] parts = name.split(" ");
+            return parts[0].substring(0, 1) + parts[1].substring(0, 1);
+        }
+        return name;
+    }
+
+    public static Person parse(final String line) {
+        String[] elems = line.split(";");
+        Team team = new Team(elems[1]);
+        boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
+        return new Person(elems[0], team,
+                          aufsicht ? 0 : (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60),
+                          aufsicht, elems[2]);
+    }
+
+    @Override
+    public String toString() {
+        return name + "@" + team.getId() + (aufsicht ? "/!" : "");
+    }
+
 }

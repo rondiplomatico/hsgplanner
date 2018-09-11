@@ -37,6 +37,7 @@ public class HSGInterval implements Serializable {
     private static final long serialVersionUID = 8533515473444363858L;
 
     public static final HSGInterval MAXMIN = new HSGInterval(LocalTime.MAX, LocalTime.MIN);
+    public static final HSGInterval ALL_DAY = new HSGInterval(LocalTime.MIN, LocalTime.MAX);
 
     private final LocalTime start;
     private final LocalTime end;

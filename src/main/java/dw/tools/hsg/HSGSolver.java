@@ -71,7 +71,7 @@ public class HSGSolver {
         for (Zuordnung z : allList) {
             problem.setVarType(z.varName(), Boolean.class);
         }
-        // Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten 
+        // Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
         addZ1GleichVielArbeitsZeit(all, problem, target, true);
         addZ1GleichVielArbeitsZeit(all, problem, target, false);
 
@@ -160,7 +160,7 @@ public class HSGSolver {
     }
 
     private static void addN3NurGleicheTeamsInGleichenDiensten(final JavaRDD<Zuordnung> all, final Problem problem) {
-        all.mapToPair(z -> new Tuple2<>(new Tuple2<>(z.getDienst(), z.getPerson().getTeamId()), z))
+        all.mapToPair(z -> new Tuple2<>(new Tuple2<>(z.getDienst(), z.getPerson().getTeam()), z))
            .aggregateByKey(new ArrayList<Zuordnung>(), (ex, n) -> {
                ex.add(n);
                return ex;
@@ -223,7 +223,7 @@ public class HSGSolver {
                Linear l = new Linear();
                zall.forEach(z -> l.add(1, z));
                 problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
-//               problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));	
+//               problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
            });
     }
 

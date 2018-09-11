@@ -67,7 +67,6 @@ public class Dienst implements Serializable {
 
     @Override
     public String toString() {
-        // typ.getPersonen() + "x " +
         return typ.getKurz() + " " + zeit;
     }
 
