@@ -20,6 +20,7 @@ package dw.tools.hsg;
 import java.io.Serializable;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 import org.spark_project.guava.base.Strings;
 
@@ -43,6 +44,11 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Game implements Serializable, Comparable<Game> {
+
+    private static final long SPERRSTD_NACHLAUF_AUSWÄRTSSPIEL = 3L;
+    private static final long SPERRSTD_NACHLAUF_HEIMSPIEL = 2L;
+    private static final long SPERRSTD_VORLAUF_AUSWÄRTSSPIEL = 2L;
+    private static final long SPERRSTD_VORLAUF_HEIMSPIEL = 1L;
 
     private static final long serialVersionUID = -2732016441985251070L;
 
@@ -80,6 +86,14 @@ public class Game implements Serializable, Comparable<Game> {
                                         : res.staffel.contains("-") ? res.staffel.substring(0, res.staffel.lastIndexOf("-")).replace("J", "") + nr
                                                         : res.staffel);
         return res;
+    }
+
+    public HSGInterval getDienstSperrenZeitraum() {
+        return new HSGInterval(getZeit().minus(isHeimspiel() ? SPERRSTD_VORLAUF_HEIMSPIEL
+                        : SPERRSTD_VORLAUF_AUSWÄRTSSPIEL, ChronoUnit.HOURS),
+                               getZeit().plus(isHeimspiel() ? SPERRSTD_NACHLAUF_HEIMSPIEL
+                                               : SPERRSTD_NACHLAUF_AUSWÄRTSSPIEL,
+                                              ChronoUnit.HOURS));
     }
 
     @Override

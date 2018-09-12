@@ -50,16 +50,16 @@ public class Person implements Serializable {
     private Team team;
     private int gearbeitetM;
     private boolean aufsicht;
-    private String trainerVon = null;
+    private Team trainerVon = null;
 
     public Person(final String name, final Team team, final int worked,
-                    final boolean aufsicht, final String trainerVon) {
+                    final boolean aufsicht, final Team trainerVon) {
         this(name, createShort(name), team, worked, aufsicht, trainerVon);
     }
 
     public Person(final String name, final String teamId, final int worked,
                     final boolean aufsicht, final String trainerVon) {
-        this(name, createShort(name), new Team(teamId), worked, aufsicht, trainerVon);
+        this(name, createShort(name), new Team(teamId), worked, aufsicht, new Team(trainerVon));
     }
 
     public Person(final String name, final String teamId, final int worked) {
@@ -90,10 +90,11 @@ public class Person implements Serializable {
     public static Person parse(final String line) {
         String[] elems = line.split(";");
         Team team = new Team(elems[1]);
+        Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? new Team(elems[2]) : null;
         boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
         return new Person(elems[0], team,
                           aufsicht ? 0 : (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60),
-                          aufsicht, elems[2]);
+                          aufsicht, trainerVon);
     }
 
     @Override

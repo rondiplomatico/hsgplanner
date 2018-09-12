@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.cli.ParseException;
@@ -120,6 +121,7 @@ public class HSGSolverTest {
     Game F11 = new Game(date, LocalTime.of(18, 00), HSGApp.GA, "F1", new Team("F1"), "Foobars", true, "BWOL");
     Game M11 = new Game(date, LocalTime.of(20, 00), HSGApp.GA, "M1", new Team("M1"), "Foobars", true, "BK");
     Game M21 = new Game(date, LocalTime.of(14, 00), HSGApp.GA, "M2", new Team("M2"), "Foobars", true, "BK");
+    List<Game> noGames = Collections.emptyList();
 //    Game F22 = new Game(date, i1300_1600.getStart(), HSGApp.GA, "F2", new Team("F1"), "Foobars", true, "BK");
 
     public static void main(final String[] args) throws IOException, ParseException {
@@ -135,7 +137,7 @@ public class HSGSolverTest {
         List<Dienst> ds = Arrays.asList(V1100_1300, V1300_1600);
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
-        assertEquals(2, HSGSolver.solve(jsc.parallelize(all)).size());
+        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames)).size());
     }
 
     @Test
@@ -144,7 +146,7 @@ public class HSGSolverTest {
         List<Dienst> ds = Arrays.asList(V1100_1300, V1300_1600, K1200_1600);
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
-        assertEquals(3, HSGSolver.solve(jsc.parallelize(all)).size());
+        assertEquals(3, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames)).size());
     }
 
     @Test
@@ -154,7 +156,7 @@ public class HSGSolverTest {
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d, 2))));
-        assertEquals(2, HSGSolver.solve(jsc.parallelize(all)).size());
+        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames)).size());
     }
 
     @Test

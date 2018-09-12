@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -33,12 +34,14 @@ import scala.Tuple2;
  * Anforderungen:
  *    - Auswertung der Arbeitszeit pro Team (aufgeschlüsselt nach Einsatz vor Saisonbeginn und Personenanzahl)
  *    - Spieler und Hallenaufsichten können für beliebige Zeitintervalle nicht verfügbar sein
- *    - Hallendienste am Besten vor eigenen Heimspielen
  *    - Die Dienstzeit an Tagen ohne eigenes Heimspiel ist minimal/es gibt keine
  *    - Festlegbare Initialstunden für Teams (gleichmäßige Verteilung auf Mitglieder)
  *    - Keine Dienste bei Spielen von Jugendtrainern
  *    - Aufsicht und Dienste bevorzugt vor eigenen Heimspielen. Je bevorzugter desto besser der Anschluss passt (x-17:00, 17:00 Treffpunkt).
  *      Jede selber aktive Aufsichtsperson sollte "gleich viel Vorteil" haben.
+ *
+ * In progress:
+ *    - Hallendienste am Besten vor eigenen Heimspielen (Teams sowie Aufsicht. Aufsicht wichtiger)
  *
  * Done:
  * - Erstellung von Verkaufs- und Kassendienst-Einteilungen für alle Spieler aus allen Teams
@@ -90,10 +93,6 @@ import scala.Tuple2;
  */
 public class HSGApp {
 
-    private static final long SPERRSTD_NACHLAUF_AUSWÄRTSSPIEL = 3L;
-    private static final long SPERRSTD_NACHLAUF_HEIMSPIEL = 2L;
-    private static final long SPERRSTD_VORLAUF_AUSWÄRTSSPIEL = 2L;
-    private static final long SPERRSTD_VORLAUF_HEIMSPIEL = 1L;
     public static final String GA = "4066";
     public static final String CSV_DELIM = ";";
     private static Logger logger;
@@ -211,6 +210,14 @@ public class HSGApp {
                                               .mapValues(IterableUtil::toList)
                                               .collectAsMap());
         // System.out.println(teams);
+        JavaPairRDD<HSGDate, Iterable<Tuple2<Person, HSGInterval>>> blockierteTrainer =
+                        personen.filter(t -> t.getTrainerVon() != null)
+                                .keyBy(Person::getTrainerVon)
+                                .join(games.keyBy(Game::getTeam))
+                                .mapToPair(t -> new Tuple2<>(t._2._2.getDate(), new Tuple2<>(t._2._1, t._2._2.getDienstSperrenZeitraum())))
+                                .groupByKey();
+//         System.out.println("Blockierte Trainer:");
+//         blockierteTrainer.foreach(System.out::println);
 
         JavaPairRDD<HSGDate, HSGInterval> spielZeiten =
                         games.filter(g -> g.isHeimspiel())
@@ -267,39 +274,20 @@ public class HSGApp {
          */
         JavaPairRDD<HSGDate, Iterable<Tuple2<Team, HSGInterval>>> spieltSelber =
                         games.filter(g -> teams.containsKey(g.getTeam()))
-                             .mapToPair(g -> {
-                                 HSGInterval zeit = new HSGInterval(g.getZeit().minus(g.isHeimspiel() ? SPERRSTD_VORLAUF_HEIMSPIEL
-                                                 : SPERRSTD_VORLAUF_AUSWÄRTSSPIEL, ChronoUnit.HOURS),
-                                                                    g.getZeit().plus(g.isHeimspiel() ? SPERRSTD_NACHLAUF_HEIMSPIEL
-                                                                                    : SPERRSTD_NACHLAUF_AUSWÄRTSSPIEL,
-                                                                                     ChronoUnit.HOURS));
-                                 return new Tuple2<>(g.getDate(), new Tuple2<>(g.getTeam(), zeit));
-                             }).groupByKey();
+                             .mapToPair(g -> new Tuple2<>(g.getDate(), new Tuple2<>(g.getTeam(), g.getDienstSperrenZeitraum())))
+                             .groupByKey();
 
         // System.out.println("Eigene Spielzeit:");
         // spieltSelber.foreach(r -> System.out.println(r));
 
-        JavaPairRDD<HSGDate, Tuple2<Spieltag, List<Tuple2<Team, HSGInterval>>>> spieltage =
-                        dienste.leftOuterJoin(spieltSelber)
-                               .mapValues(v -> {
-                                   List<Tuple2<Team, HSGInterval>> owntimes =
-                                                   new ArrayList<>();
-                                   if (v._2.isPresent()) {
-                                       owntimes.addAll(IterableUtil.toList(v._2.get()));
-                                   }
-                                   Tuple2<Spieltag, List<Tuple2<Team, HSGInterval>>> res =
-                                                   new Tuple2<>(v._1, owntimes);
-                                   v._1.dienste.forEach(d -> d.setDatum(v._1.datum));
-                                   return res;
-                               });
-        // System.out.println("Spieltage mit eigenen (parallelen) Spielen:");
-        // spieltage.foreach(s -> System.out.println(s));
+        JavaPairRDD<HSGDate, Spieltag> spieltage =
+                        berechneSpieltage(dienste, spieltSelber, blockierteTrainer);
 
         JavaRDD<Zuordnung> zuordnungen = erzeugeZuordnungen(personen, spieltage);
 
         checkAlleNotwendigenZuordnungenSindVorhanden(spieltage, zuordnungen);
 
-        List<Zuordnung> selected = HSGSolver.solve(zuordnungen);
+        List<Zuordnung> selected = HSGSolver.solve(zuordnungen, games);
         selected.forEach(System.out::println);
 
         selected.stream()
@@ -314,12 +302,42 @@ public class HSGApp {
     /**
      * TODO Method description.
      *
+     * @param dienste
+     * @param spieltSelber
+     * @param blockierteTrainer
+     * @return
+     */
+    private static JavaPairRDD<HSGDate, Spieltag> berechneSpieltage(final JavaPairRDD<HSGDate, Spieltag> dienste,
+                    final JavaPairRDD<HSGDate, Iterable<Tuple2<Team, HSGInterval>>> spieltSelber,
+                    final JavaPairRDD<HSGDate, Iterable<Tuple2<Person, HSGInterval>>> blockierteTrainer) {
+        JavaPairRDD<HSGDate, Spieltag> spieltage =
+                        dienste.leftOuterJoin(spieltSelber)
+                               .leftOuterJoin(blockierteTrainer)
+                               .mapValues(v -> {
+                                   Spieltag st = v._1._1;
+                                   if (v._1._2.isPresent()) {
+                                       st.getAuswärtsSpielZeiten().addAll(IterableUtil.toList(v._1._2.get()));
+                                   }
+                                   if (v._2.isPresent()) {
+                                       st.getBlockiertePersonen().addAll(IterableUtil.toList(v._2.get()));
+                                   }
+                                   st.dienste.forEach(d -> d.setDatum(st.datum));
+                                   return st;
+                               });
+        // System.out.println("Spieltage mit eigenen (parallelen) Spielen:");
+        // spieltage.foreach(s -> System.out.println(s));
+        return spieltage;
+    }
+
+    /**
+     * TODO Method description.
+     *
      * @param spieltage
      * @param zuordnungen
      */
-    private static void checkAlleNotwendigenZuordnungenSindVorhanden(final JavaPairRDD<HSGDate, Tuple2<Spieltag, List<Tuple2<Team, HSGInterval>>>> spieltage,
+    private static void checkAlleNotwendigenZuordnungenSindVorhanden(final JavaPairRDD<HSGDate, Spieltag> spieltage,
                     final JavaRDD<Zuordnung> zuordnungen) {
-        List<Dienst> ohneZuordnung = spieltage.flatMap(s -> s._2._1.getDienste().iterator())
+        List<Dienst> ohneZuordnung = spieltage.flatMap(s -> s._2.getDienste().iterator())
                                               .distinct()
                                               .keyBy(d -> d)
                                               .leftOuterJoin(zuordnungen.map(z -> z.getDienst())
@@ -344,15 +362,19 @@ public class HSGApp {
      * @return
      */
     private static JavaRDD<Zuordnung> erzeugeZuordnungen(final JavaRDD<Person> personen,
-                    final JavaPairRDD<HSGDate, Tuple2<Spieltag, List<Tuple2<Team, HSGInterval>>>> spieltage) {
+                    final JavaPairRDD<HSGDate, Spieltag> spieltage) {
         final List<Person> personenList = new ArrayList<>(personen.collect());
         JavaRDD<Zuordnung> zuordnungen = spieltage.flatMap(t -> {
             List<Zuordnung> res = new ArrayList<>();
-            for (Dienst d : t._2._1.dienste) {
-                List<Team> playsConcurrently = t._2._2.stream()
-                                                      .filter(v -> v._2.intersects(d.zeit))
-                                                      .map(v -> v._1)
-                                                      .collect(Collectors.toList());
+            for (Dienst d : t._2.getDienste()) {
+                Set<Team> playsConcurrently = t._2.getAuswärtsSpielZeiten().stream()
+                                                  .filter(v -> v._2.intersects(d.zeit))
+                                                  .map(v -> v._1)
+                                                  .collect(Collectors.toSet());
+                Set<Person> personIsBlocked = t._2.getBlockiertePersonen().stream()
+                                                  .filter(v -> v._2.intersects(d.zeit))
+                                                  .map(v -> v._1)
+                                                  .collect(Collectors.toSet());
                 for (Person p : personenList) {
                     /*
                      * Nur Zuordnungen erlauben, deren:
@@ -364,7 +386,11 @@ public class HSGApp {
                         continue;
                     }
                     if (playsConcurrently.contains(p.getTeam())) {
-                        logger.warn(p + " kann wegen eigener Spiele nicht in Dienst " + d + " arbeiten.");
+                        logger.warn(p.getTeam() + "(" + p + ") kann wegen eigener Spiele nicht in Dienst " + d + " arbeiten.");
+                        continue;
+                    }
+                    if (personIsBlocked.contains(p)) {
+                        logger.warn(p + " kann als Trainer wegen eigener Spiele nicht in Dienst " + d + " arbeiten.");
                         continue;
                     }
                     // So viele Zuordnungen wie Personen im Dienst hinzufügen

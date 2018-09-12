@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
+import scala.Tuple2;
 
 /**
  * TODO Replace with class description.
@@ -40,6 +41,8 @@ public class Spieltag implements Serializable {
     LocalTime erstesSpiel;
     LocalTime letztesSpiel;
 
+    List<Tuple2<Team, HSGInterval>> auswärtsSpielZeiten = new ArrayList<>();
+    List<Tuple2<Person, HSGInterval>> blockiertePersonen = new ArrayList<>();
     List<Dienst> dienste = new ArrayList<>();
 
 }

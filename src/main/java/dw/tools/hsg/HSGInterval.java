@@ -71,6 +71,20 @@ public class HSGInterval implements Serializable {
         return contains(other.getStart()) || contains(other.getEnd()) || other.contains(getStart());
     }
 
+    public int minuteDistance(final LocalTime to) {
+        if (contains(to)) {
+            return 0;
+        }
+        if (to.compareTo(getStart()) < 0) {
+            return (getStart().toSecondOfDay() - to.toSecondOfDay()) / 60;
+        }
+        return (to.toSecondOfDay() - getEnd().toSecondOfDay()) / 60;
+    }
+
+    public int minuteDistance(final HSGInterval other) {
+        return Math.min(minuteDistance(other.getStart()), minuteDistance(other.getEnd()));
+    }
+
     public int compareTo(final HSGInterval o) {
         if (getStart() == null || getEnd() == null || o == null) {
             return -1;

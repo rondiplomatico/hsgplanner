@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.spark.api.java.JavaRDD;
@@ -44,6 +46,7 @@ import net.sf.javailp.SolverParameter;
 import net.sf.javailp.Term;
 import net.sf.javailp.VarType;
 import scala.Tuple2;
+import scala.Tuple3;
 
 /**
  * @version $Revision$
@@ -55,8 +58,10 @@ public class HSGSolver {
     private static final String AVERAGE_WORK_TIME = "AverageWorkTime";
     private static final String AVERAGE_WORK_TIME_AUFSICHT = "AverageWorkTimeOverseer";
     private static int substCnt = 1;
+    private static final int CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN = 60;
+    private static final int DEFAULT_ZUORDNUNG_WEIGHT = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN + 30;
 
-    public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all) {
+    public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
         final Problem problem = new Problem();
 
         List<Zuordnung> allList = all.collect();
@@ -71,12 +76,13 @@ public class HSGSolver {
         for (Zuordnung z : allList) {
             problem.setVarType(z.varName(), Boolean.class);
         }
+        System.out.println("Z1: Gleiche mittlere Arbeitszeiten");
         // Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
         addZ1GleichVielArbeitsZeit(all, problem, target, true);
         addZ1GleichVielArbeitsZeit(all, problem, target, false);
 
-        // addZ2GleichesTeamFavorisiertZusammen()
-        // addZ3DienstKurzVorEigenemSpiel()
+        System.out.println("Z2: Geschickte Dienste um eigene Spiele");
+        addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
 
         problem.setObjective(target, OptType.MIN);
 
@@ -105,7 +111,7 @@ public class HSGSolver {
          */
 
         System.out.println("Problem:");
-//        problem.print();
+        // problem.print();
 
         System.out.println("Löse");
         // SolverFactory factory = new SolverFactoryGurobi();
@@ -130,7 +136,7 @@ public class HSGSolver {
          * FULL (6) All messages are reported. Useful for debugging purposes and small models.
          */
         // SolverFactory factory = new SolverFactoryLpSolve();
-        factory.setParameter(Solver.TIMEOUT, 60*60*14); // set timeout to 100 seconds
+        factory.setParameter(Solver.TIMEOUT, 60 * 60 * 14); // set timeout to 100 seconds
         Solver solver = factory.get(); // you should use this solver only once for one problem
 
         solver.setParameter(SolverParameter.RAND_SEED, 1);
@@ -157,6 +163,56 @@ public class HSGSolver {
             System.out.println("Solve fehlgeschlagen.");
         }
         return selected;
+    }
+
+    private static void addZ2DienstNahBeiEigenemSpiel(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
+                    final Problem problem, final Linear target) {
+        JavaRDD<Tuple3<Person, Integer, String>> tmp =
+                        all.keyBy(z -> z.getDienst().getDatum())
+                           .groupByKey().mapValues(IterableUtil::toList)
+                           .join(games.keyBy(g -> g.getDate())
+                                      .groupByKey()
+                                      .mapValues(IterableUtil::toList))
+                           .flatMap(d -> {
+                               List<Tuple3<Person, Integer, String>> präferierteDienste = new ArrayList<>();
+                               Set<Zuordnung> processed = new HashSet<>();
+                               for (Game g : d._2._2) {
+                                   for (Zuordnung z : d._2._1) {
+                                       if (g.isHeimspiel() && g.getTeam().equals(z.getPerson().getTeam())) {
+                                           int weight = z.getDienst().getZeit().minuteDistance(g.getDienstSperrenZeitraum());
+                                           if (weight <= CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN) {
+                                               // int weight = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN - diff;
+                                               // weight = z.getPerson().isAufsicht() ? weight * ARBEITSDIENST_FAKTOR :
+                                               // weight;
+                                               System.out.println(z.getPerson() + " kann geschickt vor/nach Spiel " + g
+                                                               + " den Dienst " + z.getDienst() + " machen. Faktor:"
+                                                               + weight);
+                                               präferierteDienste.add(new Tuple3<>(z.getPerson(), weight, z.varName()));
+                                               processed.add(z);
+                                           }
+                                       }
+                                   }
+                               }
+                               for (Zuordnung z : d._2._1) {
+                                   if (!processed.contains(z)) {
+                                       präferierteDienste.add(new Tuple3<>(z.getPerson(), DEFAULT_ZUORDNUNG_WEIGHT,
+                                                                           z.varName()));
+                                   }
+                               }
+                               return präferierteDienste.iterator();
+                           });
+        tmp.collect()
+           .forEach(t -> {
+               target.add(t._2(), t._3());
+           });
+
+        // tmp.mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(t._2(), t._3())))
+        // .groupByKey()
+        // .mapValues(IterableUtil::toList)
+        // .map(t -> {
+        //
+        // });
+
     }
 
     private static void addN3NurGleicheTeamsInGleichenDiensten(final JavaRDD<Zuordnung> all, final Problem problem) {
@@ -222,8 +278,8 @@ public class HSGSolver {
            .collectAsMap().forEach((d, zall) -> {
                Linear l = new Linear();
                zall.forEach(z -> l.add(1, z));
-                problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
-//               problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
+               problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
+               // problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
            });
     }
 
@@ -249,14 +305,14 @@ public class HSGSolver {
         Linear avg = new Linear();
         double numPInv = 1 / (double) allTotalTimesPerPerson.size();
         allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s));
-        createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT:AVERAGE_WORK_TIME);
+        createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME);
 
         allTotalTimesPerPerson.forEach(s -> {
             Linear l = new Linear();
             String plus = s + "+";
             String minus = s + "-";
-            l.add(new Term(s, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT:AVERAGE_WORK_TIME, -1), new Term(plus, 1), new Term(minus, -1));
-            problem.add(new Constraint(s+"Slack", l, Operator.EQ, 0));
+            l.add(new Term(s, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -1), new Term(plus, 1), new Term(minus, -1));
+            problem.add(new Constraint(s + "Slack", l, Operator.EQ, 0));
             problem.setVarType(plus, VarType.REAL);
             problem.setVarType(minus, VarType.REAL);
             problem.setVarLowerBound(plus, 0);
