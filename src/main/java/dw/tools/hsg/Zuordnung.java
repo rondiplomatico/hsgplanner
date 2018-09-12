@@ -62,9 +62,4 @@ public class Zuordnung implements Serializable {
     public String toString() {
     	return varName();
     }
-
-    public String toCSV() {
-    	return String.join(HSGApp.CSV_DELIM, dienst.zeit.getStart().toString(), dienst.zeit.getEnd().toString(),
-    			Character.toString(dienst.typ.getKurz()), person.getTeam().toString(), person.getName());
-    }
 }

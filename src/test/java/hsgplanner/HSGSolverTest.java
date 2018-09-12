@@ -122,7 +122,7 @@ public class HSGSolverTest {
     Game M11 = new Game(date, LocalTime.of(20, 00), HSGApp.GA, "M1", new Team("M1"), "Foobars", true, "BK");
     Game M21 = new Game(date, LocalTime.of(14, 00), HSGApp.GA, "M2", new Team("M2"), "Foobars", true, "BK");
     List<Game> noGames = Collections.emptyList();
-//    Game F22 = new Game(date, i1300_1600.getStart(), HSGApp.GA, "F2", new Team("F1"), "Foobars", true, "BK");
+    // Game F22 = new Game(date, i1300_1600.getStart(), HSGApp.GA, "F2", new Team("F1"), "Foobars", true, "BK");
 
     public static void main(final String[] args) throws IOException, ParseException {
         // initStatic();
@@ -194,9 +194,8 @@ public class HSGSolverTest {
         // HSGApp.main(new String[]
         // {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_10.csv" ,
         // "F:\\Software\\hsgplanner\\src\\test\\resources\\Personen.csv"});
-        // HSGApp.main(new String[]
-        // {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_20.csv" ,
-        // "F:\\Software\\hsgplanner\\src\\test\\resources\\Personen.csv"});
+        HSGApp.main(new String[] { "src\\test\\resources\\HSG_Leinfelden-Echterdingen_20.csv",
+                        "src\\test\\resources\\Personen.csv" });
     }
 
 }

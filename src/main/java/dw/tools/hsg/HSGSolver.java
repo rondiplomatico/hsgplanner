@@ -58,8 +58,8 @@ public class HSGSolver {
     private static final String AVERAGE_WORK_TIME = "AverageWorkTime";
     private static final String AVERAGE_WORK_TIME_AUFSICHT = "AverageWorkTimeOverseer";
     private static int substCnt = 1;
-    private static final int CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN = 60;
-    private static final int DEFAULT_ZUORDNUNG_WEIGHT = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN + 30;
+    public static final int CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN = 60;
+    public static final int DEFAULT_ZUORDNUNG_WEIGHT = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN + 30;
 
     public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
         final Problem problem = new Problem();
@@ -136,7 +136,7 @@ public class HSGSolver {
          * FULL (6) All messages are reported. Useful for debugging purposes and small models.
          */
         // SolverFactory factory = new SolverFactoryLpSolve();
-        factory.setParameter(Solver.TIMEOUT, 60 * 60 * 14); // set timeout to 100 seconds
+        factory.setParameter(Solver.TIMEOUT, 200); // set timeout to 100 seconds [60 * 60 * 14]
         Solver solver = factory.get(); // you should use this solver only once for one problem
 
         solver.setParameter(SolverParameter.RAND_SEED, 1);

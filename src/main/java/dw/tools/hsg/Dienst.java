@@ -38,7 +38,7 @@ import lombok.RequiredArgsConstructor;
 @EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 @AllArgsConstructor
-public class Dienst implements Serializable {
+public class Dienst implements Serializable, Comparable<Dienst> {
 
     private static final long serialVersionUID = 2386602455909060467L;
 
@@ -68,6 +68,19 @@ public class Dienst implements Serializable {
     @Override
     public String toString() {
         return typ.getKurz() + " " + zeit;
+    }
+
+    @Override
+    public int compareTo(final Dienst o) {
+        int res = datum.compareTo(o.datum);
+        if (res == 0) {
+            return zeit.compareTo(o.zeit);
+        }
+        return res;
+    }
+
+    public String toCSV() {
+        return String.join(HSGApp.CSV_DELIM, zeit.getStart().toString(), zeit.getEnd().toString(), typ.toString());
     }
 
 }

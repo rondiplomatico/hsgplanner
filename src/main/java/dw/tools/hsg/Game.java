@@ -98,9 +98,12 @@ public class Game implements Serializable, Comparable<Game> {
 
     @Override
     public int compareTo(final Game o) {
-        int res = date.compareTo(o.date);
+        int res = -Boolean.compare(heimspiel, o.heimspiel);
         if (res == 0) {
-            return zeit.compareTo(o.zeit);
+            res = date.compareTo(o.date);
+            if (res == 0) {
+                return zeit.compareTo(o.zeit);
+            }
         }
         return res;
     }
@@ -108,6 +111,10 @@ public class Game implements Serializable, Comparable<Game> {
     @Override
     public String toString() {
         return zeit + " " + staffel + ": " + heim + "-" + gast;
+    }
+
+    public String toCSV() {
+        return String.join(";", zeit.toString(), staffel, heim, gast);
     }
 
 }

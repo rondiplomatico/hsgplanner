@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -26,6 +28,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
 import dw.tools.hsg.Dienst.Typ;
 import scala.Tuple2;
 
@@ -36,16 +39,18 @@ import scala.Tuple2;
  *    - Spieler und Hallenaufsichten können für beliebige Zeitintervalle nicht verfügbar sein
  *    - Die Dienstzeit an Tagen ohne eigenes Heimspiel ist minimal/es gibt keine
  *    - Festlegbare Initialstunden für Teams (gleichmäßige Verteilung auf Mitglieder)
- *    - Keine Dienste bei Spielen von Jugendtrainern
- *    - Aufsicht und Dienste bevorzugt vor eigenen Heimspielen. Je bevorzugter desto besser der Anschluss passt (x-17:00, 17:00 Treffpunkt).
+ *    - Aufsicht und Dienste bevorzugt vor eigenen Heimspielen.
  *      Jede selber aktive Aufsichtsperson sollte "gleich viel Vorteil" haben.
- *
- * In progress:
- *    - Hallendienste am Besten vor eigenen Heimspielen (Teams sowie Aufsicht. Aufsicht wichtiger)
  *
  * Done:
  * - Erstellung von Verkaufs- und Kassendienst-Einteilungen für alle Spieler aus allen Teams
  *   Programm berechnet Dienste automatisch aus Spielplan.
+ *
+ * - Hallendienste am Besten vor eigenen Heimspielen. Je bevorzugter desto besser der Anschluss passt (x-17:00, 17:00 Treffpunkt). Für Teams sowie Aufsicht
+ *   Erledigt über "Begünstigungssystem". Jede Zuordnung hat eine standardmäßige "Strafzeit" von {@link HSGSolver#DEFAULT_ZUORDNUNG_WEIGHT} Minuten, wenn sie gewählt wird.
+ *   Ist eine Schicht näher als {@link HSGSolver#CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN} an einem Heimspiel (inkl. entsprechender Vor/Nachläufe),
+ *   entspricht die Strafe dem Abstand in Minuten.
+ *   TODO: Aufsichtsschichten übeschneiden die Spielsperrzeiten zu oft, es gibt kaum "optimale" Anschlüsse für Aufsicht.
  *
  * - Einstellbare Default-Arbeitszeiten (Verkauf, Kasse, Aufsicht)
  *   Halbstündige Intervalle können über {@link Dienst.Typ#getTimesHS()} pro Typ festgelegt werden.
@@ -89,6 +94,10 @@ import scala.Tuple2;
  * - Max. Hallendienstzeiten für bestimmte Teams einstellbar
  *   Das Feld {@link Person#WORKING_TEAMS} enthält eine Map mit Arbeitszeit-Intervallen, innerhalb derer alle
  *   Diensteinteilungen für das Team liegen müssen.
+ *
+ * - Keine Dienste bei Spielen von eigenen Trainern
+ *   In Personenexport gibt es eine Spalte, die die Teamnamen enthalten kann, die eine Person trainiert.
+ *   Die betroffenen Personen haben dann keine Dienste innerhalb der Sperrzeiten des Spiels (vor/nachlauf).
  * </pre>
  */
 public class HSGApp {
@@ -168,12 +177,15 @@ public class HSGApp {
         JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
         Path in = new Path(args[1]);
-        JavaRDD<Person> personen = jsc.textFile(in.toString()).map(Person::parse)
+        JavaRDD<Person> personen = jsc.textFile(in.toString())
+                                      // .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8))
+                                      .map(Person::parse)
                                       .filter(Person::isValid)
                                       .cache();
 
         in = new Path(args[0]);
         JavaRDD<Game> games = jsc.textFile(in.toString())
+                                 // .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8))
                                  .map(Game::parse)
                                  .filter(g -> HSGDate.TODAY.beforeOrEquals(g.getDate()))
                                  .cache();
@@ -183,23 +195,83 @@ public class HSGApp {
         JavaRDD<Zuordnung> zu = jsc.parallelize(compute(games, personen));
 
         JavaRDD<String> content = toCSV(games, zu);
-
         Path out = new Path(in.getParent(), "dienste.csv");
         saveAsFile(content, out);
+
+        exportStats(in, zu);
 
         jsc.close();
 
     }
 
+    /**
+     * @param in
+     * @param zu
+     * @param personen
+     */
+    private static void exportStats(final Path in, final JavaRDD<Zuordnung> zu) {
+        JavaRDD<String> stats1 = zu.mapToPair(z -> new Tuple2<>(z.getPerson(), z.getDienst().getZeit().dauerInMin()))
+                                   .groupByKey()
+                                   .map(t -> {
+                                       int effective = StreamSupport.stream(t._2.spliterator(), false).mapToInt(i -> i).sum();
+                                       return String.join(HSGApp.CSV_DELIM, t._1.getName(), t._1.getTeam().toString(),
+                                                          "" + t._1.getGearbeitetM(),
+                                                          "" + effective,
+                                                          Integer.toString(t._1.getGearbeitetM() + effective));
+                                   });
+        Map<Team, Integer> counts = new HashMap<>(zu.map(z -> z.getPerson()).distinct().mapToPair(p -> new Tuple2<>(p.getTeam(), 1))
+                                                    .reduceByKey((a, b) -> a + b)
+                                                    .collectAsMap());
+        JavaRDD<String> stats2 = zu.mapToPair(z -> new Tuple2<>(z.getPerson().getTeam(),
+                                                                new Tuple2<>(z.getPerson().getGearbeitetM(), z.getDienst().getZeit().dauerInMin())))
+                                   .reduceByKey((a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2))
+                                   .map(t -> String.join(HSGApp.CSV_DELIM, "Gesamtsumme Team", t._1.toString(),
+                                                         Integer.toString(t._2._1),
+                                                         Integer.toString(t._2._2),
+                                                         Integer.toString(t._2._1 + t._2._2),
+                                                         Integer.toString(counts.get(t._1)),
+                                                         Double.toString((t._2._1 + t._2._2) / (double) counts.get(t._1))));
+        Path out = new Path(in.getParent(), "stats.csv");
+        saveAsFile(stats1.union(stats2), out);
+    }
+
     public static JavaRDD<String> toCSV(final JavaRDD<Game> games, final JavaRDD<Zuordnung> zu) {
-        JavaRDD<String> content = zu.keyBy(z -> z.getDienst().getDatum()).join(
-                                                                               games.keyBy(g -> g.getDate()).groupByKey().mapValues(v -> {
-                                                                                   List<Game> res = IterableUtil.toList(v);
-                                                                                   Collections.sort(res);
-                                                                                   return res;
-                                                                               }))
-                                    .sortByKey().map(t -> String.join(CSV_DELIM, t._1.toddMMyyyy(), t._2._1.toCSV(), t._2._2.toString()));
-        return content;
+        return zu.keyBy(z -> z.getDienst().getDatum())
+                 .groupByKey().mapValues(t -> {
+                     List<Tuple2<Dienst, List<Zuordnung>>> hlp =
+                                     new ArrayList<>(StreamSupport.stream(t.spliterator(), false)
+                                                                  .collect(Collectors.groupingBy(z -> z.getDienst()))
+                                                                  .entrySet().stream().map(e -> new Tuple2<>(e.getKey(), e.getValue()))
+                                                                  .collect(Collectors.toList()));
+                     Collections.sort(hlp, (a, b) -> a._1.compareTo(b._1));
+                     return hlp;
+                 })
+                 .join(games.keyBy(g -> g.getDate()).groupByKey()
+                            .mapValues(v -> {
+                                List<Game> res = IterableUtil.toList(v);
+                                Collections.sort(res);
+                                return res;
+                            }))
+                 .sortByKey()
+                 .flatMap(t -> {
+                     // Spielinfo (4 spalten) Datum Von Bis Wo Was Anzahl Verantwortlich Helfer 1 Helfer 2 Helfer 3
+                     List<String> res = new ArrayList<>();
+                     int max = Math.max(t._2._1.size(), t._2._2.size());
+                     for (int i = 0; i < max; i++) {
+                         List<String> elems = new ArrayList<>(14);
+                         elems.add(i < t._2._2.size() ? t._2._2.get(i).toCSV() : HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM);
+                         elems.add(t._1.toddMMyyyy());
+                         if (i < t._2._1.size()) {
+                             Tuple2<Dienst, List<Zuordnung>> d = t._2._1.get(i);
+                             elems.add(d._1.toCSV()); // 3 columns
+                             elems.add(d._2.get(0).getPerson().getTeam().getId());
+                             elems.add(Integer.toString(d._2.get(0).getDienst().getTyp().getPersonen()));
+                             d._2.stream().map(z -> z.getPerson().getName()).forEach(elems::add);
+                         }
+                         res.add(String.join(HSGApp.CSV_DELIM, elems));
+                     }
+                     return res.iterator();
+                 });
     }
 
     public static List<Zuordnung> compute(final JavaRDD<Game> games, final JavaRDD<Person> personen) {
@@ -216,8 +288,8 @@ public class HSGApp {
                                 .join(games.keyBy(Game::getTeam))
                                 .mapToPair(t -> new Tuple2<>(t._2._2.getDate(), new Tuple2<>(t._2._1, t._2._2.getDienstSperrenZeitraum())))
                                 .groupByKey();
-//         System.out.println("Blockierte Trainer:");
-//         blockierteTrainer.foreach(System.out::println);
+        // System.out.println("Blockierte Trainer:");
+        // blockierteTrainer.foreach(System.out::println);
 
         JavaPairRDD<HSGDate, HSGInterval> spielZeiten =
                         games.filter(g -> g.isHeimspiel())
@@ -287,16 +359,7 @@ public class HSGApp {
 
         checkAlleNotwendigenZuordnungenSindVorhanden(spieltage, zuordnungen);
 
-        List<Zuordnung> selected = HSGSolver.solve(zuordnungen, games);
-        selected.forEach(System.out::println);
-
-        selected.stream()
-                .map(z -> new Tuple2<>(z.getPerson(), z.getDienst().getZeit().dauerInMin()))
-                .collect(Collectors.groupingBy(t -> t._1))
-                .entrySet().stream().map(e -> new Tuple2<>(e.getKey(),
-                                                           e.getKey().getGearbeitetM() + e.getValue().stream().mapToInt(Tuple2::_2).sum()))
-                .forEach(t -> System.out.println(t));
-        return selected;
+        return HSGSolver.solve(zuordnungen, games);
     }
 
     /**
