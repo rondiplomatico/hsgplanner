@@ -138,7 +138,7 @@ public class HSGSolver {
          * FULL (6) All messages are reported. Useful for debugging purposes and small models.
          */
         // SolverFactory factory = new SolverFactoryLpSolve();
-        factory.setParameter(Solver.TIMEOUT, 600); // set timeout to 100 seconds [60 * 60 * 14]
+        factory.setParameter(Solver.TIMEOUT, 1000); // set timeout to 100 seconds [60 * 60 * 14]
         Solver solver = factory.get(); // you should use this solver only once for one problem
 
         solver.setParameter(SolverParameter.RAND_SEED, 1);
@@ -283,10 +283,13 @@ public class HSGSolver {
          * Alle gleich viel Arbeitszeit. Die gesamtarbeitszeit soll pro person nicht von
          * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
          */
-        final List<String> allTotalTimesPerPerson = new ArrayList<>();
+        final List<Tuple2<String, Double>> allTotalTimesPerPerson = new ArrayList<>();
         all.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp() : Typ.Aufsicht != z.getDienst().getTyp())
            .mapToPair(z -> new Tuple2<>(z.getPerson(), new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin())))
-           .groupByKey().mapValues(IterableUtil::toList).collect().forEach(d -> {
+           .groupByKey()
+           .mapValues(IterableUtil::toList)
+           .collect()
+           .forEach(d -> {
                Linear linear = new Linear();
                d._2.forEach(t -> linear.add(t._2, t._1));
                String sumVarName = "TotalZeit" + d._1.getName();
@@ -294,19 +297,20 @@ public class HSGSolver {
                problem.setVarType(sumVarName, VarType.INT);
                problem.setVarLowerBound(sumVarName, 0);
                problem.add(new Constraint(sumVarName, linear, Operator.EQ, -d._1.getGearbeitetM()));
-               allTotalTimesPerPerson.add(sumVarName);
+               allTotalTimesPerPerson.add(new Tuple2<>(sumVarName, d._1.getTeam().leistungsFaktor()));
            });
         Linear avg = new Linear();
         double numPInv = 1 / (double) allTotalTimesPerPerson.size();
-        allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s));
+        allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s._1));
         createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME);
 
-        allTotalTimesPerPerson.forEach(s -> {
+        allTotalTimesPerPerson.forEach(t -> {
+        	String varName = t._1;
             Linear l = new Linear();
-            String plus = s + "+";
-            String minus = s + "-";
-            l.add(new Term(s, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -1), new Term(plus, -1), new Term(minus, 1));
-            problem.add(new Constraint(s + "Slack", l, Operator.EQ, 0));
+            String plus = varName + "+";
+            String minus = varName + "-";
+            l.add(new Term(varName, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -t._2), new Term(plus, -1), new Term(minus, 1));
+            problem.add(new Constraint(varName + "Slack", l, Operator.EQ, 0));
             problem.setVarType(plus, VarType.REAL);
             problem.setVarType(minus, VarType.REAL);
             problem.setVarLowerBound(plus, 0);

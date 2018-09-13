@@ -42,10 +42,7 @@ import lombok.NoArgsConstructor;
 public class Person implements Serializable {
 
     private static final long serialVersionUID = 3556391185364393215L;
-
     private static final String AUFSICHT_MARKER = "x";
-
-    private static final int JUGEND_ARBEITSZEIT_OFFSET = 60*5;
 
     private String name;
     private String shortName;
@@ -95,12 +92,7 @@ public class Person implements Serializable {
         Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? new Team(elems[2]) : null;
         boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
         int worked = (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60);
-        if (team.isJugend()) {
-            worked += JUGEND_ARBEITSZEIT_OFFSET;
-        }
-        return new Person(elems[0], team,
-                          aufsicht ? 0 : worked,
-                          aufsicht, trainerVon);
+        return new Person(elems[0], team, aufsicht ? 0 : worked, aufsicht, trainerVon);
     }
 
     @Override

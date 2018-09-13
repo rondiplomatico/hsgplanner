@@ -197,5 +197,11 @@ public class HSGSolverTest {
         HSGApp.main(new String[] { "src\\test\\resources\\HSG_Leinfelden-Echterdingen_utf8_30.csv",
                         "src\\test\\resources\\Personen.csv" });
     }
+    
+    @Test
+    public void testDienstLänge() {
+    	System.out.println(HSGApp.optimaleDienstlänge(LocalTime.of(14, 0), LocalTime.of(20, 0), Typ.Aufsicht));
+    	System.out.println(HSGApp.verteileDienste(new HSGInterval(LocalTime.of(14, 0), LocalTime.of(20, 0)), Typ.Aufsicht));
+    }
 
 }

@@ -98,6 +98,11 @@ import scala.Tuple2;
  * - Keine Dienste bei Spielen von eigenen Trainern
  *   In Personenexport gibt es eine Spalte, die die Teamnamen enthalten kann, die eine Person trainiert.
  *   Die betroffenen Personen haben dann keine Dienste innerhalb der Sperrzeiten des Spiels (vor/nachlauf).
+ *   
+ * - Festlegbare "Arbeitskraft"-Anteile für alle Teams. Insbesondere schafft A-Jugend 80% und B-Jugend 60% im Vergleich zu Aktiven.
+ *   Methode {@link Team#leistungsFaktor()} gibt pro Team einen Faktor aus [0, 1] zurück, der den prozentualen Anteil am Mittelwert der 
+ *   Einzelpersonenarbeitszeit angibt, welcher die Zielgesamtarbeitszeit vorgibt.
+ * 
  * </pre>
  */
 public class HSGApp {
@@ -113,13 +118,6 @@ public class HSGApp {
         console.setThreshold(Level.WARN);
         console.activateOptions();
         Logger.getRootLogger().addAppender(console);
-        FileAppender fa = new FileAppender();
-        fa.setFile("convert.log");
-        fa.setLayout(new PatternLayout("%d %-5p [%c{1}] %m%n"));
-        fa.setThreshold(Level.INFO);
-        fa.setAppend(true);
-        fa.activateOptions();
-        Logger.getRootLogger().addAppender(fa);
         logger = Logger.getRootLogger();
     }
 
@@ -168,6 +166,16 @@ public class HSGApp {
         // if (cmd.hasOption("o")) {
         // out = new Path(cmd.getOptionValue("o"));
         // }
+        
+        Path in = new Path(args[1]);
+        Path outbase = args.length > 2 ? new Path(args[2]) : in.getParent();
+        FileAppender fa = new FileAppender();
+        fa.setFile(new Path(outbase, "convert.log").toString());
+        fa.setLayout(new PatternLayout("%d %-5p [%c{1}] %m%n"));
+        fa.setThreshold(Level.INFO);
+        fa.setAppend(true);
+        fa.activateOptions();
+        Logger.getRootLogger().addAppender(fa);
 
         SparkConf sparkConf = new SparkConf();
         sparkConf.setAppName("HSG Tool")
@@ -176,13 +184,12 @@ public class HSGApp {
                  .setMaster("local[*]");
         JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
-        Path in = new Path(args[1]);
         JavaRDD<Person> personen = jsc.textFile(in.toString())
                                       // .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8))
                                       .map(Person::parse)
                                       .filter(Person::isValid)
                                       .cache();
-
+        
         in = new Path(args[0]);
         JavaRDD<Game> games = jsc.textFile(in.toString())
                                  // .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8))
@@ -195,7 +202,6 @@ public class HSGApp {
         JavaRDD<Zuordnung> zu = jsc.parallelize(compute(games, personen));
 
         JavaRDD<String> content = toCSV(games, zu);
-        Path outbase = args.length > 2 ? new Path(args[2]) : in.getParent();
         Path out = new Path(outbase, "dienste.csv");
         saveAsFile(content, out);
 
@@ -520,7 +526,7 @@ public class HSGApp {
                                minMax.getEnd().plus(typ.getNachlaufHS() * 30, ChronoUnit.MINUTES));
     }
 
-    private static List<Dienst> verteileDienste(final HSGInterval range, final Dienst.Typ typ) {
+    public static List<Dienst> verteileDienste(final HSGInterval range, final Dienst.Typ typ) {
         int durationInHalfHrs = optimaleDienstlänge(range.getStart(), range.getEnd(), typ);
         List<Dienst> dienste = new ArrayList<>();
         Dienst d = typ.newDienst();
@@ -547,7 +553,7 @@ public class HSGApp {
         return dienste;
     }
 
-    private static int optimaleDienstlänge(final LocalTime start, final LocalTime end, final Typ typ) {
+    public static int optimaleDienstlänge(final LocalTime start, final LocalTime end, final Typ typ) {
         /*
          * Bestimme die optimale Dienstlänge für den ganzen Tag
          */
