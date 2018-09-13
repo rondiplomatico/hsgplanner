@@ -253,9 +253,8 @@ public class HSGApp {
         /*
          * Zeiten pro Team
          */
-        JavaRDD<String> stats2 = zu.filter(z -> !z.getPerson().isAufsicht())
-                                   .mapToPair(z -> new Tuple2<>(z.getPerson().getTeam(),
-                                                                new Tuple2<>(z.getPerson().getGearbeitetM(), z.getDienst().getZeit().dauerInMin())))
+        JavaRDD<String> stats2 = effectiveWorkTime.filter(z -> !z._1.isAufsicht())
+                                   .mapToPair(z -> new Tuple2<>(z._1.getTeam(), new Tuple2<>(z._1.getGearbeitetM(), z._2)))
                                    .reduceByKey((a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2))
                                    .map(t -> String.join(HSGApp.CSV_DELIM, "Gesamtsumme Team", t._1.toString(),
                                                          Integer.toString(t._2._1),

@@ -138,7 +138,7 @@ public class HSGSolver {
          * FULL (6) All messages are reported. Useful for debugging purposes and small models.
          */
         // SolverFactory factory = new SolverFactoryLpSolve();
-        factory.setParameter(Solver.TIMEOUT, 1000); // set timeout to 100 seconds [60 * 60 * 14]
+        factory.setParameter(Solver.TIMEOUT, 60*60); // set timeout to 100 seconds [60 * 60 * 14]
         Solver solver = factory.get(); // you should use this solver only once for one problem
 
         solver.setParameter(SolverParameter.RAND_SEED, 1);
