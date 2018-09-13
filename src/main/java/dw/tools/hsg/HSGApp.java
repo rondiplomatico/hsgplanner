@@ -28,7 +28,6 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
-
 import dw.tools.hsg.Dienst.Typ;
 import scala.Tuple2;
 
@@ -41,6 +40,7 @@ import scala.Tuple2;
  *    - Festlegbare Initialstunden für Teams (gleichmäßige Verteilung auf Mitglieder)
  *    - Aufsicht und Dienste bevorzugt vor eigenen Heimspielen.
  *      Jede selber aktive Aufsichtsperson sollte "gleich viel Vorteil" haben.
+ *    - Trainer auch einteilen?
  *
  * Done:
  * - Erstellung von Verkaufs- und Kassendienst-Einteilungen für alle Spieler aus allen Teams
@@ -195,10 +195,11 @@ public class HSGApp {
         JavaRDD<Zuordnung> zu = jsc.parallelize(compute(games, personen));
 
         JavaRDD<String> content = toCSV(games, zu);
-        Path out = new Path(in.getParent(), "dienste.csv");
+        Path outbase = args.length > 2 ? new Path(args[2]) : in.getParent();
+        Path out = new Path(outbase, "dienste.csv");
         saveAsFile(content, out);
 
-        exportStats(in, zu);
+        exportStats(outbase, zu, personen);
 
         jsc.close();
 
@@ -208,31 +209,76 @@ public class HSGApp {
      * @param in
      * @param zu
      * @param personen
+     * @param personen
      */
-    private static void exportStats(final Path in, final JavaRDD<Zuordnung> zu) {
-        JavaRDD<String> stats1 = zu.mapToPair(z -> new Tuple2<>(z.getPerson(), z.getDienst().getZeit().dauerInMin()))
-                                   .groupByKey()
-                                   .map(t -> {
-                                       int effective = StreamSupport.stream(t._2.spliterator(), false).mapToInt(i -> i).sum();
-                                       return String.join(HSGApp.CSV_DELIM, t._1.getName(), t._1.getTeam().toString(),
-                                                          "" + t._1.getGearbeitetM(),
-                                                          "" + effective,
-                                                          Integer.toString(t._1.getGearbeitetM() + effective));
-                                   });
-        Map<Team, Integer> counts = new HashMap<>(zu.map(z -> z.getPerson()).distinct().mapToPair(p -> new Tuple2<>(p.getTeam(), 1))
-                                                    .reduceByKey((a, b) -> a + b)
-                                                    .collectAsMap());
-        JavaRDD<String> stats2 = zu.mapToPair(z -> new Tuple2<>(z.getPerson().getTeam(),
+    private static void exportStats(final Path out, final JavaRDD<Zuordnung> zu, final JavaRDD<Person> personen) {
+        JavaPairRDD<Person, Integer> effectiveWorkTime = zu.mapToPair(z -> new Tuple2<>(z.getPerson(), z.getDienst().getZeit().dauerInMin()))
+                                                           .reduceByKey((a, b) -> a + b)
+                                                           .cache();
+        final Tuple2<Integer, Integer> avgAufsichtT =
+                        effectiveWorkTime.filter(z -> z._1.isAufsicht())
+                                         .map(z -> new Tuple2<>(z._2, 1))
+                                         .reduce((a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2));
+        final Tuple2<Integer, Integer> avgDienstT =
+                        effectiveWorkTime.filter(z -> !z._1.isAufsicht())
+                                         .map(z -> new Tuple2<>(z._2, 1))
+                                         .reduce((a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2));
+        Map<Team, Integer> teamGröße = new HashMap<>(zu.map(z -> z.getPerson())
+                                                       .filter(p -> !p.isAufsicht())
+                                                       .distinct().mapToPair(p -> new Tuple2<>(p.getTeam(), 1))
+                                                       .reduceByKey((a, b) -> a + b)
+                                                       .collectAsMap());
+        final double avgAufsicht = avgAufsichtT._1 / (double) avgAufsichtT._2;
+        final double avgDienst = avgDienstT._1 / (double) avgDienstT._2;
+        logger.warn("Durchschn. Arbeitszeit Normal: " + avgDienst + ", Aufsicht:" + avgAufsicht);
+
+        /*
+         * Zeiten pro Person
+         */
+        JavaRDD<String> stats1 = effectiveWorkTime.map(t -> {
+            int total = t._1.getGearbeitetM() + t._2;
+            return String.join(HSGApp.CSV_DELIM, t._1.getName() + (t._1.isAufsicht() ? " (A)" : ""), t._1.getTeam().toString(),
+                               "" + t._1.getGearbeitetM(),
+                               "" + t._2,
+                               Integer.toString(total),
+                               Double.toString(total - (t._1.isAufsicht() ? avgAufsicht : avgDienst)).replace('.', ','));
+        }).sortBy(s -> s, true, 1);
+
+        /*
+         * Zeiten pro Team
+         */
+        JavaRDD<String> stats2 = zu.filter(z -> !z.getPerson().isAufsicht())
+                                   .mapToPair(z -> new Tuple2<>(z.getPerson().getTeam(),
                                                                 new Tuple2<>(z.getPerson().getGearbeitetM(), z.getDienst().getZeit().dauerInMin())))
                                    .reduceByKey((a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2))
                                    .map(t -> String.join(HSGApp.CSV_DELIM, "Gesamtsumme Team", t._1.toString(),
                                                          Integer.toString(t._2._1),
                                                          Integer.toString(t._2._2),
                                                          Integer.toString(t._2._1 + t._2._2),
-                                                         Integer.toString(counts.get(t._1)),
-                                                         Double.toString((t._2._1 + t._2._2) / (double) counts.get(t._1))));
-        Path out = new Path(in.getParent(), "stats.csv");
-        saveAsFile(stats1.union(stats2), out);
+                                                         Integer.toString(teamGröße.get(t._1)),
+                                                         Double.toString((t._2._1 + t._2._2) / (double) teamGröße.get(t._1)).replace('.', ',')))
+                                   .sortBy(s -> s, true, 1);
+        ;
+
+        /*
+         * Personen ohne Arbeitsdienste
+         */
+        JavaRDD<String> stats3 = personen.keyBy(p -> p)
+                                         .leftOuterJoin(zu.mapToPair(z -> new Tuple2<>(z.getPerson(), 1)))
+                                         .map(d -> {
+                                             if (!d._2._2.isPresent()) {
+                                                 return String.join(HSGApp.CSV_DELIM, "Kein Dienst",
+                                                                    d._1.getName() + (d._1.isAufsicht() ? " (A)" : ""),
+                                                                    d._1.getTeam().toString(),
+                                                                    Integer.toString(d._1.getGearbeitetM()),
+                                                                    Double.toString(d._1.getGearbeitetM() - (d._1.isAufsicht() ? avgAufsicht : avgDienst))
+                                                                          .replace('.', ','));
+                                             } else {
+                                                 return null;
+                                             }
+                                         }).filter(s -> s != null)
+                                         .sortBy(s -> s, true, 1);
+        saveAsFile(stats1.union(stats2).union(stats3), new Path(out, "stats.csv"));
     }
 
     public static JavaRDD<String> toCSV(final JavaRDD<Game> games, final JavaRDD<Zuordnung> zu) {

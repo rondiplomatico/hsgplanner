@@ -194,7 +194,7 @@ public class HSGSolverTest {
         // HSGApp.main(new String[]
         // {"F:\\Software\\hsgplanner\\src\\test\\resources\\HSG_Leinfelden-Echterdingen_10.csv" ,
         // "F:\\Software\\hsgplanner\\src\\test\\resources\\Personen.csv"});
-        HSGApp.main(new String[] { "src\\test\\resources\\HSG_Leinfelden-Echterdingen_20.csv",
+        HSGApp.main(new String[] { "src\\test\\resources\\HSG_Leinfelden-Echterdingen_utf8_30.csv",
                         "src\\test\\resources\\Personen.csv" });
     }
 

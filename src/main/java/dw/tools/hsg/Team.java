@@ -73,4 +73,8 @@ public class Team implements Serializable {
         return id;
     }
 
+    public boolean isJugend() {
+        return !id.startsWith("M") && !id.startsWith("F");
+    }
+
 }

@@ -6,3 +6,4 @@ cplex_problem.txt
 *.crc
 *.csv
 *.xlsx
+bin/

@@ -60,6 +60,8 @@ public class HSGSolver {
     private static int substCnt = 1;
     public static final int CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN = 60;
     public static final int DEFAULT_ZUORDNUNG_WEIGHT = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN + 30;
+    public static final int ÜBERZEIT_STRAFE = 5;
+    public static final int UNTERZEIT_STRAFE = 1;
 
     public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
         final Problem problem = new Problem();
@@ -136,13 +138,13 @@ public class HSGSolver {
          * FULL (6) All messages are reported. Useful for debugging purposes and small models.
          */
         // SolverFactory factory = new SolverFactoryLpSolve();
-        factory.setParameter(Solver.TIMEOUT, 200); // set timeout to 100 seconds [60 * 60 * 14]
+        factory.setParameter(Solver.TIMEOUT, 600); // set timeout to 100 seconds [60 * 60 * 14]
         Solver solver = factory.get(); // you should use this solver only once for one problem
 
         solver.setParameter(SolverParameter.RAND_SEED, 1);
         solver.setParameter(SolverParameter.NUMBER_OF_THREADS, 8);
         solver.setParameter(SolverParameter.WORK_DIRECTORY, ".");
-        solver.setParameter(SolverParameter.WORKING_MEMORY, 2048);
+        solver.setParameter(SolverParameter.WORKING_MEMORY, 1024*10);
         solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH, 3);
         solver.setParameter(SolverParameter.MEMORY_EMPHASIS, true);
         solver.setParameter(SolverParameter.ADVANCED_START_SWITCH, 0);
@@ -205,14 +207,6 @@ public class HSGSolver {
            .forEach(t -> {
                target.add(t._2(), t._3());
            });
-
-        // tmp.mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(t._2(), t._3())))
-        // .groupByKey()
-        // .mapValues(IterableUtil::toList)
-        // .map(t -> {
-        //
-        // });
-
     }
 
     private static void addN3NurGleicheTeamsInGleichenDiensten(final JavaRDD<Zuordnung> all, final Problem problem) {
@@ -311,13 +305,13 @@ public class HSGSolver {
             Linear l = new Linear();
             String plus = s + "+";
             String minus = s + "-";
-            l.add(new Term(s, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -1), new Term(plus, 1), new Term(minus, -1));
+            l.add(new Term(s, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -1), new Term(plus, -1), new Term(minus, 1));
             problem.add(new Constraint(s + "Slack", l, Operator.EQ, 0));
             problem.setVarType(plus, VarType.REAL);
             problem.setVarType(minus, VarType.REAL);
             problem.setVarLowerBound(plus, 0);
             problem.setVarLowerBound(minus, 0);
-            target.add(new Term(plus, 1), new Term(minus, 1));
+            target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
         });
     }
 
