@@ -28,8 +28,10 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
 import dw.tools.hsg.Dienst.Typ;
 import scala.Tuple2;
+import scala.Tuple3;
 
 /**
  * <pre>
@@ -41,6 +43,14 @@ import scala.Tuple2;
  *    - Aufsicht und Dienste bevorzugt vor eigenen Heimspielen.
  *      Jede selber aktive Aufsichtsperson sollte "gleich viel Vorteil" haben.
  *    - Trainer auch einteilen?
+ *    - Weniger Dienste für Trainer von Jugendteams?
+ *    - Gemischte Verkaufsschichten? (Jugend/Aktive, M/W)
+ *    
+ * Feedback:
+ *    - Keine Dienste an spielfreien Wochenenden, [zumindest für aktive Aufsicht]
+ *    - Doppelspielrecht berücksichtigen
+ *    - Einstellbare Sperrzeiten für Teams (erste 2 Spieltage keine Jugend)
+ *    - Maximale Arbeitszeit pro Tag 6h o.ä.
  *
  * Done:
  * - Erstellung von Verkaufs- und Kassendienst-Einteilungen für alle Spieler aus allen Teams
@@ -196,11 +206,49 @@ public class HSGApp {
                                  .map(Game::parse)
                                  .filter(g -> HSGDate.TODAY.beforeOrEquals(g.getDate()))
                                  .cache();
-        // System.out.println("Spiele:");
-        // games.foreach(System.out::println);
+        games.foreach(g -> logger.info("Spiel:"+g));
+         
 
-        JavaRDD<Zuordnung> zu = jsc.parallelize(compute(games, personen));
-
+         JavaRDD<Zuordnung> allzu = compute(games, personen);
+         
+         if (args.length > 3) {
+        	 in = new Path(args[3]);
+         	JavaRDD<Zuordnung> fixed = 
+        		 jsc.textFile(in.toString())
+                                  .flatMap(l -> Zuordnung.read(l).iterator())
+                                  .keyBy(z -> new Tuple2<>(z.getPerson().getName(), z.getPerson().getTeam()))
+                                  .leftOuterJoin(personen.keyBy(p -> new Tuple2<>(p.getName(), p.getTeam())))
+                                  .map(d -> {
+                                	  if (d._2._2.isPresent()) {
+                                		  return new Zuordnung(d._2._2.get(), d._2._1.getDienst(), d._2._1.getNr());
+                                	  } else {
+                                		  logger.warn("nicht gefunden: " + d._1 + " in "+ d._2._1);
+                                		  return null;
+                                	  }
+                                  })
+                                  .filter(d -> d!=null)
+                                  .cache();
+          fixed.foreach(f -> logger.info("Festgelegt: "+f));
+         	
+         	allzu = allzu.keyBy(z -> new Tuple3<>(z.getDienst(), z.getPerson(), z.getNr()))
+         	.fullOuterJoin(fixed.keyBy(z -> new Tuple3<>(z.getDienst(), z.getPerson(), z.getNr())))
+         	.map(d -> {
+         		if (d._2._1.isPresent()) {
+         			Zuordnung z = d._2._1.get();
+         		z.setFixed(d._2._2.isPresent());
+         		if (d._2._2.isPresent()) { 
+         			logger.warn("Zuordnung fixiert: "+z); 
+         		}
+         		return z;
+         		}else {
+         			logger.warn("Keine Zuordnung für Fixierung: "+ d._2._2.get().getDienst().getDatum()+", "+ d._2._2.get());
+         		return null;
+         		}
+         	}).filter(d -> d!=null);
+         }
+         
+        JavaRDD<Zuordnung> zu = jsc.parallelize(HSGSolver.solve(allzu, games));
+        
         JavaRDD<String> content = toCSV(games, zu);
         Path out = new Path(outbase, "dienste.csv");
         saveAsFile(content, out);
@@ -325,7 +373,7 @@ public class HSGApp {
                  });
     }
 
-    public static List<Zuordnung> compute(final JavaRDD<Game> games, final JavaRDD<Person> personen) {
+    public static JavaRDD<Zuordnung> compute(final JavaRDD<Game> games, final JavaRDD<Person> personen) {
 
         HashMap<Team, List<Person>> teams =
                         new HashMap<>(personen.keyBy(p -> p.getTeam())
@@ -348,8 +396,8 @@ public class HSGApp {
                              .aggregateByKey(HSGInterval.MAXMIN,
                                              (ex, g) -> ex.stretch(g.getZeit()),
                                              (a, b) -> a.merge(b));
-        // System.out.println("Spielzeiten:");
-        // spielZeiten.foreach(System.out::println);
+//        System.out.println("Spielzeiten:");
+//        spielZeiten.foreach(s -> System.out.println(s));
 
         JavaPairRDD<HSGDate, Spieltag> verkauf = spielZeiten.mapToPair(t -> {
             Spieltag sp = new Spieltag();
@@ -381,15 +429,17 @@ public class HSGApp {
         // kassenZeiten.foreach(System.out::println);
 
         JavaPairRDD<HSGDate, Spieltag> dienste =
-                        verkauf.join(kassenZeiten)
-                               .join(aufsichtsZeiten)
+                        verkauf.join(aufsichtsZeiten)
+                        	   .leftOuterJoin(kassenZeiten)
                                .mapValues(v -> {
                                    v._1._1.getDienste().addAll(v._1._2);
-                                   v._1._1.getDienste().addAll(v._2);
+                                   if (v._2.isPresent()) {
+                                	   v._1._1.getDienste().addAll(v._2.get());
+                                   }
                                    return v._1._1;
                                });
-        // System.out.println("Spieltage:");
-        // dienste.foreach(System.out::println);
+//        System.out.println("Dienste:");
+//        dienste.foreach(d->System.out.println(d));
 
         /*
          * Spielzeiten +- Puffer berechnen, um zu wissen welches Team wann keinen
@@ -407,10 +457,14 @@ public class HSGApp {
                         berechneSpieltage(dienste, spieltSelber, blockierteTrainer);
 
         JavaRDD<Zuordnung> zuordnungen = erzeugeZuordnungen(personen, spieltage);
+        
+        /*
+         * Match vorhandene mit fixierten (stimmen nicht bzgl ID überein - daher match über dienst+person)
+         */
 
         checkAlleNotwendigenZuordnungenSindVorhanden(spieltage, zuordnungen);
 
-        return HSGSolver.solve(zuordnungen, games);
+        return zuordnungen;
     }
 
     /**
@@ -464,7 +518,7 @@ public class HSGApp {
             ohneZuordnung.forEach(d -> logger.error(d + ": Keine Personen zugeordnet"));
             throw new RuntimeException("Für " + ohneZuordnung.size() + " Dienste konnten keine möglichen Personen zugeordnet werden.");
         } else {
-            logger.info("Zuordnungen gesamt: " + zuordnungen.count());
+            logger.warn("Zuordnungen gesamt: " + zuordnungen.count());
         }
     }
 

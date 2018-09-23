@@ -7,3 +7,4 @@ cplex_problem.txt
 *.csv
 *.xlsx
 bin/
+HD1819/

@@ -46,6 +46,8 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
 
     private static final DateTimeFormatter DD_MM_YYYY_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    
+    public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
      * The HSGDate of today with only year, month and day set.
@@ -112,13 +114,13 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
     }
 
     /**
-     * Creates a new {@link HSGDate} instance from a date string (YYYYmmdd).
+     * Creates a new {@link HSGDate} instance from a date string formatted as DD_MM_YYYY_FORMATTER.
      *
      * @param date
      *            the date
      */
     public HSGDate(final String date) {
-        this.date = LocalDate.from(DD_MM_YYYY_FORMATTER.parse(date));
+    	this.date = LocalDate.from(DD_MM_YYYY_FORMATTER.parse(date));
     }
 
     /**
@@ -315,6 +317,17 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
         return new HSGDate(LocalDate.of(Integer.parseInt(date.substring(0, 4)),
                                         Integer.parseInt(date.substring(4, 6)),
                                         Integer.parseInt(date.substring(6, 8))));
+    }
+    
+    /**
+     * 12.05.18
+     * @param date
+     * @return
+     */
+    public static HSGDate fromDDMMYY(final String date) {
+        return new HSGDate(LocalDate.of(2000+Integer.parseInt(date.substring(6, 8)),
+                                        Integer.parseInt(date.substring(3, 5)),
+                                        Integer.parseInt(date.substring(0, 2))));
     }
 
     /**

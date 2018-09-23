@@ -165,7 +165,7 @@ public class HSGSolverTest {
         List<Game> gs = Arrays.asList(F21, F11);
 
         JavaRDD<Game> gsRDD = jsc.parallelize(gs);
-        List<Zuordnung> res = HSGApp.compute(gsRDD, jsc.parallelize(ps));
+        List<Zuordnung> res = HSGSolver.solve(HSGApp.compute(gsRDD, jsc.parallelize(ps)), gsRDD);
         assertTrue(res.size() > 0);
         List<String> csv = HSGApp.toCSV(gsRDD, jsc.parallelize(res)).collect();
         System.out.println(csv);
@@ -177,7 +177,7 @@ public class HSGSolverTest {
         List<Game> gs = Arrays.asList(F21, F11, M11);
 
         JavaRDD<Game> gsRDD = jsc.parallelize(gs);
-        List<Zuordnung> res = HSGApp.compute(gsRDD, jsc.parallelize(ps));
+        List<Zuordnung> res = HSGSolver.solve(HSGApp.compute(gsRDD, jsc.parallelize(ps)), gsRDD);
         assertTrue(res.size() > 0);
         List<String> csv = HSGApp.toCSV(gsRDD, jsc.parallelize(res)).collect();
         System.out.println(csv);

@@ -95,17 +95,21 @@ public class HSGSolver {
         /*
          * Nur eine Person pro Dienst
          */
-        System.out.println("Erstelle NB: Nur eine Person pro Dienst");
+        System.out.println("Erstelle N1: Nur eine Person pro Dienst");
         addN1EinePersonProDienst(all, problem);
 
         /*
          * Pro Person nur ein Dienst gleichzeitig. Da die Dienste beliebig überschneiden
          * können, muss man vorher disjunkt aufteilen.
          */
-        System.out.println("Erstelle NB: Keine parallelen Dienste pro Person");
+        System.out.println("Erstelle N2: Keine parallelen Dienste pro Person");
         addN2KeineParallelenDienste(all, problem);
 
+        System.out.println("Erstelle N3: Nur gleiche Teams in gleichen Diensten");
         addN3NurGleicheTeamsInGleichenDiensten(all, problem);
+        
+        System.out.println("Erstelle N4: Schon fixierte Zuordnungen");
+        addN4FixierteZuordnungen(allList, problem);
 
         /*
          * ********************************************************* Lösen
@@ -138,7 +142,7 @@ public class HSGSolver {
          * FULL (6) All messages are reported. Useful for debugging purposes and small models.
          */
         // SolverFactory factory = new SolverFactoryLpSolve();
-        factory.setParameter(Solver.TIMEOUT, 60*60); // set timeout to 100 seconds [60 * 60 * 14]
+        factory.setParameter(Solver.TIMEOUT, 60*60*3); // set timeout to 100 seconds [60 * 60 * 14]
         Solver solver = factory.get(); // you should use this solver only once for one problem
 
         solver.setParameter(SolverParameter.RAND_SEED, 1);
@@ -163,11 +167,22 @@ public class HSGSolver {
             System.out.println("Durchschnittliche Arbeitszeit Aufsicht:" + result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
         } else {
             System.out.println("Solve fehlgeschlagen.");
+            problem.print();
         }
         return selected;
     }
 
-    private static void addZ2DienstNahBeiEigenemSpiel(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
+    private static void addN4FixierteZuordnungen(List<Zuordnung> allList, Problem problem) {
+    	allList.stream()
+    	.filter(z -> z.isFixed())
+    	.forEach(z -> {
+    		Linear l = new Linear();
+    		l.add(1, z.varName());
+    		problem.add("Fix"+z.varName(), l, Operator.EQ, 1);
+    	});
+	}
+
+	private static void addZ2DienstNahBeiEigenemSpiel(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
                     final Problem problem, final Linear target) {
         JavaRDD<Tuple3<Person, Integer, String>> tmp =
                         all.keyBy(z -> z.getDienst().getDatum())

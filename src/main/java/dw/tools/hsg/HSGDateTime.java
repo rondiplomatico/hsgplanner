@@ -39,6 +39,7 @@ public class HSGDateTime implements Serializable, Comparable<HSGDateTime> {
      * Formatter for printing {@link HSGDateTime} into "yyyyMMddHHmm" format
      */
     private static final DateTimeFormatter PBK_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
+    
 
     /**
      * Creates a new {@link HSGDateTime} instance for given year, month, day, hour, minute and second.

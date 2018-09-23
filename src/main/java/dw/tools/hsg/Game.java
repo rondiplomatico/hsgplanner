@@ -110,7 +110,7 @@ public class Game implements Serializable, Comparable<Game> {
 
     @Override
     public String toString() {
-        return zeit + " " + staffel + ": " + heim + "-" + gast;
+        return date.toddMMyyyy() + ", " + zeit + " " + staffel + ": " + heim + "-" + gast;
     }
 
     public String toCSV() {
