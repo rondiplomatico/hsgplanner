@@ -92,7 +92,7 @@ public class Person implements Serializable {
         Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? new Team(elems[2]) : null;
         boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
         int worked = (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60);
-        return new Person(elems[0], team, aufsicht ? 0 : worked, aufsicht, trainerVon);
+        return new Person(elems[0].trim(), team, aufsicht ? 0 : worked, aufsicht, trainerVon);
     }
 
     @Override

@@ -64,28 +64,33 @@ public class Game implements Serializable, Comparable<Game> {
     private String staffel;
 
     public static Game parse(final String l) {
-        String[] elems = l.split(";");
-        Game res = new Game();
-        res.staffel = elems[1].trim();
-        res.date = new HSGDate(elems[2]);
-        res.zeit = LocalTime.from(TIME_FMT.parse(elems[3]));
-        res.halle = elems[4].trim();
-        res.heim = elems[5].trim();
-        res.gast = elems[6].trim();
-        res.heimspiel = HSGApp.GA.equals(res.halle);
-        String team = res.heimspiel ? res.heim : res.gast;
-        String snr = team.length() > 27 ? team.substring(team.length() - 1, team.length()) : null;
-        int nr = Strings.isNullOrEmpty(snr) ? 1 : Integer.parseInt(snr);
-        /*
-         * MXXX -> M[1-N]
-         * FXXX -> F[1-N]
-         * XJYZ -> XYZ[1-N]
-         */
-        res.team = new Team(res.staffel.startsWith("M") ? "M" + nr
-                        : res.staffel.startsWith("F") ? "F" + nr
-                                        : res.staffel.contains("-") ? res.staffel.substring(0, res.staffel.lastIndexOf("-")).replace("J", "") + nr
-                                                        : res.staffel);
-        return res;
+        try {
+            String[] elems = l.split(";");
+            Game res = new Game();
+            res.staffel = elems[1].trim();
+            res.date = new HSGDate(elems[2]);
+            res.zeit = LocalTime.from(TIME_FMT.parse(elems[3]));
+            res.halle = elems[4].trim();
+            res.heim = elems[5].trim();
+            res.gast = elems[6].trim();
+            res.heimspiel = HSGApp.GA.equals(res.halle);
+            String team = res.heimspiel ? res.heim : res.gast;
+            String snr = team.length() > 27 ? team.substring(team.length() - 1, team.length()) : null;
+            int nr = Strings.isNullOrEmpty(snr) ? 1 : Integer.parseInt(snr);
+            /*
+             * MXXX -> M[1-N]
+             * FXXX -> F[1-N]
+             * XJYZ -> XYZ[1-N]
+             */
+            res.team = new Team(res.staffel.startsWith("M") ? "M" + nr
+                            : res.staffel.startsWith("F") ? "F" + nr
+                                            : res.staffel.contains("-") ? res.staffel.substring(0, res.staffel.lastIndexOf("-")).replace("J", "") + nr
+                                                            : res.staffel);
+            return res;
+        } catch (Exception e) {
+            HSGApp.logger.error("Import für Spiel '" + l + "' fehlgeschlagen", e);
+            return null;
+        }
     }
 
     public HSGInterval getDienstSperrenZeitraum() {
