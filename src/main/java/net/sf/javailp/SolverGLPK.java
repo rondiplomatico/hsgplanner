@@ -44,20 +44,16 @@ public class SolverGLPK extends AbstractSolver {
 	public interface Hook {
 
 		/**
-		 * This method is called once before the optimization and allows to
-		 * change some internal settings.
+		 * This method is called once before the optimization and allows to change some
+		 * internal settings.
 		 * 
-		 * @param glpk
-		 *            the glpk problem
-		 * @param simplexParameters
-		 *            simplex parameters
-		 * @param integerParameters
-		 *            mip parameters
-		 * @param varToIndex
-		 *            the map of variables to glpk specific variables
+		 * @param glpk              the glpk problem
+		 * @param simplexParameters simplex parameters
+		 * @param integerParameters mip parameters
+		 * @param varToIndex        the map of variables to glpk specific variables
 		 */
-		public void call(glp_prob glpk, glp_smcp simplexParameters,
-				glp_iocp integerParameters, Map<Object, Integer> varToIndex);
+		public void call(glp_prob glpk, glp_smcp simplexParameters, glp_iocp integerParameters,
+				Map<Object, Integer> varToIndex);
 	}
 
 	protected final Set<Hook> hooks = new HashSet<Hook>();
@@ -65,8 +61,7 @@ public class SolverGLPK extends AbstractSolver {
 	/**
 	 * Adds a hook.
 	 * 
-	 * @param hook
-	 *            the hook to be added
+	 * @param hook the hook to be added
 	 */
 	public void addHook(Hook hook) {
 		hooks.add(hook);
@@ -75,8 +70,7 @@ public class SolverGLPK extends AbstractSolver {
 	/**
 	 * Removes a hook
 	 * 
-	 * @param hook
-	 *            the hook to be removed
+	 * @param hook the hook to be removed
 	 */
 	public void removeHook(Hook hook) {
 		hooks.remove(hook);
@@ -93,7 +87,7 @@ public class SolverGLPK extends AbstractSolver {
 		Map<Object, Integer> varToIndex = new HashMap<Object, Integer>();
 		Map<Integer, Constraint> indexToCon = new HashMap<Integer, Constraint>();
 		int numberOfIntegerVariables = 0;
-		//Map<Constraint, Integer> conToIndex = new HashMap<Constraint, Integer>();
+		// Map<Constraint, Integer> conToIndex = new HashMap<Constraint, Integer>();
 
 		int i = 1;
 		for (Object variable : problem.getVariables()) {
@@ -104,7 +98,7 @@ public class SolverGLPK extends AbstractSolver {
 		int k = 1;
 		for (Constraint constraint : problem.getConstraints()) {
 			indexToCon.put(k, constraint);
-			//conToIndex.put(constraint, k);
+			// conToIndex.put(constraint, k);
 			k++;
 		}
 
@@ -129,7 +123,7 @@ public class SolverGLPK extends AbstractSolver {
 
 					final String name = variable.toString();
 					final int kind;
-					
+
 					switch (varType) {
 					case BOOL:
 					case INT:
@@ -226,7 +220,7 @@ public class SolverGLPK extends AbstractSolver {
 					GLPK.glp_set_row_name(lp, k, name);
 					GLPK.glp_set_mat_row(lp, k, size, vars, coeffs);
 					GLPK.glp_set_row_bnds(lp, k, comp, rhs, rhs);
-					
+
 				}
 			}
 
@@ -302,16 +296,16 @@ public class SolverGLPK extends AbstractSolver {
 			}
 
 			if (numberOfIntegerVariables == 0) {
-				
+
 				GLPK.glp_simplex(lp, simplexParameters);
-				
+
 				Result result;
 				if (problem.getObjective() != null) {
 					result = new ResultImpl(problem.getObjective());
 				} else {
 					result = new ResultImpl();
 				}
-				
+
 				for (i = 1; i <= nvar; i++) {
 					Object variable = indexToVar.get(i);
 					double primalValue = GLPK.glp_get_col_prim(lp, i);
@@ -333,7 +327,7 @@ public class SolverGLPK extends AbstractSolver {
 					result.putPrimalValue(constraint.getName(), primalValue);
 					result.putDualValue(constraint.getName(), dualValue);
 				}
-				
+
 				return result;
 			} else {
 				return null;

@@ -22,8 +22,6 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.parquet.Strings;
-
 import dw.tools.hsg.Dienst.Typ;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -40,48 +38,51 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class Zuordnung implements Serializable {
 
-    private static final long serialVersionUID = 6500267604562155991L;
-    private static int ID = 0;
+	private static final long serialVersionUID = 6500267604562155991L;
+	private static int ID = 0;
 
+	private final Person person;
+	private final Dienst dienst;
+	private final int nr;
+	// private final UUID id;
+	private final int id;
+	@Setter
+	private boolean fixed = false;
 
-    private final Person person;
-    private final Dienst dienst;
-    private final int nr;
-    // private final UUID id;
-    private final int id;
-    @Setter private boolean fixed = false;
+	public String varName() {
+		return person.getShortName() + "@" + dienst.getTyp().getKurz() + dienst.zeit + "/" + nr + "/" + id;
+	}
 
-    public String varName() {
-        return person.getShortName() + "@" + dienst.getTyp().getKurz() + dienst.zeit + "/" + nr + "/" + id;
-    }
+	public Zuordnung(final Person p, final Dienst d, final int nr) {
+		person = p;
+		dienst = d;
+		this.nr = nr;
+		// id = UUID.randomUUID();
+		id = ID++;
+	}
 
-    public Zuordnung(final Person p, final Dienst d, final int nr) {
-        person = p;
-        dienst = d;
-        this.nr = nr;
-        // id = UUID.randomUUID();
-        id = ID++;
-    }
+	public Zuordnung(final Person p, final Dienst d) {
+		this(p, d, 0);
+	}
 
-    public Zuordnung(final Person p, final Dienst d) {
-        this(p, d, 0);
-    }
+	@Override
+	public String toString() {
+		return varName();
+	}
 
-    @Override
-    public String toString() {
-    	return varName();
-    }
-    
-    public static List<Zuordnung> read(String line) {
-    	String[] elems = line.split(";");
-        Team team = new Team(elems[4]);
-        Person p = new Person(elems[5], team, 0, false, null);
-        Dienst d = new Dienst(HSGDate.fromDDMMYY(elems[0].substring(4)), new HSGInterval(LocalTime.parse(elems[1], HSGDate.TIME_FORMATTER), LocalTime.parse(elems[2], HSGDate.TIME_FORMATTER)), Typ.valueOf(elems[3]));
-        List<Zuordnung> res = new ArrayList<>();
-        res.add(new Zuordnung(p,d));
-        if (elems.length > 6) {
-        	res.add(new Zuordnung(new Person(elems[6], team, 0, false, null),d,1));
-        } 
-        return res;
-    }
+	public static List<Zuordnung> read(String line) {
+		String[] elems = line.split(";");
+		Team team = new Team(elems[4]);
+		Person p = new Person(elems[5], team, 0, false, null);
+		Dienst d = new Dienst(HSGDate.fromDDMMYY(elems[0].substring(4)),
+				new HSGInterval(LocalTime.parse(elems[1], HSGDate.TIME_FORMATTER),
+						LocalTime.parse(elems[2], HSGDate.TIME_FORMATTER)),
+				Typ.valueOf(elems[3]));
+		List<Zuordnung> res = new ArrayList<>();
+		res.add(new Zuordnung(p, d));
+		if (elems.length > 6) {
+			res.add(new Zuordnung(new Person(elems[6], team, 0, false, null), d, 1));
+		}
+		return res;
+	}
 }

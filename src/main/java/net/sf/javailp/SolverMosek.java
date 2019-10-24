@@ -40,8 +40,7 @@ public class SolverMosek extends AbstractSolver {
 	/**
 	 * Constructs a {@code SolverMosek}.
 	 * 
-	 * @param env
-	 *            the {@code mosek} environment
+	 * @param env the {@code mosek} environment
 	 */
 	public SolverMosek(Env env) {
 		super();
@@ -57,15 +56,12 @@ public class SolverMosek extends AbstractSolver {
 	public interface Hook {
 
 		/**
-		 * This method is called once before the optimization and allows to
-		 * change some internal settings.
+		 * This method is called once before the optimization and allows to change some
+		 * internal settings.
 		 * 
-		 * @param env
-		 *            the environment
-		 * @param task
-		 *            the task
-		 * @param varToIndex
-		 *            the map of variables to mosek specific variables
+		 * @param env        the environment
+		 * @param task       the task
+		 * @param varToIndex the map of variables to mosek specific variables
 		 */
 		public void call(Env env, Task task, Map<Object, Integer> varToIndex);
 	}
@@ -73,8 +69,7 @@ public class SolverMosek extends AbstractSolver {
 	/**
 	 * Adds a hook.
 	 * 
-	 * @param hook
-	 *            the hook to be added
+	 * @param hook the hook to be added
 	 */
 	public void addHook(Hook hook) {
 		hooks.add(hook);
@@ -83,8 +78,7 @@ public class SolverMosek extends AbstractSolver {
 	/**
 	 * Removes a hook
 	 * 
-	 * @param hook
-	 *            the hook to be removed
+	 * @param hook the hook to be removed
 	 */
 	public void removeHook(Hook hook) {
 		hooks.remove(hook);
@@ -272,13 +266,11 @@ public class SolverMosek extends AbstractSolver {
 			int[] solsta = new int[1];
 
 			task.getsolutionstatus(mosek.Env.soltype.itg, prosta, solsta);
-			
+
 			int p = prosta[0];
-			
-			if(p == mosek.Env.prosta.prim_infeas || 
-					p == mosek.Env.prosta.prim_and_dual_infeas ||
-					p == mosek.Env.prosta.dual_infeas || 
-					p == mosek.Env.prosta.prim_infeas_or_unbounded){
+
+			if (p == mosek.Env.prosta.prim_infeas || p == mosek.Env.prosta.prim_and_dual_infeas
+					|| p == mosek.Env.prosta.dual_infeas || p == mosek.Env.prosta.prim_infeas_or_unbounded) {
 				task.dispose();
 				return null;
 			}

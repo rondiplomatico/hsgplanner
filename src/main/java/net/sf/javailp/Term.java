@@ -29,10 +29,8 @@ public class Term {
 	/**
 	 * Constructs a {@code Term}.
 	 * 
-	 * @param variable
-	 *            the variable
-	 * @param coefficient
-	 *            the coefficient
+	 * @param variable    the variable
+	 * @param coefficient the coefficient
 	 */
 	public Term(Object variable, Number coefficient) {
 		super();

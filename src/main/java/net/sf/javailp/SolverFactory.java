@@ -27,10 +27,8 @@ public interface SolverFactory {
 	/**
 	 * Sets a parameter.
 	 * 
-	 * @param parameter
-	 *            the parameter
-	 * @param value
-	 *            the value
+	 * @param parameter the parameter
+	 * @param value     the value
 	 */
 	public void setParameter(Object parameter, Object value);
 

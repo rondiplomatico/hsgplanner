@@ -50,16 +50,13 @@ public class SolverSAT4J extends AbstractSolver {
 	public interface Hook {
 
 		/**
-		 * This method is called once before the optimization and allows to
-		 * change some internal settings.
+		 * This method is called once before the optimization and allows to change some
+		 * internal settings.
 		 * 
-		 * @param solver
-		 *            the sat4j solver
-		 * @param varToIndex
-		 *            the map of variables to sat4j specific variables
+		 * @param solver     the sat4j solver
+		 * @param varToIndex the map of variables to sat4j specific variables
 		 */
-		public void call(PBSolverResolution solver,
-				Map<Object, Integer> varToIndex);
+		public void call(PBSolverResolution solver, Map<Object, Integer> varToIndex);
 	}
 
 	protected final Set<Hook> hooks = new HashSet<Hook>();
@@ -67,8 +64,7 @@ public class SolverSAT4J extends AbstractSolver {
 	/**
 	 * Adds a hook.
 	 * 
-	 * @param hook
-	 *            the hook to be added
+	 * @param hook the hook to be added
 	 */
 	public void addHook(Hook hook) {
 		hooks.add(hook);
@@ -77,8 +73,7 @@ public class SolverSAT4J extends AbstractSolver {
 	/**
 	 * Removes a hook
 	 * 
-	 * @param hook
-	 *            the hook to be removed
+	 * @param hook the hook to be removed
 	 */
 	public void removeHook(Hook hook) {
 		hooks.remove(hook);
@@ -103,11 +98,8 @@ public class SolverSAT4J extends AbstractSolver {
 				varToIndex.put(variable, i);
 				i++;
 			}
-			
-			
 
-			PBSolverResolution solver = SolverFactory
-					.newPBResMixedConstraintsObjective();
+			PBSolverResolution solver = SolverFactory.newPBResMixedConstraintsObjective();
 			initWithParameters(solver);
 			printOut("Solve problem with SAT4J");
 			solver.newVar(problem.getVariablesCount() + 1);
@@ -186,14 +178,11 @@ public class SolverSAT4J extends AbstractSolver {
 			Map<Object, Number> r = new HashMap<Object, Number>();
 			Linear objective = problem.getObjective();
 
-			
-			
 			long startTime = System.currentTimeMillis();
 
 			try {
 				long currentTime = System.currentTimeMillis();
-				int diff = (int) Math
-						.floor((double) (currentTime - startTime) / 1000.0);
+				int diff = (int) Math.floor((double) (currentTime - startTime) / 1000.0);
 				int t = Math.max(this.timeout - diff, 0);
 				solver.setTimeout(t);
 
@@ -236,8 +225,7 @@ public class SolverSAT4J extends AbstractSolver {
 					solver.addPseudoBoolean(vars, coeffs, isMax, toBigInt(rhs));
 
 					currentTime = System.currentTimeMillis();
-					diff = (int) Math
-							.floor((double) (currentTime - startTime) / 1000.0);
+					diff = (int) Math.floor((double) (currentTime - startTime) / 1000.0);
 					t = Math.max(this.timeout - diff, 0);
 					solver.setTimeout(t);
 				}
@@ -311,9 +299,7 @@ public class SolverSAT4J extends AbstractSolver {
 		VarType type = problem.getVarType(variable);
 		if (type != VarType.BOOL) {
 			throw new IllegalArgumentException(
-					"Variable "
-							+ variable
-							+ " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
+					"Variable " + variable + " is not a binary variable. SAT4J can only solve 0-1 ILPs.");
 		}
 	}
 

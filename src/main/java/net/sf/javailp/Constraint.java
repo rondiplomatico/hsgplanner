@@ -30,12 +30,9 @@ public class Constraint {
 	/**
 	 * Constructs a {@code Constraint}.
 	 * 
-	 * @param lhs
-	 *            the left hand side
-	 * @param operator
-	 *            the operator
-	 * @param rhs
-	 *            the right hand side
+	 * @param lhs      the left hand side
+	 * @param operator the operator
+	 * @param rhs      the right hand side
 	 */
 	public Constraint(Linear lhs, Operator operator, Number rhs) {
 		this.lhs = lhs;
@@ -47,12 +44,9 @@ public class Constraint {
 	/**
 	 * Constructs a {@code Constraint}.
 	 * 
-	 * @param lhs
-	 *            the left hand side
-	 * @param operator
-	 *            the operator ("<=","=",">=")
-	 * @param rhs
-	 *            the right hand side
+	 * @param lhs      the left hand side
+	 * @param operator the operator ("<=","=",">=")
+	 * @param rhs      the right hand side
 	 */
 	public Constraint(Linear lhs, String operator, Number rhs) {
 		if (operator.equals("<=")) {
@@ -62,25 +56,20 @@ public class Constraint {
 		} else if (operator.equals(">=")) {
 			this.operator = Operator.GE;
 		} else {
-			throw new IllegalArgumentException("Unknown Boolean operator: "
-					+ operator);
+			throw new IllegalArgumentException("Unknown Boolean operator: " + operator);
 		}
 		this.lhs = lhs;
 		this.rhs = rhs;
 		this.name = this.toString();
 	}
-	
+
 	/**
 	 * Constructs a {@code Constraint}.
 	 * 
-	 * @param name
-	 * 			  the name of the constraint
-	 * @param lhs
-	 *            the left hand side
-	 * @param operator
-	 *            the operator
-	 * @param rhs
-	 *            the right hand side
+	 * @param name     the name of the constraint
+	 * @param lhs      the left hand side
+	 * @param operator the operator
+	 * @param rhs      the right hand side
 	 */
 	public Constraint(String name, Linear lhs, Operator operator, Number rhs) {
 		this.name = name;
@@ -92,14 +81,10 @@ public class Constraint {
 	/**
 	 * Constructs a {@code Constraint}.
 	 * 
-	 * @param name
-	 * 			  the name of the constraint
-	 * @param lhs
-	 *            the left hand side
-	 * @param operator
-	 *            the operator ("<=","=",">=")
-	 * @param rhs
-	 *            the right hand side
+	 * @param name     the name of the constraint
+	 * @param lhs      the left hand side
+	 * @param operator the operator ("<=","=",">=")
+	 * @param rhs      the right hand side
 	 */
 	public Constraint(String name, Linear lhs, String operator, Number rhs) {
 		if (operator.equals("<=")) {
@@ -109,8 +94,7 @@ public class Constraint {
 		} else if (operator.equals(">=")) {
 			this.operator = Operator.GE;
 		} else {
-			throw new IllegalArgumentException("Unknown Boolean operator: "
-					+ operator);
+			throw new IllegalArgumentException("Unknown Boolean operator: " + operator);
 		}
 		this.name = name;
 		this.lhs = lhs;
@@ -163,7 +147,7 @@ public class Constraint {
 	public String toString() {
 		return lhs.toString() + " " + operator.toString() + " " + rhs;
 	}
-	
+
 	/**
 	 * Returns the name of the constraint.
 	 * 

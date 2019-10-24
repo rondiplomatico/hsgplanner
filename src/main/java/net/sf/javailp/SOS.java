@@ -32,29 +32,25 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class SOS {
 
-    @RequiredArgsConstructor
-    @Getter
-    public static enum SOSType {
-        SOS1(1),
-        SOS2(2),
-        SOS3(3),
-        SOS4(4),
-        SOS5(5);
+	@RequiredArgsConstructor
+	@Getter
+	public static enum SOSType {
+		SOS1(1), SOS2(2), SOS3(3), SOS4(4), SOS5(5);
 
-        private final int num;
-    }
+		private final int num;
+	}
 
-    private String name;
-    private final Linear lhs;
-    private final SOSType type;
+	private String name;
+	private final Linear lhs;
+	private final SOSType type;
 
-    public int size() {
-        return lhs.size();
-    }
+	public int size() {
+		return lhs.size();
+	}
 
-    @Override
-    public String toString() {
-        return type + ": " + lhs + " = 1";
-    }
+	@Override
+	public String toString() {
+		return type + ": " + lhs + " = 1";
+	}
 
 }

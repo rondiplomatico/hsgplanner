@@ -39,8 +39,7 @@ public abstract class AbstractSolver implements Solver {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see net.sf.javailp.Solver#setParameter(java.lang.Object,
-	 * java.lang.Object)
+	 * @see net.sf.javailp.Solver#setParameter(java.lang.Object, java.lang.Object)
 	 */
 	public void setParameter(Object parameter, Object value) {
 		parameters.put(parameter, value);

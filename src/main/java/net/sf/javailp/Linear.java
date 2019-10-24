@@ -41,16 +41,13 @@ public class Linear implements Iterable<Term> {
 	 * Constructs a linear expression with the predefined variables and their
 	 * coefficients.
 	 * 
-	 * @param coefficients
-	 *            the coefficients
-	 * @param variables
-	 *            the variables
+	 * @param coefficients the coefficients
+	 * @param variables    the variables
 	 */
 	public Linear(List<Number> coefficients, List<Object> variables) {
 		this();
 		if (coefficients.size() != variables.size()) {
-			throw new IllegalArgumentException(
-					"The size of the varibales and coefficients must be equal.");
+			throw new IllegalArgumentException("The size of the varibales and coefficients must be equal.");
 		} else {
 			for (int i = 0; i < variables.size(); i++) {
 				Object variable = variables.get(i);
@@ -64,8 +61,7 @@ public class Linear implements Iterable<Term> {
 	/**
 	 * Constructs a linear expression from the terms.
 	 * 
-	 * @param terms
-	 *            the terms to be added
+	 * @param terms the terms to be added
 	 */
 	public Linear(Iterable<Term> terms) {
 		for (Term term : terms) {
@@ -102,10 +98,8 @@ public class Linear implements Iterable<Term> {
 	/**
 	 * Adds an element to the linear expression.
 	 * 
-	 * @param coefficient
-	 *            the coefficient
-	 * @param variable
-	 *            the variable
+	 * @param coefficient the coefficient
+	 * @param variable    the variable
 	 */
 	public void add(Number coefficient, Object variable) {
 		Term term = new Term(variable, coefficient);
@@ -115,8 +109,7 @@ public class Linear implements Iterable<Term> {
 	/**
 	 * Adds terms.
 	 * 
-	 * @param terms
-	 *            the terms to be added
+	 * @param terms the terms to be added
 	 */
 	public void add(Term... terms) {
 		for (Term term : terms) {
@@ -155,7 +148,7 @@ public class Linear implements Iterable<Term> {
 
 			s.append(coeff).append("*").append(variable);
 			if (i < size() - 1) {
-				if ((i+1) % 100 == 0) {
+				if ((i + 1) % 100 == 0) {
 					s.append("\n");
 				}
 				s.append(" + ");
@@ -167,21 +160,19 @@ public class Linear implements Iterable<Term> {
 	/**
 	 * Evaluates the value of the linear expression.
 	 * 
-	 * @param result
-	 *            the result
+	 * @param result the result
 	 * @return the value
 	 */
 	public Number evaluate(Map<Object, Number> result) {
 		return evaluate(result, false);
 	}
-	
+
 	/**
 	 * Evaluates the value of the linear expression.
 	 * 
-	 * @param result
-	 *            the result
-	 * @param ignoreMissingValues
-	 * 			  if true, values that are missing in result will be set to 0
+	 * @param result              the result
+	 * @param ignoreMissingValues if true, values that are missing in result will be
+	 *                            set to 0
 	 * @return the value
 	 */
 	public Number evaluate(Map<Object, Number> result, boolean ignoreMissingValues) {
@@ -201,8 +192,7 @@ public class Linear implements Iterable<Term> {
 				d += coeff.doubleValue() * value.doubleValue();
 			} else {
 				if (!ignoreMissingValues) {
-					throw new IllegalArgumentException("The variable " + variable
-							+ " is missing in the given result.");
+					throw new IllegalArgumentException("The variable " + variable + " is missing in the given result.");
 				}
 			}
 		}
@@ -225,8 +215,7 @@ public class Linear implements Iterable<Term> {
 	/**
 	 * Returns the {@code i}-th {@code Term}.
 	 * 
-	 * @param i
-	 *            the index
+	 * @param i the index
 	 * @return the term
 	 */
 	public Term get(int i) {

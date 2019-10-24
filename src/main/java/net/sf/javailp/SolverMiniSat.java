@@ -23,7 +23,8 @@ import net.sf.javailp.minisat.MiniSat;
 /**
  * The {@code SolverMiniSat} is the {@code Solver} MiniSat+.
  * 
- * @see <a href="http://minisat.se/MiniSat+.html">http://minisat.se/MiniSat+.html</a>
+ * @see <a href=
+ *      "http://minisat.se/MiniSat+.html">http://minisat.se/MiniSat+.html</a>
  * @author lukasiewycz
  * 
  */
@@ -197,9 +198,7 @@ public class SolverMiniSat extends AbstractSolver {
 		VarType type = problem.getVarType(variable);
 		if (type != VarType.BOOL) {
 			throw new IllegalArgumentException(
-					"Variable "
-							+ variable
-							+ " is not a binary variable. MiniSat can only solve 0-1 ILPs.");
+					"Variable " + variable + " is not a binary variable. MiniSat can only solve 0-1 ILPs.");
 		}
 	}
 

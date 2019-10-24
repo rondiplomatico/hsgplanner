@@ -33,7 +33,7 @@ public interface Solver {
 	 * Identifier for the verbose value.
 	 */
 	public static final int VERBOSE = 1;
-	
+
 	/**
 	 * Identifier for the post-solve value.
 	 */
@@ -42,10 +42,8 @@ public interface Solver {
 	/**
 	 * Sets a parameter.
 	 * 
-	 * @param parameter
-	 *            the parameter
-	 * @param value
-	 *            the value
+	 * @param parameter the parameter
+	 * @param value     the value
 	 */
 	public void setParameter(Object parameter, Object value);
 
@@ -60,8 +58,7 @@ public interface Solver {
 	 * Solve the optimization problem. Returns {@code null} if there exists no
 	 * feasible solution for the problem.
 	 * 
-	 * @param problem
-	 *            the optimization problem
+	 * @param problem the optimization problem
 	 * @return the result
 	 */
 	public Result solve(Problem problem);

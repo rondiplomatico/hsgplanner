@@ -30,6 +30,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class GUB {
 
-    private final Linear lhs;
+	private final Linear lhs;
 
 }

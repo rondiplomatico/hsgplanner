@@ -56,16 +56,16 @@ import scala.Tuple3;
  */
 public class HSGSolver {
 
-    private static final String AVERAGE_WORK_TIME = "AverageWorkTime";
-    private static final String AVERAGE_WORK_TIME_AUFSICHT = "AverageWorkTimeOverseer";
-    private static int substCnt = 1;
-    public static final int CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN = 60;
-    public static final int DEFAULT_ZUORDNUNG_WEIGHT = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN + 30;
-    public static final int ÜBERZEIT_STRAFE = 5;
-    public static final int UNTERZEIT_STRAFE = 1;
-    
-    public static Logger logger = Logger.getRootLogger();
-    
+	private static final String AVERAGE_WORK_TIME = "AverageWorkTime";
+	private static final String AVERAGE_WORK_TIME_AUFSICHT = "AverageWorkTimeOverseer";
+	private static int substCnt = 1;
+	public static final int CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN = 60;
+	public static final int DEFAULT_ZUORDNUNG_WEIGHT = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN + 30;
+	public static final int ÜBERZEIT_STRAFE = 5;
+	public static final int UNTERZEIT_STRAFE = 1;
+
+	public static Logger logger = Logger.getRootLogger();
+
 //    public static class CplexCallback extends OptimizationCallback {
 //
 //		@Override
@@ -74,156 +74,157 @@ public class HSGSolver {
 //		}
 //    	
 //    }
-    
-    public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
-    	// Aufsicht
+
+	public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
+		// Aufsicht
 //    	Problem aufsicht = assembleAufsicht(all.filter(z -> z.getDienst().getTyp().equals(Typ.Aufsicht)), games);
-    	Problem kasseVerkauf = assembleVerkaufKasse(all.filter(z -> !z.getDienst().getTyp().equals(Typ.Aufsicht)), games);
-    	
-    	List<Zuordnung> res = new ArrayList<>(); 
+		Problem kasseVerkauf = assembleVerkaufKasse(all.filter(z -> !z.getDienst().getTyp().equals(Typ.Aufsicht)),
+				games);
+
+		List<Zuordnung> res = new ArrayList<>();
 //    	res.addAll(solveProblem(aufsicht, all, 60*4));
-    	// Kasse, Verkauf
-    	res.addAll(solveProblem(kasseVerkauf, all, 60*60*12));
-    	
-    	return res;
-    }
+		// Kasse, Verkauf
+		res.addAll(solveProblem(kasseVerkauf, all, 60 * 60 * 12));
 
-    private static Problem assembleVerkaufKasse(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
-        final Problem problem = new Problem();
+		return res;
+	}
 
-        List<Zuordnung> allList = all.collect();
-        
-        if (allList.stream().filter(z -> z.getPerson().isAufsicht()).count() > 0) {
-        	allList.stream().filter(z -> z.getPerson().isAufsicht()).forEach(System.err::println);
-        	throw new RuntimeException("Aufsichtspersonal darf nicht für Kasse/Verkauf verwendet werden.");
-        }
+	private static Problem assembleVerkaufKasse(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
+		final Problem problem = new Problem();
 
-        /*
-         * ********************************************************* Zielfunktion
-         * *********************************************************
-         */
-        // Init
-        logger.info("Erstelle Zielfunktion");
-        Linear target = new Linear();
-        for (Zuordnung z : allList) {
-            problem.setVarType(z.varName(), Boolean.class);
-        }
-        logger.info("Z1: Gleiche mittlere Arbeitszeiten");
-        // Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
-        addZ1GleichVielArbeitsZeit(all, problem, target, false);
+		List<Zuordnung> allList = all.collect();
 
-        logger.info("Z2: Geschickte Dienste um eigene Spiele");
-        addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
+		if (allList.stream().filter(z -> z.getPerson().isAufsicht()).count() > 0) {
+			allList.stream().filter(z -> z.getPerson().isAufsicht()).forEach(System.err::println);
+			throw new RuntimeException("Aufsichtspersonal darf nicht für Kasse/Verkauf verwendet werden.");
+		}
 
-        problem.setObjective(target, OptType.MIN);
+		/*
+		 * ********************************************************* Zielfunktion
+		 * *********************************************************
+		 */
+		// Init
+		logger.info("Erstelle Zielfunktion");
+		Linear target = new Linear();
+		for (Zuordnung z : allList) {
+			problem.setVarType(z.varName(), Boolean.class);
+		}
+		logger.info("Z1: Gleiche mittlere Arbeitszeiten");
+		// Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
+		addZ1GleichVielArbeitsZeit(all, problem, target, false);
 
-        /*
-         * ********************************************************* Nebenbedingungen
-         * *********************************************************
-         */
-        /*
-         * Nur eine Person pro Dienst
-         */
-        logger.info("Erstelle N1: Nur eine Person pro Dienst");
-        addN1EinePersonProDienst(all, problem);
+		logger.info("Z2: Geschickte Dienste um eigene Spiele");
+		addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
 
-        /*
-         * Pro Person nur ein Dienst gleichzeitig. Da die Dienste beliebig überschneiden
-         * können, muss man vorher disjunkt aufteilen.
-         */
-        logger.info("Erstelle N2: Keine parallelen Dienste pro Person");
-        addN2KeineParallelenDienste(all, problem);
+		problem.setObjective(target, OptType.MIN);
 
-        logger.info("Erstelle N3: Nur gleiche Teams in gleichen Diensten");
-        addN3NurGleicheTeamsInGleichenDiensten(all, problem);
-        
-        logger.info("Erstelle N4: Schon fixierte Zuordnungen");
-        addN4FixierteZuordnungen(allList, problem);
+		/*
+		 * ********************************************************* Nebenbedingungen
+		 * *********************************************************
+		 */
+		/*
+		 * Nur eine Person pro Dienst
+		 */
+		logger.info("Erstelle N1: Nur eine Person pro Dienst");
+		addN1EinePersonProDienst(all, problem);
 
-        return problem;
-    }
-    
-    public static Problem assembleAufsicht(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
-        final Problem problem = new Problem();
+		/*
+		 * Pro Person nur ein Dienst gleichzeitig. Da die Dienste beliebig überschneiden
+		 * können, muss man vorher disjunkt aufteilen.
+		 */
+		logger.info("Erstelle N2: Keine parallelen Dienste pro Person");
+		addN2KeineParallelenDienste(all, problem);
 
-        List<Zuordnung> allList = all.collect();
-        if (allList.stream().filter(z -> !z.getPerson().isAufsicht()).count() > 0) {
-        	allList.stream().filter(z -> !z.getPerson().isAufsicht()).forEach(System.err::println);
-        	throw new RuntimeException("Spieler dürfen nicht für Aufsicht verwendet werden.");
-        }
+		logger.info("Erstelle N3: Nur gleiche Teams in gleichen Diensten");
+		addN3NurGleicheTeamsInGleichenDiensten(all, problem);
 
-        /*
-         * ********************************************************* Zielfunktion
-         * *********************************************************
-         */
-        // Init
-        logger.info("Erstelle Zielfunktion");
-        Linear target = new Linear();
-        for (Zuordnung z : allList) {
-            problem.setVarType(z.varName(), Boolean.class);
-        }
-        logger.info("Z1: Gleiche mittlere Arbeitszeiten");
-        // Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
-        addZ1GleichVielArbeitsZeit(all, problem, target, true);
+		logger.info("Erstelle N4: Schon fixierte Zuordnungen");
+		addN4FixierteZuordnungen(allList, problem);
 
-        logger.info("Z2: Geschickte Dienste um eigene Spiele");
-        addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
+		return problem;
+	}
 
-        problem.setObjective(target, OptType.MIN);
+	public static Problem assembleAufsicht(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
+		final Problem problem = new Problem();
 
-        /*
-         * ********************************************************* Nebenbedingungen
-         * *********************************************************
-         */
-        /*
-         * Nur eine Person pro Dienst
-         */
-        logger.info("Erstelle N1: Nur eine Person pro Dienst");
-        addN1EinePersonProDienst(all, problem);
-        
-        logger.info("Erstelle N4: Schon fixierte Zuordnungen");
-        addN4FixierteZuordnungen(allList, problem);
+		List<Zuordnung> allList = all.collect();
+		if (allList.stream().filter(z -> !z.getPerson().isAufsicht()).count() > 0) {
+			allList.stream().filter(z -> !z.getPerson().isAufsicht()).forEach(System.err::println);
+			throw new RuntimeException("Spieler dürfen nicht für Aufsicht verwendet werden.");
+		}
 
-        return problem;
-    }
-    
-    public static List<Zuordnung> solveProblem(Problem problem, final JavaRDD<Zuordnung> all, int seconds) {
-    	logger.info("Löse");
-        // SolverFactory factory = new SolverFactoryGurobi();
-        // SolverFactory factory = new SolverFactorySAT4J();
-        // SolverFactory factory = new SolverFactoryMiniSat();
+		/*
+		 * ********************************************************* Zielfunktion
+		 * *********************************************************
+		 */
+		// Init
+		logger.info("Erstelle Zielfunktion");
+		Linear target = new Linear();
+		for (Zuordnung z : allList) {
+			problem.setVarType(z.varName(), Boolean.class);
+		}
+		logger.info("Z1: Gleiche mittlere Arbeitszeiten");
+		// Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
+		addZ1GleichVielArbeitsZeit(all, problem, target, true);
 
-        try {
-            NativeLoaderCplex.load();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed loading CPLEX libraries", e);
-        }
-        SolverFactory factory = new SolverFactoryCPLEX();
+		logger.info("Z2: Geschickte Dienste um eigene Spiele");
+		addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
 
-        /*
-         * LP_OPT Verbosity Levels:
-         * NEUTRAL (0) Only some specific debug messages in de debug print routines are reported.
-         * CRITICAL (1) Only critical messages are reported. Hard errors like instability, out of memory, ...
-         * SEVERE (2) Only severe messages are reported. Errors.
-         * IMPORTANT (3) Only important messages are reported. Warnings and Errors.
-         * NORMAL (4) Normal messages are reported. This is the default.
-         * DETAILED (5) Detailed messages are reported. Like model size, continuing B&B improvements, ...
-         * FULL (6) All messages are reported. Useful for debugging purposes and small models.
-         */
-        // SolverFactory factory = new SolverFactoryLpSolve();
+		problem.setObjective(target, OptType.MIN);
+
+		/*
+		 * ********************************************************* Nebenbedingungen
+		 * *********************************************************
+		 */
+		/*
+		 * Nur eine Person pro Dienst
+		 */
+		logger.info("Erstelle N1: Nur eine Person pro Dienst");
+		addN1EinePersonProDienst(all, problem);
+
+		logger.info("Erstelle N4: Schon fixierte Zuordnungen");
+		addN4FixierteZuordnungen(allList, problem);
+
+		return problem;
+	}
+
+	public static List<Zuordnung> solveProblem(Problem problem, final JavaRDD<Zuordnung> all, int seconds) {
+		logger.info("Löse");
+		// SolverFactory factory = new SolverFactoryGurobi();
+		// SolverFactory factory = new SolverFactorySAT4J();
+		// SolverFactory factory = new SolverFactoryMiniSat();
+
+		try {
+			NativeLoaderCplex.load();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed loading CPLEX libraries", e);
+		}
+		SolverFactory factory = new SolverFactoryCPLEX();
+
+		/*
+		 * LP_OPT Verbosity Levels: NEUTRAL (0) Only some specific debug messages in de
+		 * debug print routines are reported. CRITICAL (1) Only critical messages are
+		 * reported. Hard errors like instability, out of memory, ... SEVERE (2) Only
+		 * severe messages are reported. Errors. IMPORTANT (3) Only important messages
+		 * are reported. Warnings and Errors. NORMAL (4) Normal messages are reported.
+		 * This is the default. DETAILED (5) Detailed messages are reported. Like model
+		 * size, continuing B&B improvements, ... FULL (6) All messages are reported.
+		 * Useful for debugging purposes and small models.
+		 */
+		// SolverFactory factory = new SolverFactoryLpSolve();
 //        factory.setParameter(Solver.TIMEOUT, 60*60*3); // set timeout to 100 seconds [60 * 60 * 14]
-        factory.setParameter(Solver.TIMEOUT, seconds); // set timeout to 100 seconds [60 * 60 * 14]
-        Solver solver = factory.get(); // you should use this solver only once for one problem
+		factory.setParameter(Solver.TIMEOUT, seconds); // set timeout to 100 seconds [60 * 60 * 14]
+		Solver solver = factory.get(); // you should use this solver only once for one problem
 
-        solver.setParameter(SolverParameter.RAND_SEED, 1);
-        solver.setParameter(SolverParameter.NUMBER_OF_THREADS, 8);
-        solver.setParameter(SolverParameter.WORK_DIRECTORY, ".");
-        solver.setParameter(SolverParameter.WORKING_MEMORY, 1024*10);
-        solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH, 3);
-        solver.setParameter(SolverParameter.MEMORY_EMPHASIS, true);
-        solver.setParameter(SolverParameter.ADVANCED_START_SWITCH, 0);
-        solver.setParameter(SolverParameter.VERBOSE, 5);
-        
+		solver.setParameter(SolverParameter.RAND_SEED, 1);
+		solver.setParameter(SolverParameter.NUMBER_OF_THREADS, 8);
+		solver.setParameter(SolverParameter.WORK_DIRECTORY, ".");
+		solver.setParameter(SolverParameter.WORKING_MEMORY, 1024 * 10);
+		solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH, 3);
+		solver.setParameter(SolverParameter.MEMORY_EMPHASIS, true);
+		solver.setParameter(SolverParameter.ADVANCED_START_SWITCH, 0);
+		solver.setParameter(SolverParameter.VERBOSE, 5);
+
 //        if (solver instanceof SolverCPLEX) {
 //        	((SolverCPLEX)solver).addHook(new Hook() {
 //
@@ -234,199 +235,189 @@ public class HSGSolver {
 //        		
 //        	});
 //        }
-    	
-    	
-    	List<Zuordnung> selected = Collections.emptyList();
-        Result result = solver.solve(problem);
-        if (result != null) {
-            logger.info(result);
 
-            logger.info("Ergebnis:");
-            selected = all.collect().stream()
-            		.filter(z -> result.getBoolean(z.varName()))
-                              .collect(Collectors.toList());
+		List<Zuordnung> selected = Collections.emptyList();
+		Result result = solver.solve(problem);
+		if (result != null) {
+			logger.info(result);
 
-            logger.info("Durchschnittliche Arbeitszeit:" + result.getPrimalValue(AVERAGE_WORK_TIME));
-            logger.info("Durchschnittliche Arbeitszeit Aufsicht:" + result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
-        } else {
-            logger.info("Solve fehlgeschlagen.");
-            problem.print();
-        }
-        return selected;
-    }
+			logger.info("Ergebnis:");
+			selected = all.collect().stream().filter(z -> result.getBoolean(z.varName())).collect(Collectors.toList());
 
-    private static void addN4FixierteZuordnungen(List<Zuordnung> allList, Problem problem) {
-    	allList.stream()
-    	.filter(z -> z.isFixed())
-    	.forEach(z -> {
-    		Linear l = new Linear();
-    		l.add(1, z.varName());
-    		problem.add("Fix"+z.varName(), l, Operator.EQ, 1);
-    	});
+			logger.info("Durchschnittliche Arbeitszeit:" + result.getPrimalValue(AVERAGE_WORK_TIME));
+			logger.info("Durchschnittliche Arbeitszeit Aufsicht:" + result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
+		} else {
+			logger.info("Solve fehlgeschlagen.");
+			problem.print();
+		}
+		return selected;
+	}
+
+	private static void addN4FixierteZuordnungen(List<Zuordnung> allList, Problem problem) {
+		allList.stream().filter(z -> z.isFixed()).forEach(z -> {
+			Linear l = new Linear();
+			l.add(1, z.varName());
+			problem.add("Fix" + z.varName(), l, Operator.EQ, 1);
+		});
 	}
 
 	private static void addZ2DienstNahBeiEigenemSpiel(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
-                    final Problem problem, final Linear target) {
-        JavaRDD<Tuple3<Person, Integer, String>> tmp =
-                        all.keyBy(z -> z.getDienst().getDatum())
-                           .groupByKey().mapValues(IterableUtil::toList)
-                           .join(games.keyBy(g -> g.getDate())
-                                      .groupByKey()
-                                      .mapValues(IterableUtil::toList))
-                           .flatMap(d -> {
-                               List<Tuple3<Person, Integer, String>> präferierteDienste = new ArrayList<>();
-                               Set<Zuordnung> processed = new HashSet<>();
-                               for (Game g : d._2._2) {
-                                   for (Zuordnung z : d._2._1) {
-                                       if (g.isHeimspiel() && g.getTeam().equals(z.getPerson().getTeam())) {
-                                           int weight = z.getDienst().getZeit().minuteDistance(g.getDienstSperrenZeitraum());
-                                           if (weight <= CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN) {
-                                               // int weight = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN - diff;
-                                               // weight = z.getPerson().isAufsicht() ? weight * ARBEITSDIENST_FAKTOR :
-                                               // weight;
-                                               logger.info(z.getPerson() + " kann geschickt vor/nach Spiel " + g
-                                                               + " den Dienst " + z.getDienst() + " machen. Faktor:"
-                                                               + weight);
-                                               präferierteDienste.add(new Tuple3<>(z.getPerson(), weight, z.varName()));
-                                               processed.add(z);
-                                           }
-                                       }
-                                   }
-                               }
-                               for (Zuordnung z : d._2._1) {
-                                   if (!processed.contains(z)) {
-                                       präferierteDienste.add(new Tuple3<>(z.getPerson(), DEFAULT_ZUORDNUNG_WEIGHT,
-                                                                           z.varName()));
-                                   }
-                               }
-                               return präferierteDienste.iterator();
-                           });
-        tmp.collect()
-           .forEach(t -> {
-               target.add(t._2(), t._3());
-           });
-    }
+			final Problem problem, final Linear target) {
+		JavaRDD<Tuple3<Person, Integer, String>> tmp = all.keyBy(z -> z.getDienst().getDatum()).groupByKey().mapValues(
+				IterableUtil::toList).join(
+						games.keyBy(g -> g.getDate()).groupByKey().mapValues(IterableUtil::toList)).flatMap(d -> {
+							List<Tuple3<Person, Integer, String>> präferierteDienste = new ArrayList<>();
+							Set<Zuordnung> processed = new HashSet<>();
+							for (Game g : d._2._2) {
+								for (Zuordnung z : d._2._1) {
+									if (g.isHeimspiel() && g.getTeam().equals(z.getPerson().getTeam())) {
+										int weight = z.getDienst().getZeit().minuteDistance(
+												g.getDienstSperrenZeitraum());
+										if (weight <= CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN) {
+											// int weight = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN - diff;
+											// weight = z.getPerson().isAufsicht() ? weight * ARBEITSDIENST_FAKTOR :
+											// weight;
+											logger.info(z.getPerson() + " kann geschickt vor/nach Spiel " + g
+													+ " den Dienst " + z.getDienst() + " machen. Faktor:" + weight);
+											präferierteDienste.add(new Tuple3<>(z.getPerson(), weight, z.varName()));
+											processed.add(z);
+										}
+									}
+								}
+							}
+							for (Zuordnung z : d._2._1) {
+								if (!processed.contains(z)) {
+									präferierteDienste.add(
+											new Tuple3<>(z.getPerson(), DEFAULT_ZUORDNUNG_WEIGHT, z.varName()));
+								}
+							}
+							return präferierteDienste.iterator();
+						});
+		tmp.collect().forEach(t -> {
+			target.add(t._2(), t._3());
+		});
+	}
 
-    private static void addN3NurGleicheTeamsInGleichenDiensten(final JavaRDD<Zuordnung> all, final Problem problem) {
-        all.mapToPair(z -> new Tuple2<>(new Tuple2<>(z.getDienst(), z.getPerson().getTeam()), z))
-           .aggregateByKey(new ArrayList<Zuordnung>(), (ex, n) -> {
-               ex.add(n);
-               return ex;
-           }, (a, b) -> {
-               a.addAll(b);
-               return a;
-           }).values().filter(d -> d.size() > 1).collect().forEach(l -> {
-               for (Zuordnung lead : l) {
-                   Linear li = new Linear();
-                   li.add(-1, lead.varName());
-                   for (Zuordnung added : l) {
-                       if (!added.getPerson().equals(lead.getPerson())
-                                       && added.getNr() != lead.getNr()
-                                       && !added.varName().equals(lead.varName())) {
-                           li.add(1, added.varName());
-                       }
-                   }
-                   if (li.size() > 1) {
-                       problem.add(new Constraint("N3:" + lead.getPerson().getName() + "@" + lead.getDienst().getZeit() + "/" + lead.getNr(),
-                                                  li, Operator.GE, 0));
-                   }
-               }
-           });
-    }
+	private static void addN3NurGleicheTeamsInGleichenDiensten(final JavaRDD<Zuordnung> all, final Problem problem) {
+		all.mapToPair(z -> new Tuple2<>(new Tuple2<>(z.getDienst(), z.getPerson().getTeam()), z)).aggregateByKey(
+				new ArrayList<Zuordnung>(), (ex, n) -> {
+					ex.add(n);
+					return ex;
+				}, (a, b) -> {
+					a.addAll(b);
+					return a;
+				}).values().filter(d -> d.size() > 1).collect().forEach(l -> {
+					for (Zuordnung lead : l) {
+						Linear li = new Linear();
+						li.add(-1, lead.varName());
+						for (Zuordnung added : l) {
+							if (!added.getPerson().equals(lead.getPerson()) && added.getNr() != lead.getNr()
+									&& !added.varName().equals(lead.varName())) {
+								li.add(1, added.varName());
+							}
+						}
+						if (li.size() > 1) {
+							problem.add(new Constraint("N3:" + lead.getPerson().getName() + "@"
+									+ lead.getDienst().getZeit() + "/" + lead.getNr(), li, Operator.GE, 0));
+						}
+					}
+				});
+	}
 
-    private static void addN2KeineParallelenDienste(final JavaRDD<Zuordnung> all, final Problem problem) {
-        all.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getPerson(), t.getDienst().getDatum()),
-                                        new Tuple2<>(t.varName(), t.getDienst().getZeit())))
-           .groupByKey().mapValues(v -> {
-               Map<HSGInterval, List<String>> idsPerTime = new HashMap<>();
-               for (Tuple2<String, HSGInterval> s : v) {
-                   if (!idsPerTime.containsKey(s._2)) {
-                       idsPerTime.put(s._2, new ArrayList<>());
-                   }
-                   idsPerTime.get(s._2).add(s._1);
-               }
-               Map<HSGInterval, List<HSGInterval>> disj = IntervalDisjoiner.disjoin(idsPerTime.keySet());
-               List<List<String>> res = new ArrayList<>();
-               for (List<HSGInterval> s : disj.values()) {
-                   List<String> res1 = new ArrayList<>();
-                   s.stream().flatMap(i -> idsPerTime.get(i).stream()).forEach(res1::add);
-                   res.add(res1);
-               }
-               return res;
-           }).collect().forEach(t -> {
-               int num = 0;
-               for (List<String> timedata : t._2) {
-                   if (timedata.size() > 1) {
-                       Linear l = new Linear();
-                       timedata.forEach(id -> l.add(1, id));
-                       problem.add(new Constraint("N2:" + t._1._1.getName() + "@" + t._1._2 + "#" + num++, l, Operator.LE, 1));
-                   }
-               }
-           });
-    }
+	private static void addN2KeineParallelenDienste(final JavaRDD<Zuordnung> all, final Problem problem) {
+		all.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getPerson(), t.getDienst().getDatum()),
+				new Tuple2<>(t.varName(), t.getDienst().getZeit()))).groupByKey().mapValues(v -> {
+					Map<HSGInterval, List<String>> idsPerTime = new HashMap<>();
+					for (Tuple2<String, HSGInterval> s : v) {
+						if (!idsPerTime.containsKey(s._2)) {
+							idsPerTime.put(s._2, new ArrayList<>());
+						}
+						idsPerTime.get(s._2).add(s._1);
+					}
+					Map<HSGInterval, List<HSGInterval>> disj = IntervalDisjoiner.disjoin(idsPerTime.keySet());
+					List<List<String>> res = new ArrayList<>();
+					for (List<HSGInterval> s : disj.values()) {
+						List<String> res1 = new ArrayList<>();
+						s.stream().flatMap(i -> idsPerTime.get(i).stream()).forEach(res1::add);
+						res.add(res1);
+					}
+					return res;
+				}).collect().forEach(t -> {
+					int num = 0;
+					for (List<String> timedata : t._2) {
+						if (timedata.size() > 1) {
+							Linear l = new Linear();
+							timedata.forEach(id -> l.add(1, id));
+							problem.add(new Constraint("N2:" + t._1._1.getName() + "@" + t._1._2 + "#" + num++, l,
+									Operator.LE, 1));
+						}
+					}
+				});
+	}
 
-    private static void addN1EinePersonProDienst(final JavaRDD<Zuordnung> all, final Problem problem) {
-        all.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getDienst(), t.getNr()), t.varName())).groupByKey().mapValues(IterableUtil::toList)
-           .collectAsMap().forEach((d, zall) -> {
-               Linear l = new Linear();
-               zall.forEach(z -> l.add(1, z));
-               problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
-               // problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
-           });
-    }
+	private static void addN1EinePersonProDienst(final JavaRDD<Zuordnung> all, final Problem problem) {
+		all.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getDienst(), t.getNr()), t.varName())).groupByKey().mapValues(
+				IterableUtil::toList).collectAsMap().forEach((d, zall) -> {
+					Linear l = new Linear();
+					zall.forEach(z -> l.add(1, z));
+					problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
+					// problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
+				});
+	}
 
-    private static void addZ1GleichVielArbeitsZeit(final JavaRDD<Zuordnung> all, final Problem problem,
-                    final Linear target, final boolean isAufsicht) {
-        /*
-         * Alle gleich viel Arbeitszeit. Die gesamtarbeitszeit soll pro person nicht von
-         * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
-         */
-        final List<Tuple2<String, Double>> allTotalTimesPerPerson = new ArrayList<>();
-        all.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp() : Typ.Aufsicht != z.getDienst().getTyp())
-           .mapToPair(z -> new Tuple2<>(z.getPerson(), new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin())))
-           .groupByKey()
-           .mapValues(IterableUtil::toList)
-           .collect()
-           .forEach(d -> {
-               Linear linear = new Linear();
-               d._2.forEach(t -> linear.add(t._2, t._1));
-               String sumVarName = "TotalZeit" + d._1.getName();
-               linear.add(-1, sumVarName);
-               problem.setVarType(sumVarName, VarType.INT);
-               problem.setVarLowerBound(sumVarName, 0);
-               problem.add(new Constraint(sumVarName, linear, Operator.EQ, -d._1.getGearbeitetM()));
-               allTotalTimesPerPerson.add(new Tuple2<>(sumVarName, d._1.getTeam().leistungsFaktor()));
-               logger.debug(sumVarName+": "+d._1.getGearbeitetM());
-           });
-        Linear avg = new Linear();
-        double numPInv = 1 / (double) allTotalTimesPerPerson.size();
-        allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s._1));
-        createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME);
+	private static void addZ1GleichVielArbeitsZeit(final JavaRDD<Zuordnung> all, final Problem problem,
+			final Linear target, final boolean isAufsicht) {
+		/*
+		 * Alle gleich viel Arbeitszeit. Die gesamtarbeitszeit soll pro person nicht von
+		 * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
+		 */
+		final List<Tuple2<String, Double>> allTotalTimesPerPerson = new ArrayList<>();
+		all.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp()
+				: Typ.Aufsicht != z.getDienst().getTyp()).mapToPair(z -> new Tuple2<>(z.getPerson(),
+						new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin()))).groupByKey().mapValues(
+								IterableUtil::toList).collect().forEach(d -> {
+									Linear linear = new Linear();
+									d._2.forEach(t -> linear.add(t._2, t._1));
+									String sumVarName = "TotalZeit" + d._1.getName();
+									linear.add(-1, sumVarName);
+									problem.setVarType(sumVarName, VarType.INT);
+									problem.setVarLowerBound(sumVarName, 0);
+									problem.add(
+											new Constraint(sumVarName, linear, Operator.EQ, -d._1.getGearbeitetM()));
+									allTotalTimesPerPerson.add(
+											new Tuple2<>(sumVarName, d._1.getTeam().leistungsFaktor()));
+									logger.debug(sumVarName + ": " + d._1.getGearbeitetM());
+								});
+		Linear avg = new Linear();
+		double numPInv = 1 / (double) allTotalTimesPerPerson.size();
+		allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s._1));
+		createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME);
 
-        allTotalTimesPerPerson.forEach(t -> {
-        	String varName = t._1;
-            Linear l = new Linear();
-            String plus = varName + "+";
-            String minus = varName + "-";
-            l.add(new Term(varName, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -t._2), new Term(plus, -1), new Term(minus, 1));
-            problem.add(new Constraint(varName + "Slack", l, Operator.EQ, 0));
-            problem.setVarType(plus, VarType.REAL);
-            problem.setVarType(minus, VarType.REAL);
-            problem.setVarLowerBound(plus, 0);
-            problem.setVarLowerBound(minus, 0);
-            target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
-        });
-    }
+		allTotalTimesPerPerson.forEach(t -> {
+			String varName = t._1;
+			Linear l = new Linear();
+			String plus = varName + "+";
+			String minus = varName + "-";
+			l.add(new Term(varName, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -t._2),
+					new Term(plus, -1), new Term(minus, 1));
+			problem.add(new Constraint(varName + "Slack", l, Operator.EQ, 0));
+			problem.setVarType(plus, VarType.REAL);
+			problem.setVarType(minus, VarType.REAL);
+			problem.setVarLowerBound(plus, 0);
+			problem.setVarLowerBound(minus, 0);
+			target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
+		});
+	}
 
-    private static String createSubstitute(final Problem p, final Linear linear, final VarType type) {
-        String name = "sub" + substCnt++;
-        createSubstitute(p, linear, type, name);
-        return name;
-    }
+	private static String createSubstitute(final Problem p, final Linear linear, final VarType type) {
+		String name = "sub" + substCnt++;
+		createSubstitute(p, linear, type, name);
+		return name;
+	}
 
-    private static void createSubstitute(final Problem p, final Linear linear, final VarType type, final String name) {
-        linear.add(-1, name);
-        p.setVarType(name, type);
-        p.add(new Constraint(name, linear, Operator.EQ, 0));
-    }
+	private static void createSubstitute(final Problem p, final Linear linear, final VarType type, final String name) {
+		linear.add(-1, name);
+		p.setVarType(name, type);
+		p.add(new Constraint(name, linear, Operator.EQ, 0));
+	}
 }

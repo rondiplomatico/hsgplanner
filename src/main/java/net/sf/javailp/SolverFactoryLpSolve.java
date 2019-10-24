@@ -22,7 +22,9 @@ package net.sf.javailp;
  */
 public class SolverFactoryLpSolve extends AbstractSolverFactory {
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sf.javailp.AbstractSolverFactory#getInternal()
 	 */
 	protected Solver getInternal() {

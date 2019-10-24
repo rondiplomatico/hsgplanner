@@ -24,7 +24,8 @@ package net.sf.javailp.minisat;
  * variable {@code x} is {@code x+1}, the negative literal is {@code -(x+1)}.
  * </p>
  * 
- * @see <a href="http://minisat.se/MiniSat+.html">http://minisat.se/MiniSat+.html</a>
+ * @see <a href=
+ *      "http://minisat.se/MiniSat+.html">http://minisat.se/MiniSat+.html</a>
  * 
  * @author lukasiewycz
  * 
@@ -45,13 +46,11 @@ public class MiniSat {
 	}
 
 	/**
-	 * Set the objective of the problem. By default the objective is minimized.
-	 * If you want the objective to be maximized negate the coefficients.
+	 * Set the objective of the problem. By default the objective is minimized. If
+	 * you want the objective to be maximized negate the coefficients.
 	 * 
-	 * @param coeffs
-	 *            the coefficients
-	 * @param lits
-	 *            the literals
+	 * @param coeffs the coefficients
+	 * @param lits   the literals
 	 */
 	public void setObjective(int[] coeffs, int[] lits) {
 		setObjective(pointer, coeffs, lits);
@@ -60,14 +59,10 @@ public class MiniSat {
 	/**
 	 * Adds a linear constraint.
 	 * 
-	 * @param coeffs
-	 *            the coefficients
-	 * @param lits
-	 *            the literals
-	 * @param comp
-	 *            the comparator ("<=","=",">=")
-	 * @param rhs
-	 *            the right hand side value
+	 * @param coeffs the coefficients
+	 * @param lits   the literals
+	 * @param comp   the comparator ("<=","=",">=")
+	 * @param rhs    the right hand side value
 	 * @return {@code true} if this constraint did not cause a contradiction
 	 */
 	public boolean addConstraint(int[] coeffs, int[] lits, String comp, int rhs) {
@@ -106,12 +101,11 @@ public class MiniSat {
 	}
 
 	/**
-	 * Returns the value of the result of a specified variable. The method
-	 * should be called after {@code MiniSat#solve()} or {@code
+	 * Returns the value of the result of a specified variable. The method should be
+	 * called after {@code MiniSat#solve()} or {@code
 	 * MiniSat#solveSingle()}.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param var the variable
 	 * @return the boolean result value
 	 */
 	public boolean valueOf(int var) {
@@ -121,12 +115,9 @@ public class MiniSat {
 	/**
 	 * Sets the initial phase and activity for a specified variable-
 	 * 
-	 * @param var
-	 *            the variable
-	 * @param phase
-	 *            the phase
-	 * @param activity
-	 *            the activity
+	 * @param var      the variable
+	 * @param phase    the phase
+	 * @param activity the activity
 	 */
 	public void setVar(int var, boolean phase, double activity) {
 		setVar(pointer, var, phase, activity);
@@ -143,8 +134,7 @@ public class MiniSat {
 	/**
 	 * Set the {@code inc} value
 	 * 
-	 * @param value
-	 *            the inc value to be set
+	 * @param value the inc value to be set
 	 */
 	public void setInc(double value) {
 		setInc(pointer, value);
@@ -153,8 +143,7 @@ public class MiniSat {
 	/**
 	 * Set the {@code decay} value
 	 * 
-	 * @param value
-	 *            the decay value to be set
+	 * @param value the decay value to be set
 	 */
 	public void setDecay(double value) {
 		setDecay(pointer, value);
@@ -163,8 +152,7 @@ public class MiniSat {
 	/**
 	 * Set the verbosity level (0=no output,1,2=most output).
 	 * 
-	 * @param level
-	 *            the level to be set
+	 * @param level the level to be set
 	 */
 	public void setVerbose(int level) {
 		setVerbose(pointer, level);
@@ -189,67 +177,51 @@ public class MiniSat {
 	/**
 	 * Frees a solver.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
+	 * @param solver the pointer to the solver
 	 */
 	protected native void free(long solver);
 
 	/**
 	 * Add variables to a solver (this method has no effect).
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param numVars
-	 *            the number of variables
+	 * @param solver  the pointer to the solver
+	 * @param numVars the number of variables
 	 */
 	protected native void addVariables(long solver, int numVars);
 
 	/**
 	 * Add a constraint.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param coeffs
-	 *            the coefficients
-	 * @param vars
-	 *            the literals
-	 * @param ineq
-	 *            the comparator
-	 * @param rhs
-	 *            the right-hand-side value
+	 * @param solver the pointer to the solver
+	 * @param coeffs the coefficients
+	 * @param vars   the literals
+	 * @param ineq   the comparator
+	 * @param rhs    the right-hand-side value
 	 * @return {@code true} if no contradiction appeared
 	 */
-	protected native boolean addConstraint(long solver, int[] coeffs,
-			int[] vars, int ineq, int rhs);
+	protected native boolean addConstraint(long solver, int[] coeffs, int[] vars, int ineq, int rhs);
 
 	/**
 	 * Set the phase and activity of a variable.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param var
-	 *            the variable
-	 * @param phase
-	 *            the phase
-	 * @param activity
-	 *            the activity
+	 * @param solver   the pointer to the solver
+	 * @param var      the variable
+	 * @param phase    the phase
+	 * @param activity the activity
 	 */
-	protected native void setVar(long solver, int var, boolean phase,
-			double activity);
+	protected native void setVar(long solver, int var, boolean phase, double activity);
 
 	/**
 	 * Solve the problem.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
+	 * @param solver the pointer to the solver
 	 */
 	protected native void solve(long solver);
 
 	/**
 	 * Solve without optimizing the objective.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
+	 * @param solver the pointer to the solver
 	 * @return {@code true} if no contradiction appeared
 	 */
 	protected native boolean solveSingle(long solver);
@@ -257,38 +229,31 @@ public class MiniSat {
 	/**
 	 * Set the objective.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param coeffs
-	 *            the coefficients
-	 * @param lits
-	 *            the literals
+	 * @param solver the pointer to the solver
+	 * @param coeffs the coefficients
+	 * @param lits   the literals
 	 */
 	protected native void setObjective(long solver, int[] coeffs, int[] lits);
 
 	/**
 	 * Set the verbose level.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param level
-	 *            the verbose level
+	 * @param solver the pointer to the solver
+	 * @param level  the verbose level
 	 */
 	protected native void setVerbose(long solver, int level);
 
 	/**
 	 * Reset the decision heuristic of the solver.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
+	 * @param solver the pointer to the solver
 	 */
 	protected native void reset(long solver);
 
 	/**
 	 * Returns {@code true} if no contradiction appeared.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
+	 * @param solver the pointer to the solver
 	 * @return {@code true} if no contradiction appeared
 	 */
 	protected native boolean okay(long solver);
@@ -296,30 +261,24 @@ public class MiniSat {
 	/**
 	 * Set the inc value.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param value
-	 *            the inc value
+	 * @param solver the pointer to the solver
+	 * @param value  the inc value
 	 */
 	protected native void setInc(long solver, double value);
 
 	/**
 	 * Set the decay value.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param value
-	 *            the decay value
+	 * @param solver the pointer to the solver
+	 * @param value  the decay value
 	 */
 	protected native void setDecay(long solver, double value);
 
 	/**
 	 * Returns the value of a variable.
 	 * 
-	 * @param solver
-	 *            the pointer to the solver
-	 * @param var
-	 *            the variable
+	 * @param solver the pointer to the solver
+	 * @param var    the variable
 	 * @return boolean value
 	 */
 	protected native boolean valueOf(long solver, int var);

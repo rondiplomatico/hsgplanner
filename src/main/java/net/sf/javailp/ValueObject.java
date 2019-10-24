@@ -17,8 +17,7 @@ import java.util.Map;
  */
 public abstract class ValueObject {
 
-	protected static Map<Class<?>, Field[]> fields = Collections
-			.synchronizedMap(new HashMap<Class<?>, Field[]>());
+	protected static Map<Class<?>, Field[]> fields = Collections.synchronizedMap(new HashMap<Class<?>, Field[]>());
 
 	/*
 	 * (non-Javadoc)
@@ -114,8 +113,7 @@ public abstract class ValueObject {
 	/**
 	 * Returns all fields of the given class.
 	 * 
-	 * @param clazz
-	 *            the given class
+	 * @param clazz the given class
 	 * @return the fields
 	 */
 	protected synchronized Field[] createFields(Class<?> clazz) {

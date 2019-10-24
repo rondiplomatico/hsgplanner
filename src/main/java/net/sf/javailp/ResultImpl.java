@@ -26,8 +26,8 @@ import java.util.Map;
  */
 public class ResultImpl implements Result {
 
-	protected Map<Object,Number> primalValues;
-	protected Map<Object,Number> dualValues;
+	protected Map<Object, Number> primalValues;
+	protected Map<Object, Number> dualValues;
 	protected Number objectiveValue = null;
 	protected Linear objectiveFunction = null;
 
@@ -37,18 +37,18 @@ public class ResultImpl implements Result {
 	 */
 	public ResultImpl() {
 		super();
-		this.primalValues = new HashMap<Object,Number>();
-		this.dualValues = new HashMap<Object,Number>();
+		this.primalValues = new HashMap<Object, Number>();
+		this.dualValues = new HashMap<Object, Number>();
 	}
 
 	/**
-	 * Constructs a {@code ResultImpl} for a {@code Problem} with objective
-	 * function and the optimal value.
+	 * Constructs a {@code ResultImpl} for a {@code Problem} with objective function
+	 * and the optimal value.
 	 */
 	public ResultImpl(Number objectiveValue) {
 		super();
-		this.primalValues = new HashMap<Object,Number>();
-		this.dualValues = new HashMap<Object,Number>();
+		this.primalValues = new HashMap<Object, Number>();
+		this.dualValues = new HashMap<Object, Number>();
 		this.objectiveValue = objectiveValue;
 	}
 
@@ -58,8 +58,8 @@ public class ResultImpl implements Result {
 	 */
 	public ResultImpl(Linear objectiveFunction) {
 		super();
-		this.primalValues = new HashMap<Object,Number>();
-		this.dualValues = new HashMap<Object,Number>();
+		this.primalValues = new HashMap<Object, Number>();
+		this.dualValues = new HashMap<Object, Number>();
 		this.objectiveFunction = objectiveFunction;
 	}
 
@@ -95,7 +95,7 @@ public class ResultImpl implements Result {
 			return true;
 		}
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -104,16 +104,16 @@ public class ResultImpl implements Result {
 	public Number get(Object key) {
 		return primalValues.get(key);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see net.sf.javailp.Result#put(java.lang.Object, java.lang.Number)
 	 */
 	public void put(Object key, Number value) {
-		primalValues.put(key,value);
+		primalValues.put(key, value);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -122,16 +122,16 @@ public class ResultImpl implements Result {
 	public Number getPrimalValue(Object key) {
 		return primalValues.get(key);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see net.sf.javailp.Result#putPrimalValue(java.lang.Object, java.lang.Number)
 	 */
 	public void putPrimalValue(Object key, Number value) {
-		primalValues.put(key,value);
+		primalValues.put(key, value);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -140,14 +140,14 @@ public class ResultImpl implements Result {
 	public Number getDualValue(Object key) {
 		return dualValues.get(key);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see net.sf.javailp.Result#putDualValue(java.lang.Object, java.lang.Number)
 	 */
 	public void putDualValue(Object key, Number value) {
-		dualValues.put(key,value);
+		dualValues.put(key, value);
 	}
 
 	/*

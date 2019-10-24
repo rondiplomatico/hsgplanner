@@ -14,18 +14,18 @@
  */
 package net.sf.javailp;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import gurobi.GRB;
 import gurobi.GRBEnv;
 import gurobi.GRBException;
 import gurobi.GRBLinExpr;
 import gurobi.GRBModel;
 import gurobi.GRBVar;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * The {@code SolverGurobi} is the {@code Solver} Gurobi.
@@ -73,10 +73,8 @@ public class SolverGurobi extends AbstractSolver {
 				Number lowerBound = problem.getVarLowerBound(variable);
 				Number upperBound = problem.getVarUpperBound(variable);
 
-				double lb = (lowerBound != null ? lowerBound.doubleValue()
-						: -Double.MAX_VALUE);
-				double ub = (upperBound != null ? upperBound.doubleValue()
-						: Double.MAX_VALUE);
+				double lb = (lowerBound != null ? lowerBound.doubleValue() : -Double.MAX_VALUE);
+				double ub = (upperBound != null ? upperBound.doubleValue() : Double.MAX_VALUE);
 
 				final String name = variable.toString();
 				final char type;
@@ -120,14 +118,13 @@ public class SolverGurobi extends AbstractSolver {
 				else
 					operator = GRB.EQUAL;
 
-				model.addConstr(expr, operator, constraint.getRhs()
-						.doubleValue(), constraint.getName());
+				model.addConstr(expr, operator, constraint.getRhs().doubleValue(), constraint.getName());
 			}
 
-			for(Hook hook: hooks){
+			for (Hook hook : hooks) {
 				hook.call(env, model, objToVar, varToObj, problem);
 			}
-			
+
 			model.optimize();
 
 			Result result;
@@ -194,22 +191,16 @@ public class SolverGurobi extends AbstractSolver {
 	public interface Hook {
 
 		/**
-		 * This method is called once before the optimization and allows to
-		 * change some internal settings.
+		 * This method is called once before the optimization and allows to change some
+		 * internal settings.
 		 * 
-		 * @param env
-		 *            the environment
-		 * @param model
-		 *            the model
-		 * @param objToVar
-		 *            the map from objects to gurobi variables
-		 * @param varToObj
-		 *            the map from gurobi variables to objects
-		 * @param problem
-		 *            the problem
+		 * @param env      the environment
+		 * @param model    the model
+		 * @param objToVar the map from objects to gurobi variables
+		 * @param varToObj the map from gurobi variables to objects
+		 * @param problem  the problem
 		 */
-		public void call(GRBEnv env, GRBModel model,
-				Map<Object, GRBVar> objToVar, Map<GRBVar, Object> varToObj,
+		public void call(GRBEnv env, GRBModel model, Map<Object, GRBVar> objToVar, Map<GRBVar, Object> varToObj,
 				Problem problem);
 	}
 
@@ -218,8 +209,7 @@ public class SolverGurobi extends AbstractSolver {
 	/**
 	 * Adds a hook.
 	 * 
-	 * @param hook
-	 *            the hook to be added
+	 * @param hook the hook to be added
 	 */
 	public void addHook(Hook hook) {
 		hooks.add(hook);
@@ -228,8 +218,7 @@ public class SolverGurobi extends AbstractSolver {
 	/**
 	 * Removes a hook
 	 * 
-	 * @param hook
-	 *            the hook to be removed
+	 * @param hook the hook to be removed
 	 */
 	public void removeHook(Hook hook) {
 		hooks.remove(hook);

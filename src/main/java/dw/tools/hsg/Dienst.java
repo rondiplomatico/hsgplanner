@@ -71,7 +71,7 @@ public class Dienst implements Serializable, Comparable<Dienst> {
 
 	@Override
 	public String toString() {
-		return (datum != null ? (datum.toddMMyyyy() + ": "):"") + typ.getKurz() + " " + zeit;
+		return (datum != null ? (datum.toddMMyyyy() + ": ") : "") + typ.getKurz() + " " + zeit;
 	}
 
 	@Override

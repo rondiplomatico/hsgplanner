@@ -32,8 +32,7 @@ public interface Result {
 	/**
 	 * Returns the primal value for a specific var as a boolean. (value!=0)
 	 * 
-	 * @param var
-	 *            the var
+	 * @param var the var
 	 * @return {@code true} if the value is not 0
 	 */
 	public boolean getBoolean(Object var);
@@ -41,65 +40,55 @@ public interface Result {
 	/**
 	 * Returns the primal value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param var the variable
 	 * @return the resulting value
 	 */
 	public Number get(Object var);
-	
+
 	/**
 	 * Sets the primal value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
-	 * @param value
-	 *            the value
+	 * @param var   the variable
+	 * @param value the value
 	 */
 	public void put(Object var, Number value);
-	
+
 	/**
 	 * Returns the primal value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param var the variable
 	 * @return the resulting value
 	 */
 	public Number getPrimalValue(Object var);
-	
+
 	/**
 	 * Sets the primal value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
-	 * @param value
-	 *            the value
+	 * @param var   the variable
+	 * @param value the value
 	 */
 	public void putPrimalValue(Object var, Number value);
-	
+
 	/**
 	 * Returns the dual value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param var the variable
 	 * @return the resulting value
 	 */
 	public Number getDualValue(Object var);
-	
+
 	/**
 	 * Sets the dual value of the variable.
 	 * 
-	 * @param var
-	 *            the variable
-	 * @param value
-	 *            the value
+	 * @param var   the variable
+	 * @param value the value
 	 */
 	public void putDualValue(Object var, Number value);
 
 	/**
 	 * Returns {@code true} if the result contains the variable.
 	 * 
-	 * @param var
-	 *            the variable
+	 * @param var the variable
 	 * @return {@code true} if the result contains the variable
 	 */
 	public Boolean containsVar(Object var);

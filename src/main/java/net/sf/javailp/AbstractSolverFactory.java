@@ -28,37 +28,44 @@ import java.util.Map.Entry;
 public abstract class AbstractSolverFactory implements SolverFactory {
 
 	protected final Map<Object, Object> parameters = new HashMap<Object, Object>();
-	
-	/* (non-Javadoc)
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sf.javailp.SolverFactory#get()
 	 */
 	public Solver get() {
 		Solver solver = getInternal();
-		
-		for(Entry<Object,Object> entry: parameters.entrySet()){
+
+		for (Entry<Object, Object> entry : parameters.entrySet()) {
 			Object parameter = entry.getKey();
 			Object value = entry.getValue();
-			
+
 			solver.setParameter(parameter, value);
 		}
-		
-		return solver;		
+
+		return solver;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see net.sf.javailp.SolverFactory#getParameters()
 	 */
 	public Map<Object, Object> getParameters() {
 		return parameters;
 	}
 
-	/* (non-Javadoc)
-	 * @see net.sf.javailp.SolverFactory#setParameter(java.lang.Object, java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see net.sf.javailp.SolverFactory#setParameter(java.lang.Object,
+	 * java.lang.Object)
 	 */
 	public void setParameter(Object parameter, Object value) {
 		parameters.put(parameter, value);
 	}
-	
+
 	/**
 	 * Returns the {@code Solver}
 	 * 

@@ -30,261 +30,259 @@ import lpsolve.LpSolveException;
  */
 public class SolverLpSolve extends AbstractSolver {
 
-    private static int sosCount = 0;
+	private static int sosCount = 0;
 
-    /**
-     * The {@code Hook} for the {@code SolverLpSolve}.
-     *
-     * @author lukasiewycz
-     *
-     */
-    public interface Hook {
+	/**
+	 * The {@code Hook} for the {@code SolverLpSolve}.
+	 *
+	 * @author lukasiewycz
+	 *
+	 */
+	public interface Hook {
 
-        /**
-         * This method is called once before the optimization and allows to
-         * change some internal settings.
-         *
-         * @param lp
-         *            the lp solver
-         * @param varToIndex
-         *            the map of variables to lp specific variables
-         */
-        public void call(LpSolve lp, Map<Object, Integer> varToIndex);
-    }
+		/**
+		 * This method is called once before the optimization and allows to change some
+		 * internal settings.
+		 *
+		 * @param lp         the lp solver
+		 * @param varToIndex the map of variables to lp specific variables
+		 */
+		public void call(LpSolve lp, Map<Object, Integer> varToIndex);
+	}
 
-    protected final Set<Hook> hooks = new HashSet<Hook>();
+	protected final Set<Hook> hooks = new HashSet<Hook>();
 
-    /**
-     * Adds a hook.
-     *
-     * @param hook
-     *            the hook to be added
-     */
-    public void addHook(final Hook hook) {
-        hooks.add(hook);
-    }
+	/**
+	 * Adds a hook.
+	 *
+	 * @param hook the hook to be added
+	 */
+	public void addHook(final Hook hook) {
+		hooks.add(hook);
+	}
 
-    /**
-     * Removes a hook
-     *
-     * @param hook
-     *            the hook to be removed
-     */
-    public void removeHook(final Hook hook) {
-        hooks.remove(hook);
-    }
+	/**
+	 * Removes a hook
+	 *
+	 * @param hook the hook to be removed
+	 */
+	public void removeHook(final Hook hook) {
+		hooks.remove(hook);
+	}
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
-     */
-    @Override
-    public Result solve(final Problem problem) {
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see net.sf.javailp.Solver#solve(net.sf.javailp.Problem)
+	 */
+	@Override
+	public Result solve(final Problem problem) {
 
-        Map<Integer, Object> indexToVar = new HashMap<Integer, Object>();
-        Map<Object, Integer> varToIndex = new HashMap<Object, Integer>();
+		Map<Integer, Object> indexToVar = new HashMap<Integer, Object>();
+		Map<Object, Integer> varToIndex = new HashMap<Object, Integer>();
 
-        int i = 1;
-        for (Object variable : problem.getVariables()) {
-            indexToVar.put(i, variable);
-            varToIndex.put(variable, i);
-            i++;
-        }
+		int i = 1;
+		for (Object variable : problem.getVariables()) {
+			indexToVar.put(i, variable);
+			varToIndex.put(variable, i);
+			i++;
+		}
 
-        try {
-            LpSolve lp = LpSolve.makeLp(0, problem.getVariablesCount());
+		try {
+			LpSolve lp = LpSolve.makeLp(0, problem.getVariablesCount());
 
-            initWithParameters(lp);
+			initWithParameters(lp);
 
-            lp.setAddRowmode(true);
+			lp.setAddRowmode(true);
 
-            for (Constraint constraint : problem.getConstraints()) {
-                int size = constraint.size();
+			for (Constraint constraint : problem.getConstraints()) {
+				int size = constraint.size();
 
-                int[] var = new int[size];
-                double[] coeffs = new double[size];
-                Linear linear = constraint.getLhs();
+				int[] var = new int[size];
+				double[] coeffs = new double[size];
+				Linear linear = constraint.getLhs();
 
-                convert(linear, var, coeffs, varToIndex);
+				convert(linear, var, coeffs, varToIndex);
 
-                int operator;
-                switch (constraint.getOperator()) {
-                case LE:
-                    operator = LpSolve.LE;
-                    break;
-                case GE:
-                    operator = LpSolve.GE;
-                    break;
-                default: // EQ
-                    operator = LpSolve.EQ;
-                }
+				int operator;
+				switch (constraint.getOperator()) {
+				case LE:
+					operator = LpSolve.LE;
+					break;
+				case GE:
+					operator = LpSolve.GE;
+					break;
+				default: // EQ
+					operator = LpSolve.EQ;
+				}
 
-                double rhs = constraint.getRhs().doubleValue();
+				double rhs = constraint.getRhs().doubleValue();
 
-                lp.addConstraintex(size, coeffs, var, operator, rhs);
-            }
+				lp.addConstraintex(size, coeffs, var, operator, rhs);
+			}
 
-            for (SOS constraint : problem.getSoss()) {
-                int size = constraint.size();
+			for (SOS constraint : problem.getSoss()) {
+				int size = constraint.size();
 
-                int[] var = new int[size];
-                double[] coeffs = new double[size];
+				int[] var = new int[size];
+				double[] coeffs = new double[size];
 
-                convert(constraint.getLhs(), var, coeffs, varToIndex);
+				convert(constraint.getLhs(), var, coeffs, varToIndex);
 
-                //lp.addConstraintex(size, coeffs, var, LpSolve.EQ, 1);
-                lp.addSOS(constraint.getType() + "-" + sosCount++, constraint.getType().getNum(), 1, size, var, coeffs);
-            }
+				// lp.addConstraintex(size, coeffs, var, LpSolve.EQ, 1);
+				lp.addSOS(constraint.getType() + "-" + sosCount++, constraint.getType().getNum(), 1, size, var, coeffs);
+			}
 
-            lp.setAddRowmode(false);
+			lp.setAddRowmode(false);
 
-            for (Object variable : problem.getVariables()) {
-                int index = varToIndex.get(variable);
+			for (Object variable : problem.getVariables()) {
+				int index = varToIndex.get(variable);
 
-                // VarType varType = problem.getVarType(variable);
-                // Number lowerBound = problem.getVarLowerBound(variable);
-                // Number upperBound = problem.getVarUpperBound(variable);
-                //
-                // if (varType == VarType.BOOL || varType == VarType.INT) {
-                // lp.setInt(index, true);
-                // }
-                //
-                // if (varType == VarType.BOOL) {
-                // int lb = 0;
-                // int ub = 1;
-                // if (lowerBound != null && lowerBound.doubleValue() > 0) {
-                // lb = 1;
-                // }
-                // if (upperBound != null && upperBound.doubleValue() < 1) {
-                // ub = 0;
-                // }
-                // lp.setLowbo(index, lb);
-                // lp.setUpbo(index, ub);
-                // } else {
-                // if (lowerBound != null) {
-                // lp.setLowbo(index, lowerBound.doubleValue());
-                // }
-                // if (upperBound != null) {
-                // lp.setUpbo(index, upperBound.doubleValue());
-                // }
-                // }
+				// VarType varType = problem.getVarType(variable);
+				// Number lowerBound = problem.getVarLowerBound(variable);
+				// Number upperBound = problem.getVarUpperBound(variable);
+				//
+				// if (varType == VarType.BOOL || varType == VarType.INT) {
+				// lp.setInt(index, true);
+				// }
+				//
+				// if (varType == VarType.BOOL) {
+				// int lb = 0;
+				// int ub = 1;
+				// if (lowerBound != null && lowerBound.doubleValue() > 0) {
+				// lb = 1;
+				// }
+				// if (upperBound != null && upperBound.doubleValue() < 1) {
+				// ub = 0;
+				// }
+				// lp.setLowbo(index, lb);
+				// lp.setUpbo(index, ub);
+				// } else {
+				// if (lowerBound != null) {
+				// lp.setLowbo(index, lowerBound.doubleValue());
+				// }
+				// if (upperBound != null) {
+				// lp.setUpbo(index, upperBound.doubleValue());
+				// }
+				// }
 
-                VarType varType = problem.getVarType(variable);
-                if (varType == VarType.BOOL) {
-                    lp.setBinary(index, true);
-                } else if (varType == VarType.INT) {
-                    lp.setInt(index, true);
-                    Number lowerBound = problem.getVarLowerBound(variable);
-                    Number upperBound = problem.getVarUpperBound(variable);
-                    if (lowerBound != null) {
-                        lp.setLowbo(index, lowerBound.doubleValue());
-                    }
-                    if (upperBound != null) {
-                        lp.setUpbo(index, upperBound.doubleValue());
-                    }
-                }
+				VarType varType = problem.getVarType(variable);
+				if (varType == VarType.BOOL) {
+					lp.setBinary(index, true);
+				} else if (varType == VarType.INT) {
+					lp.setInt(index, true);
+					Number lowerBound = problem.getVarLowerBound(variable);
+					Number upperBound = problem.getVarUpperBound(variable);
+					if (lowerBound != null) {
+						lp.setLowbo(index, lowerBound.doubleValue());
+					}
+					if (upperBound != null) {
+						lp.setUpbo(index, upperBound.doubleValue());
+					}
+				}
 
-            }
+			}
 
-            if (problem.getObjective() != null) {
+			if (problem.getObjective() != null) {
 
-                Linear objective = problem.getObjective();
-                int size = objective.size();
-                int[] var = new int[size];
-                double[] coeffs = new double[size];
+				Linear objective = problem.getObjective();
+				int size = objective.size();
+				int[] var = new int[size];
+				double[] coeffs = new double[size];
 
-                convert(objective, var, coeffs, varToIndex);
+				convert(objective, var, coeffs, varToIndex);
 
-                lp.setObjFnex(size, coeffs, var);
+				lp.setObjFnex(size, coeffs, var);
 
-                if (problem.getOptType() == OptType.MIN) {
-                    lp.setMinim();
-                } else {
-                    lp.setMaxim();
-                }
-            }
+				if (problem.getOptType() == OptType.MIN) {
+					lp.setMinim();
+				} else {
+					lp.setMaxim();
+				}
+			}
 
-            for (Hook hook : hooks) {
-                hook.call(lp, varToIndex);
-            }
+			for (Hook hook : hooks) {
+				hook.call(lp, varToIndex);
+			}
 
-            int ret = lp.solve();
+			int ret = lp.solve();
 
-            // 0 means optimal
-            // 1 means suboptimal
-            // 12 means feasible
-            if (ret != 0 && ret != 1 && ret != 12) {
-                lp.deleteLp();
-                return null;
-            }
+			// 0 means optimal
+			// 1 means suboptimal
+			// 12 means feasible
+			if (ret != 0 && ret != 1 && ret != 12) {
+				lp.deleteLp();
+				return null;
+			}
 
-            final Result result;
-            if (problem.getObjective() != null) {
-                result = new ResultImpl(problem.getObjective());
-            } else {
-                result = new ResultImpl();
-            }
+			final Result result;
+			if (problem.getObjective() != null) {
+				result = new ResultImpl(problem.getObjective());
+			} else {
+				result = new ResultImpl();
+			}
 
-            double[] values = new double[problem.getVariablesCount()];
-            double[] dualValues = new double[problem.getConstraintsCount()];
-            lp.getVariables(values);
-            // lp.getDualSolution(dualValues); throws lpsolve.LpSolveException: Target array is too short to hold values
+			double[] values = new double[problem.getVariablesCount()];
+			double[] dualValues = new double[problem.getConstraintsCount()];
+			lp.getVariables(values);
+			// lp.getDualSolution(dualValues); throws lpsolve.LpSolveException: Target array
+			// is too short to hold values
 
-            for (Object variable : problem.getVariables()) {
+			for (Object variable : problem.getVariables()) {
 
-                int index = varToIndex.get(variable);
-                VarType varType = problem.getVarType(variable);
+				int index = varToIndex.get(variable);
+				VarType varType = problem.getVarType(variable);
 
-                double value = values[index - 1];
+				double value = values[index - 1];
 
-                if (varType == VarType.INT || varType == VarType.BOOL) {
-                    int v = (int) Math.round(value);
-                    result.putPrimalValue(variable, v);
-                } else {
-                    result.putPrimalValue(variable, value);
-                }
-            }
+				if (varType == VarType.INT || varType == VarType.BOOL) {
+					int v = (int) Math.round(value);
+					result.putPrimalValue(variable, v);
+				} else {
+					result.putPrimalValue(variable, value);
+				}
+			}
 
-            lp.deleteLp();
+			lp.deleteLp();
 
-            return result;
+			return result;
 
-        } catch (LpSolveException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+		} catch (LpSolveException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-    protected void initWithParameters(final LpSolve lp) {
-        Object timeout = parameters.get(Solver.TIMEOUT);
-        Object verbose = parameters.get(Solver.VERBOSE);
+	protected void initWithParameters(final LpSolve lp) {
+		Object timeout = parameters.get(Solver.TIMEOUT);
+		Object verbose = parameters.get(Solver.VERBOSE);
 
-        if (timeout != null && timeout instanceof Number) {
-            Number number = (Number) timeout;
-            long value = number.longValue();
-            lp.setTimeout(value);
-        }
-        if (verbose != null && verbose instanceof Number) {
-            Number number = (Number) verbose;
-            int value = number.intValue();
-            if (value == 0) {
-                lp.setVerbose(0);
-            } else if (value == 1) {
-                lp.setVerbose(4);
-            } else {
-                lp.setVerbose(10);
-            }
-        }
+		if (timeout != null && timeout instanceof Number) {
+			Number number = (Number) timeout;
+			long value = number.longValue();
+			lp.setTimeout(value);
+		}
+		if (verbose != null && verbose instanceof Number) {
+			Number number = (Number) verbose;
+			int value = number.intValue();
+			if (value == 0) {
+				lp.setVerbose(0);
+			} else if (value == 1) {
+				lp.setVerbose(4);
+			} else {
+				lp.setVerbose(10);
+			}
+		}
 
-    }
+	}
 
-    protected void convert(final Linear linear, final int[] var, final double[] coeffs, final Map<Object, Integer> varToIndex) {
-        int i = 0;
-        for (Term term : linear) {
-            var[i] = varToIndex.get(term.getVariable());
-            coeffs[i] = term.getCoefficient().doubleValue();
-            i++;
-        }
-    }
+	protected void convert(final Linear linear, final int[] var, final double[] coeffs,
+			final Map<Object, Integer> varToIndex) {
+		int i = 0;
+		for (Term term : linear) {
+			var[i] = varToIndex.get(term.getVariable());
+			coeffs[i] = term.getCoefficient().doubleValue();
+			i++;
+		}
+	}
 }

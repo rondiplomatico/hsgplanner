@@ -35,14 +35,14 @@ import scala.Tuple2;
 @Data
 public class Spieltag implements Serializable {
 
-    private static final long serialVersionUID = -2000124935112267942L;
+	private static final long serialVersionUID = -2000124935112267942L;
 
-    HSGDate datum;
-    LocalTime erstesSpiel;
-    LocalTime letztesSpiel;
+	HSGDate datum;
+	LocalTime erstesSpiel;
+	LocalTime letztesSpiel;
 
-    List<Tuple2<Team, HSGInterval>> auswärtsSpielZeiten = new ArrayList<>();
-    List<Tuple2<Person, HSGInterval>> blockiertePersonen = new ArrayList<>();
-    List<Dienst> dienste = new ArrayList<>();
+	List<Tuple2<Team, HSGInterval>> auswärtsSpielZeiten = new ArrayList<>();
+	List<Tuple2<Person, HSGInterval>> blockiertePersonen = new ArrayList<>();
+	List<Dienst> dienste = new ArrayList<>();
 
 }

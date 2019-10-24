@@ -14,7 +14,7 @@
  */
 
 /**
- * Provides the classes for the problem and solvers. 
+ * Provides the classes for the problem and solvers.
  * 
  */
 package net.sf.javailp;
