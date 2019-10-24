@@ -28,8 +28,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 /**
  * TODO Replace with class description.
@@ -39,7 +39,6 @@ import lombok.ToString;
  * @since 04.09.2018
  */
 @Data
-@ToString
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -58,14 +57,14 @@ public class Game implements Serializable, Comparable<Game> {
     private LocalTime zeit;
     private String halle;
     private String heim;
-    private Team team;
+    @Getter private Team team;
     private String gast;
     private boolean heimspiel;
     private String staffel;
 
     public static Game parse(final String l) {
         try {
-            String[] elems = l.split(";");
+            String[] elems = l.replace("\"","").split(";");
             Game res = new Game();
             res.staffel = elems[1].trim();
             res.date = new HSGDate(elems[2]);

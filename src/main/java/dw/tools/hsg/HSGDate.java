@@ -45,7 +45,7 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
      */
     private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
 
-    private static final DateTimeFormatter DD_MM_YYYY_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+    private static final DateTimeFormatter DD_MM_YY_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy");
     
     public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -120,7 +120,7 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
      *            the date
      */
     public HSGDate(final String date) {
-    	this.date = LocalDate.from(DD_MM_YYYY_FORMATTER.parse(date));
+    	this.date = LocalDate.from(DD_MM_YY_FORMATTER.parse(date));
     }
 
     /**
@@ -157,6 +157,18 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
      */
     public long getTime() {
         return date.toEpochDay() * MSEC_TO_EPOCH_DAY;
+    }
+    
+    public boolean isSaturday() {
+    	return date.getDayOfWeek() == DayOfWeek.SATURDAY;
+    }
+    
+    public boolean isSunday() {
+    	return date.getDayOfWeek() == DayOfWeek.SUNDAY;
+    }
+    
+    public HSGDate getWeekend() {
+    	return isSaturday() ? new HSGDate(date.minusDays(1)) : (isSunday() ? new HSGDate(date.minusDays(2)):null); 
     }
 
     /**
@@ -384,7 +396,7 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
      * @return the string
      */
     public String toddMMyyyy() {
-        return date.format(DD_MM_YYYY_FORMATTER);
+        return date.format(DD_MM_YY_FORMATTER);
     }
 
     /**

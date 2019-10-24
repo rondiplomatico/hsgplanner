@@ -19,6 +19,7 @@ package dw.tools.hsg;
 
 import java.io.Serializable;
 
+import org.apache.log4j.Logger;
 import org.apache.parquet.Strings;
 
 import dw.tools.hsg.Dienst.Typ;
@@ -43,6 +44,7 @@ public class Person implements Serializable {
 
     private static final long serialVersionUID = 3556391185364393215L;
     private static final String AUFSICHT_MARKER = "x";
+    public static Logger logger = Logger.getRootLogger();
 
     private String name;
     private String shortName;
@@ -88,11 +90,16 @@ public class Person implements Serializable {
 
     public static Person parse(final String line) {
         String[] elems = line.split(";");
-        Team team = new Team(elems[1]);
-        Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? new Team(elems[2]) : null;
-        boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
-        int worked = (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60);
-        return new Person(elems[0].trim(), team, aufsicht ? 0 : worked, aufsicht, trainerVon);
+        try {
+	        Team team = new Team(elems[1]);
+	        Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? new Team(elems[2]) : null;
+	        boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
+	        int worked = (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60);
+	        return new Person(elems[0].trim(), team, worked, aufsicht, trainerVon);
+        } catch (Exception e) {
+        	logger.error("Fehler beim Parsen von Person "+line, e);
+        	throw e;
+        }
     }
 
     @Override

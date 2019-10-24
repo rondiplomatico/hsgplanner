@@ -86,6 +86,8 @@ public class ResultImpl implements Result {
 	 */
 	public boolean getBoolean(Object key) {
 		Number number = primalValues.get(key);
+		if (number == null)
+			return false;
 		double v = number.doubleValue();
 		if (v == 0) {
 			return false;
