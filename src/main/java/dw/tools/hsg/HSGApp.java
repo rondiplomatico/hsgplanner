@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -140,25 +141,15 @@ public class HSGApp {
 	public static final String GA = "4066";
 	public static final String CSV_DELIM = ";";
 	public static final HSGDate START_DATE = new HSGDate(2019, 11, 1); // HSGDate.TODAY.nextDay(1);
-	public static final HSGDate END_DATE = new HSGDate(2019, 12, 31); // HSGDate.TODAY.nextDay(1);
+	public static final HSGDate END_DATE = new HSGDate(2119, 12, 31); // HSGDate.TODAY.nextDay(1);
 	/*
 	 * Sonderregelung für F1 - Kassenzeiten beginnen eine halbe stunde eher.
 	 */
 	public static final Team F1 = new Team("F1");
-	public static Logger logger;
-
-	static {
-		ConsoleAppender console = new ConsoleAppender();
-		String PATTERN = "%d [%p|%c|%C{1}] %m%n";
-		console.setLayout(new PatternLayout(PATTERN));
-		console.setThreshold(Level.WARN);
-		console.activateOptions();
-		Logger.getRootLogger().addAppender(console);
-		logger = Logger.getRootLogger();
-	}
+	public static Logger logger = Logger.getLogger(HSGApp.class);
 
 	public static void main(final String[] args) throws IOException, ParseException {
-		Options options = new Options();
+		// Options options = new Options();
 		//
 		// Option option = new Option("s", "schema", false, "print the schema");
 		// option.setRequired(false);
@@ -218,10 +209,12 @@ public class HSGApp {
 				"false").setMaster("local[*]");
 		JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
+		// Personen einlesen
 		JavaRDD<Person> personen = jsc.textFile(in.toString())
 				// .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8))
-				.map(Person::parse).filter(Person::isValid).cache();
+				.map(Person::parse).filter(Person::isValid);
 
+		// Spiele einlesen
 		in = new Path(args[0]);
 		JavaRDD<Game> games = jsc.textFile(in.toString())
 				// .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.ISO_8859_1))
@@ -229,20 +222,54 @@ public class HSGApp {
 						g -> g != null && g.getDate().after(START_DATE) && g.getDate().before(END_DATE)).cache();
 		games.foreach(g -> logger.info("Spiel:" + g));
 
-		JavaRDD<Zuordnung> allzu = compute(games, personen);
+		JavaPairRDD<HSGDate, Spieltag> spieltage = berechneSpieltage(games, personen);
+
+		final Map<Typ, Integer> zeitenNachTyp = new HashMap<>(
+				spieltage.flatMap(s -> s._2.getDienste().iterator()).distinct().keyBy(d -> d.getTyp()).aggregateByKey(0,
+						(ex, n) -> ex + n.zeit.dauerInMin() * n.getTyp().getPersonen(),
+						(a, b) -> a + b).collectAsMap());
+		zeitenNachTyp.forEach(
+				(t, z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + (z / 60.0) + "h)"));
+
+		final Map<Team, Double> avgZeitProTeam = berechneSpielerArbeitszeit(personen, zeitenNachTyp);
+
+		int kürzesterDienst = Arrays.asList(Dienst.Typ.values()).stream().mapToInt(t -> t.getTimesHS()[0]).min().getAsInt() * 30;
+		// Alle Spieler rauswerfen, die schon genug gearbeitet haben (reduziert die
+		// Problemkomplexität)
+		personen = personen.filter(p -> {
+			boolean res = p.isAufsicht() || (p.getGearbeitetM() < avgZeitProTeam.get(p.getTeam())-kürzesterDienst);
+			if (!res) {
+				logger.info(p + " hat mit " + p.getGearbeitetM() / 60.0
+						+ "h mehr (oder ist hinreichend nah dran) als der erforderliche Durchschnitt von " + avgZeitProTeam.get(p.getTeam()) / 60.0
+						+ "h gearbeitet und wird nicht mehr eingeteilt.");
+			}
+			return res;
+		}).cache();
+
+		JavaRDD<Zuordnung> alleMöglichenZuordunungen = erzeugeZuordnungen(personen, spieltage);
+
+		JavaRDD<Zuordnung> gültigeZuordnungen = entferneDiensteAnNichtspieltagen(games, alleMöglichenZuordunungen,
+				spieltage);
 
 		/*
 		 * Fixierte Zuordnungen einlesen und rausrechnen
 		 */
-		if (args.length > 3) {
-			allzu = processFixed(args, jsc, personen, allzu);
-		}
+//		if (args.length > 3) {
+//			gültigeZuordnungen = processFixed(args, jsc, personen, gültigeZuordnungen);
+//		}
 
-		JavaRDD<String> content = toCSV(games, allzu);
+		JavaRDD<String> content = toCSV(games, gültigeZuordnungen);
 		Path out = new Path(outbase, "dienste_rahmen.csv");
 		saveAsFile(content, out);
 
-		JavaRDD<Zuordnung> zu = jsc.parallelize(HSGSolver.solve(allzu, games));
+//		final Map<Typ, Integer> zeitenNachTyp = new HashMap<>(
+//				spieltage.flatMap(s -> s._2.dienste.iterator()).distinct().keyBy(d -> d.getTyp()).aggregateByKey(0,
+//						(ex, n) -> ex + n.zeit.dauerInMin() * n.getTyp().getPersonen(),
+//						(a, b) -> a + b).collectAsMap());
+//		zeitenNachTyp.forEach(
+//				(t, z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + (z / 60.0) + "h)"));
+
+		JavaRDD<Zuordnung> zu = jsc.parallelize(HSGSolver.solve(gültigeZuordnungen, games, avgZeitProTeam));
 
 		content = toCSV(games, zu);
 		out = new Path(outbase, "dienste.csv");
@@ -252,6 +279,64 @@ public class HSGApp {
 
 		jsc.close();
 
+	}
+
+	private static Map<Team, Double> berechneSpielerArbeitszeit(JavaRDD<Person> personen,
+			Map<Typ, Integer> zeitenNachTyp) {
+
+		final Map<Team, Tuple2<Integer, Double>> vorleistungProTeam = new HashMap<>(
+				personen.filter(p -> !p.isAufsicht()).keyBy(p -> p.getTeam()).aggregateByKey(
+						new Tuple2<Integer, Double>(0, 0.0),
+						(ex, n) -> new Tuple2<>(ex._1 + 1, ex._2 + n.getGearbeitetM()),
+						(a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2)).collectAsMap());
+		vorleistungProTeam.forEach((t, v) -> logger.info(
+				"Vorleistung von Team " + t + " mit " + v._1 + " Spielern: " + v._2 + " (" + (v._2 / 60.0) + "h)"));
+		final double gesamtVorleistung = vorleistungProTeam.values().stream().mapToDouble(v -> v._2).sum();
+		logger.info("Gesamtvorleistung " + gesamtVorleistung / 60.0 + "h");
+
+		double gesamtEffektivPersonen = vorleistungProTeam.entrySet().stream().mapToDouble(
+				e -> e.getKey().leistungsFaktor() * e.getValue()._1).sum();
+		int zeitKasseVerkauf = zeitenNachTyp.get(Typ.Kasse) + zeitenNachTyp.get(Typ.Verkauf);
+
+		final double zeitProPerson = (zeitKasseVerkauf + gesamtVorleistung) / gesamtEffektivPersonen;
+		logger.info("Arbeitszeit für " + gesamtEffektivPersonen + " volle Personen im Schnitt " + zeitProPerson
+				+ "min (" + zeitProPerson / 60.0 + ")");
+		Map<Team, Double> res = new HashMap<>(
+				vorleistungProTeam.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> {
+					double zeitMitVorleistung = e.getKey().leistungsFaktor() * e.getValue()._1 * zeitProPerson;
+					double schnittProSpieler = zeitMitVorleistung / (double) e.getValue()._1;
+					logger.info("Team " + e.getKey() + " muss die Saison " + zeitMitVorleistung / 60.0
+							+ "h arbeiten und hat schon " + e.getValue()._2 / 60.0 + "h geleistet. Bleiben "
+							+ (zeitMitVorleistung - e.getValue()._2) / 60.0 + "h");
+					logger.info("Team " + e.getKey() + ": Durchschnittliche Zielzeit je Teamspieler für die Saison: "
+							+ schnittProSpieler / 60.0);
+					return schnittProSpieler;
+				})));
+
+		// Aufsicht
+		int vorarbeitAufsicht = personen.filter(p -> p.isAufsicht()).map(p -> p.getGearbeitetM()).reduce(Integer::sum);
+		logger.info("Gesamtvorleistung Aufsicht: " + vorarbeitAufsicht / 60.0 + "h");
+
+		// TODO
+		res.put(Team.AUFSICHT, 0.0);
+//		double gesamtEffektivPersonen = vorleistungProTeam.entrySet().stream().mapToDouble(
+//				e -> e.getKey().leistungsFaktor() * e.getValue()._1).sum();
+//		int zeitKasseVerkauf = zeitenNachTyp.get(Typ.Kasse) + zeitenNachTyp.get(Typ.Verkauf);
+//
+//		final double zeitProPerson = (zeitKasseVerkauf + gesamtVorleistung) / gesamtEffektivPersonen;
+//		logger.info("Arbeitszeit für " + gesamtEffektivPersonen + " volle Personen im Schnitt " + zeitProPerson
+//				+ "min (" + zeitProPerson / 60.0 + ")");
+//		return new HashMap<>(vorleistungProTeam.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> {
+//			double zeitMitVorleistung = e.getKey().leistungsFaktor() * e.getValue()._1 * zeitProPerson;
+//			double schnittProSpieler = zeitMitVorleistung / (double) e.getValue()._1;
+//			logger.info("Team " + e.getKey() + " muss die Saison " + zeitMitVorleistung / 60.0
+//					+ "h arbeiten und hat schon " + e.getValue()._2 / 60.0 + "h geleistet. Bleiben "
+//					+ (zeitMitVorleistung - e.getValue()._2) / 60.0 + "h");
+//			logger.info("Team " + e.getKey() + ": Durchschnittliche Zielzeit je Teamspieler für die Saison: "
+//					+ schnittProSpieler / 60.0);
+//			return schnittProSpieler;
+//		})));
+		return res;
 	}
 
 	private static JavaRDD<Zuordnung> processFixed(final String[] args, JavaSparkContext jsc, JavaRDD<Person> personen,
@@ -404,7 +489,8 @@ public class HSGApp {
 		});
 	}
 
-	public static JavaRDD<Zuordnung> compute(final JavaRDD<Game> games, final JavaRDD<Person> personen) {
+	public static JavaPairRDD<HSGDate, Spieltag> berechneSpieltage(final JavaRDD<Game> games,
+			final JavaRDD<Person> personen) {
 
 		HashMap<Team, List<Person>> teams = new HashMap<>(
 				personen.keyBy(p -> p.getTeam()).groupByKey().mapValues(IterableUtil::toList).collectAsMap());
@@ -489,14 +575,29 @@ public class HSGApp {
 		// System.out.println("Eigene Spielzeit:");
 		// spieltSelber.foreach(r -> System.out.println(r));
 
-		JavaPairRDD<HSGDate, Spieltag> spieltage = berechneSpieltage(dienste, spieltSelber, blockierteTrainer);
+		JavaPairRDD<HSGDate, Spieltag> spieltage = dienste.leftOuterJoin(spieltSelber).leftOuterJoin(
+				blockierteTrainer).mapValues(v -> {
+					Spieltag st = v._1._1;
+					if (v._1._2.isPresent()) {
+						st.getAuswärtsSpielZeiten().addAll(IterableUtil.toList(v._1._2.get()));
+					}
+					if (v._2.isPresent()) {
+						st.getBlockiertePersonen().addAll(IterableUtil.toList(v._2.get()));
+					}
+					st.dienste.forEach(d -> d.setDatum(st.datum));
+					return st;
+				});
+		// System.out.println("Spieltage mit eigenen (parallelen) Spielen:");
+		// spieltage.foreach(s -> System.out.println(s));
+		return spieltage.cache();
+	}
 
-		JavaRDD<Zuordnung> zuordnungenAll = erzeugeZuordnungen(personen, spieltage);
-
+	public static JavaRDD<Zuordnung> entferneDiensteAnNichtspieltagen(final JavaRDD<Game> games,
+			JavaRDD<Zuordnung> zuordnungenAll, JavaPairRDD<HSGDate, Spieltag> spieltage) {
 		JavaPairRDD<HSGDate, Iterable<Tuple2<HSGDate, Team>>> gamesByWE = games.mapToPair(
 				g -> new Tuple2<>(g.getDate().getWeekend(), new Tuple2<>(g.getDate(), g.getTeam()))).groupByKey();
 
-		logger.warn("Zuordnungen vor Wochenendfilter: " + zuordnungenAll.count());
+		logger.info("Zuordnungen vor Wochenendfilter: " + zuordnungenAll.count());
 		// Experimentell: Alle Zurordnungen rauswerfen bei denen ein Spieler am jeweils
 		// anderen Tag spielt
 		JavaRDD<Zuordnung> zuordnungen = zuordnungenAll.groupBy(
@@ -518,13 +619,13 @@ public class HSGApp {
 					for (Zuordnung z : d._2._1) {
 						if (z.getPerson().getTeam() != null && z.getDienst().getDatum().isSaturday()
 								&& so.contains(z.getPerson().getTeam())) {
-							logger.warn(z.getPerson() + " wird am Samstag den " + z.getDienst().getDatum()
+							logger.info(z.getPerson() + " wird am Samstag den " + z.getDienst().getDatum()
 									+ " nicht arbeiten weil er/sie Sonntag spielt.");
 							continue;
 						}
 						if (z.getPerson().getTeam() != null && z.getDienst().getDatum().isSunday()
 								&& sa.contains(z.getPerson().getTeam())) {
-							logger.warn(z.getPerson() + " wird am Sonntag den " + z.getDienst().getDatum()
+							logger.info(z.getPerson() + " wird am Sonntag den " + z.getDienst().getDatum()
 									+ " nicht arbeiten weil er/sie Samstag spielt.");
 							continue;
 						}
@@ -536,41 +637,13 @@ public class HSGApp {
 		JavaRDD<Zuordnung> reAdded = zuordnungenAll.filter(z -> missing.contains(z.getDienst()));
 		logger.warn("Zuviel entfernte Zuordnungen (wieder hinzugefügt): " + reAdded.count());
 		zuordnungen = zuordnungen.union(reAdded);
-		logger.warn("Zuordnungen nach Wochenendfilter: " + zuordnungen.count());
+		logger.info("Zuordnungen nach Wochenendfilter: " + zuordnungen.count());
 
 		if (!checkAlleNotwendigenZuordnungenSindVorhanden(spieltage, zuordnungen).isEmpty()) {
 			throw new RuntimeException("Zu wenige Zuordnungen generiert!");
 		}
 
 		return zuordnungen.cache();
-	}
-
-	/**
-	 * TODO Method description.
-	 *
-	 * @param dienste
-	 * @param spieltSelber
-	 * @param blockierteTrainer
-	 * @return
-	 */
-	private static JavaPairRDD<HSGDate, Spieltag> berechneSpieltage(final JavaPairRDD<HSGDate, Spieltag> dienste,
-			final JavaPairRDD<HSGDate, Iterable<Tuple2<Team, HSGInterval>>> spieltSelber,
-			final JavaPairRDD<HSGDate, Iterable<Tuple2<Person, HSGInterval>>> blockierteTrainer) {
-		JavaPairRDD<HSGDate, Spieltag> spieltage = dienste.leftOuterJoin(spieltSelber).leftOuterJoin(
-				blockierteTrainer).mapValues(v -> {
-					Spieltag st = v._1._1;
-					if (v._1._2.isPresent()) {
-						st.getAuswärtsSpielZeiten().addAll(IterableUtil.toList(v._1._2.get()));
-					}
-					if (v._2.isPresent()) {
-						st.getBlockiertePersonen().addAll(IterableUtil.toList(v._2.get()));
-					}
-					st.dienste.forEach(d -> d.setDatum(st.datum));
-					return st;
-				});
-		// System.out.println("Spieltage mit eigenen (parallelen) Spielen:");
-		// spieltage.foreach(s -> System.out.println(s));
-		return spieltage;
 	}
 
 	/**
@@ -611,7 +684,7 @@ public class HSGApp {
 					 * in der Schicht auch arbeiten darf.
 					 */
 					if (!p.mayWorkAt(d)) {
-						logger.warn(p + " darf generell nicht in Dienst " + d + " Arbeiten");
+						logger.info(p + " darf generell nicht in Dienst " + d + " Arbeiten");
 						continue;
 					}
 					if (playsConcurrently.contains(p.getTeam())) {

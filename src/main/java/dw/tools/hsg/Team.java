@@ -44,16 +44,20 @@ public class Team implements Serializable {
 	public static final Map<String, HSGInterval> WORKING_TEAMS = teamTimes();
 	public static final List<String> mitKasse = new ArrayList<>(Arrays.asList("F1", "F2", "M1"));
 	public static final Map<String, Double> leistungsFaktoren;
+
+	// Hilfsteam um hier und da die Aufsicht als Team zu betrachten. 
+	public static final Team AUFSICHT = new Team("Aufsicht");
+	
 	static {
 		leistungsFaktoren = new HashMap<>();
-		leistungsFaktoren.put("mA1", 0.8);
-		leistungsFaktoren.put("wA1", 0.8);
-		leistungsFaktoren.put("mA2", 0.8);
-		leistungsFaktoren.put("wA2", 0.8);
-		leistungsFaktoren.put("mB1", 0.6);
-		leistungsFaktoren.put("wB1", 0.6);
-		leistungsFaktoren.put("mB2", 0.6);
-		leistungsFaktoren.put("wB2", 0.6);
+		leistungsFaktoren.put("mA1", 0.75);
+		leistungsFaktoren.put("wA1", 0.75);
+		leistungsFaktoren.put("mA2", 0.75);
+		leistungsFaktoren.put("wA2", 0.75);
+		leistungsFaktoren.put("mB1", 0.75);
+		leistungsFaktoren.put("wB1", 0.75);
+		leistungsFaktoren.put("mB2", 0.75);
+		leistungsFaktoren.put("wB2", 0.75);
 	}
 
 	private final String id;

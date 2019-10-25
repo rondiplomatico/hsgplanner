@@ -34,7 +34,6 @@ import lombok.ToString;
  * @since 05.09.2018
  */
 @Getter
-@ToString
 @EqualsAndHashCode
 public class Zuordnung implements Serializable {
 

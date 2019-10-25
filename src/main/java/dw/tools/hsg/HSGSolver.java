@@ -64,7 +64,7 @@ public class HSGSolver {
 	public static final int ÜBERZEIT_STRAFE = 5;
 	public static final int UNTERZEIT_STRAFE = 1;
 
-	public static Logger logger = Logger.getRootLogger();
+	public static Logger logger = Logger.getLogger(HSGSolver.class);
 
 //    public static class CplexCallback extends OptimizationCallback {
 //
@@ -75,21 +75,23 @@ public class HSGSolver {
 //    	
 //    }
 
-	public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
+	public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
+			Map<Team, Double> avgZeitProTeam) {
 		// Aufsicht
-//    	Problem aufsicht = assembleAufsicht(all.filter(z -> z.getDienst().getTyp().equals(Typ.Aufsicht)), games);
+//    	Problem aufsicht = assembleAufsicht(all.filter(z -> z.getDienst().getTyp().equals(Typ.Aufsicht)), games, avgZeitProTeam);
 		Problem kasseVerkauf = assembleVerkaufKasse(all.filter(z -> !z.getDienst().getTyp().equals(Typ.Aufsicht)),
-				games);
+				games, avgZeitProTeam);
 
 		List<Zuordnung> res = new ArrayList<>();
 //    	res.addAll(solveProblem(aufsicht, all, 60*4));
 		// Kasse, Verkauf
-		res.addAll(solveProblem(kasseVerkauf, all, 60 * 60 * 12));
+		res.addAll(solveProblem(kasseVerkauf, all, 60 * 60 * 7));//60 * 12
 
 		return res;
 	}
 
-	private static Problem assembleVerkaufKasse(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
+	private static Problem assembleVerkaufKasse(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
+			Map<Team, Double> avgZeitProTeam) {
 		final Problem problem = new Problem();
 
 		List<Zuordnung> allList = all.collect();
@@ -105,13 +107,15 @@ public class HSGSolver {
 		 */
 		// Init
 		logger.info("Erstelle Zielfunktion");
+
 		Linear target = new Linear();
 		for (Zuordnung z : allList) {
 			problem.setVarType(z.varName(), Boolean.class);
 		}
 		logger.info("Z1: Gleiche mittlere Arbeitszeiten");
+
 		// Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
-		addZ1GleichVielArbeitsZeit(all, problem, target, false);
+		addZ1GleichVielArbeitsZeit(all, problem, target, false, avgZeitProTeam);
 
 		logger.info("Z2: Geschickte Dienste um eigene Spiele");
 		addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
@@ -144,7 +148,8 @@ public class HSGSolver {
 		return problem;
 	}
 
-	public static Problem assembleAufsicht(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games) {
+	public static Problem assembleAufsicht(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
+			Map<Team, Double> avgZeitProTeam) {
 		final Problem problem = new Problem();
 
 		List<Zuordnung> allList = all.collect();
@@ -165,7 +170,7 @@ public class HSGSolver {
 		}
 		logger.info("Z1: Gleiche mittlere Arbeitszeiten");
 		// Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
-		addZ1GleichVielArbeitsZeit(all, problem, target, true);
+		addZ1GleichVielArbeitsZeit(all, problem, target, true, avgZeitProTeam);
 
 		logger.info("Z2: Geschickte Dienste um eigene Spiele");
 		addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
@@ -244,8 +249,8 @@ public class HSGSolver {
 			logger.info("Ergebnis:");
 			selected = all.collect().stream().filter(z -> result.getBoolean(z.varName())).collect(Collectors.toList());
 
-			logger.info("Durchschnittliche Arbeitszeit:" + result.getPrimalValue(AVERAGE_WORK_TIME));
-			logger.info("Durchschnittliche Arbeitszeit Aufsicht:" + result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
+			//logger.info("Durchschnittliche Arbeitszeit:" + result.getPrimalValue(AVERAGE_WORK_TIME));
+			//logger.info("Durchschnittliche Arbeitszeit Aufsicht:" + result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
 		} else {
 			logger.info("Solve fehlgeschlagen.");
 			problem.print();
@@ -366,47 +371,52 @@ public class HSGSolver {
 	}
 
 	private static void addZ1GleichVielArbeitsZeit(final JavaRDD<Zuordnung> all, final Problem problem,
-			final Linear target, final boolean isAufsicht) {
+			final Linear target, final boolean isAufsicht, final Map<Team, Double> avgZeitProTeam) {
 		/*
 		 * Alle gleich viel Arbeitszeit. Die gesamtarbeitszeit soll pro person nicht von
 		 * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
 		 */
-		final List<Tuple2<String, Double>> allTotalTimesPerPerson = new ArrayList<>();
+//		final List<Tuple2<String, Double>> allTotalTimesPerPerson = new ArrayList<>();
 		all.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp()
 				: Typ.Aufsicht != z.getDienst().getTyp()).mapToPair(z -> new Tuple2<>(z.getPerson(),
 						new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin()))).groupByKey().mapValues(
 								IterableUtil::toList).collect().forEach(d -> {
 									Linear linear = new Linear();
 									d._2.forEach(t -> linear.add(t._2, t._1));
+
 									String sumVarName = "TotalZeit" + d._1.getName();
 									linear.add(-1, sumVarName);
 									problem.setVarType(sumVarName, VarType.INT);
 									problem.setVarLowerBound(sumVarName, 0);
-									problem.add(
-											new Constraint(sumVarName, linear, Operator.EQ, -d._1.getGearbeitetM()));
-									allTotalTimesPerPerson.add(
-											new Tuple2<>(sumVarName, d._1.getTeam().leistungsFaktor()));
+									Constraint c = new Constraint(sumVarName, linear, Operator.EQ, 0);
+									logger.debug("Adding total time variable for " + d._1.getName() + ": " + c);
+									problem.add(c);
+
+									Linear l = new Linear();
+									String plus = sumVarName + "+";
+									String minus = sumVarName + "-";
+									l.add(new Term(sumVarName, 1), new Term(plus, -1), new Term(minus, 1));
+									c = new Constraint(sumVarName + "Slack", l, Operator.EQ,
+											avgZeitProTeam.get(d._1.getTeam()) - d._1.getGearbeitetM());
+									logger.debug("Adding slacked constraint " + c);
+									problem.add(c);
+									problem.setVarType(plus, VarType.REAL);
+									problem.setVarType(minus, VarType.REAL);
+									problem.setVarLowerBound(plus, 0);
+									problem.setVarLowerBound(minus, 0);
+									target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
 									logger.debug(sumVarName + ": " + d._1.getGearbeitetM());
 								});
-		Linear avg = new Linear();
-		double numPInv = 1 / (double) allTotalTimesPerPerson.size();
-		allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s._1));
-		createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME);
 
-		allTotalTimesPerPerson.forEach(t -> {
-			String varName = t._1;
-			Linear l = new Linear();
-			String plus = varName + "+";
-			String minus = varName + "-";
-			l.add(new Term(varName, 1), new Term(isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME, -t._2),
-					new Term(plus, -1), new Term(minus, 1));
-			problem.add(new Constraint(varName + "Slack", l, Operator.EQ, 0));
-			problem.setVarType(plus, VarType.REAL);
-			problem.setVarType(minus, VarType.REAL);
-			problem.setVarLowerBound(plus, 0);
-			problem.setVarLowerBound(minus, 0);
-			target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
-		});
+//		Linear avg = new Linear();
+//		double numPInv = 1 / (double) allTotalTimesPerPerson.size();
+//		allTotalTimesPerPerson.forEach(s -> avg.add(numPInv, s._1));
+//		createSubstitute(problem, avg, VarType.REAL, isAufsicht ? AVERAGE_WORK_TIME_AUFSICHT : AVERAGE_WORK_TIME);
+//
+//		allTotalTimesPerPerson.forEach(t -> {
+//			String varName = t._1;
+//
+//		});
 	}
 
 	private static String createSubstitute(final Problem p, final Linear linear, final VarType type) {
@@ -419,5 +429,6 @@ public class HSGSolver {
 		linear.add(-1, name);
 		p.setVarType(name, type);
 		p.add(new Constraint(name, linear, Operator.EQ, 0));
+		logger.debug("Erstelle Substitution " + name + ": " + linear);
 	}
 }

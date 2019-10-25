@@ -137,7 +137,7 @@ public class HSGSolverTest {
         List<Dienst> ds = Arrays.asList(V1100_1300, V1300_1600);
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
-        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames)).size());
+        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).size());
     }
 
     @Test
@@ -146,7 +146,7 @@ public class HSGSolverTest {
         List<Dienst> ds = Arrays.asList(V1100_1300, V1300_1600, K1200_1600);
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
-        assertEquals(3, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames)).size());
+        assertEquals(3, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).size());
     }
 
     @Test
@@ -156,7 +156,7 @@ public class HSGSolverTest {
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d, 2))));
-        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames)).size());
+        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).size());
     }
 
     @Test
@@ -165,7 +165,7 @@ public class HSGSolverTest {
         List<Game> gs = Arrays.asList(F21, F11);
 
         JavaRDD<Game> gsRDD = jsc.parallelize(gs);
-        List<Zuordnung> res = HSGSolver.solve(HSGApp.compute(gsRDD, jsc.parallelize(ps)), gsRDD);
+        List<Zuordnung> res = Collections.EMPTY_LIST;// HSGSolver.solve(erzeugeZuordnungen(HSGApp.berechneSpieltage(gsRDD, jsc.parallelize(ps)), gsRDD);
         assertTrue(res.size() > 0);
         List<String> csv = HSGApp.toCSV(gsRDD, jsc.parallelize(res)).collect();
         System.out.println(csv);
@@ -177,7 +177,7 @@ public class HSGSolverTest {
         List<Game> gs = Arrays.asList(F21, F11, M11);
 
         JavaRDD<Game> gsRDD = jsc.parallelize(gs);
-        List<Zuordnung> res = HSGSolver.solve(HSGApp.compute(gsRDD, jsc.parallelize(ps)), gsRDD);
+        List<Zuordnung> res = Collections.EMPTY_LIST;// HSGSolver.solve(HSGApp.berechneSpieltage(gsRDD, jsc.parallelize(ps)), gsRDD);
         assertTrue(res.size() > 0);
         List<String> csv = HSGApp.toCSV(gsRDD, jsc.parallelize(res)).collect();
         System.out.println(csv);
