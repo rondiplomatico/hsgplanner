@@ -64,6 +64,12 @@ public class Game implements Serializable, Comparable<Game> {
 	private String staffel;
 
 	public static Game parse(final String l) {
+		/*
+		 * Skip first header line, which begins with "Nummer" 
+		 */
+		if (l.startsWith("Nummer")) {
+			return null;
+		}
 		try {
 			String[] elems = l.replace("\"", "").split(";");
 			Game res = new Game();

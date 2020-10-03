@@ -1,9 +1,7 @@
 package dw.tools.hsg;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalTime;
@@ -19,13 +17,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -162,8 +158,8 @@ public class HSGApp {
 		/*
 		 * Convert to UTF8
 		 */
-		Path spielerCSVUTF8 = toUTF8(spieleCSVLatin1);
-		Path spieleCSVUTF8 = toUTF8(spielerCSVLatin1);
+		Path spieleCSVUTF8 = toUTF8(spieleCSVLatin1);
+		Path spielerCSVUTF8 = toUTF8(spielerCSVLatin1);
 
 		Path outbase = args.length > 2 ? new Path(args[2]) : spielerCSVUTF8.getParent();
 
@@ -184,7 +180,6 @@ public class HSGApp {
 		JavaRDD<Person> personen = jsc.textFile(spielerCSVUTF8.toString()).map(Person::parse).filter(Person::isValid);
 
 		// Spiele einlesen
-
 		JavaRDD<Game> games = jsc.textFile(spieleCSVUTF8.toString()).map(Game::parse).filter(
 				g -> g != null && g.getDate().after(START_DATE) && g.getDate().before(END_DATE)).cache();
 		games.foreach(g -> logger.info("Spiel:" + g));
@@ -253,6 +248,7 @@ public class HSGApp {
 		Path res = new Path(in.getParent(), "utf8-" + in.getName());
 		try {
 			String str = new String(Files.readAllBytes(Paths.get(in.toString())), Charsets.ISO_8859_1);
+			str = str.replace(",", ";");
 			Files.write(Paths.get(res.toString()), str.getBytes(Charsets.UTF_8), StandardOpenOption.CREATE,
 					StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 		} catch (IOException e) {
