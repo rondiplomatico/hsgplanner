@@ -26,7 +26,6 @@ import dw.tools.hsg.Dienst.Typ;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 /**
  * @version $Revision$
@@ -71,7 +70,7 @@ public class Zuordnung implements Serializable {
 
 	public static List<Zuordnung> read(String line) {
 		String[] elems = line.split(";");
-		Team team = new Team(elems[4]);
+		Team team = Team.valueOf(elems[4]);
 		Person p = new Person(elems[5], team, 0, false, null);
 		Dienst d = new Dienst(HSGDate.fromDDMMYY(elems[0].substring(4)),
 				new HSGInterval(LocalTime.parse(elems[1], HSGDate.TIME_FORMATTER),

@@ -55,6 +55,9 @@ import scala.Tuple3;
  *    - Trainer auch einteilen?
  *    - Weniger Dienste für Trainer von Jugendteams?
  *    - Gemischte Verkaufsschichten? (Jugend/Aktive, M/W)
+ * Neu seit 20/21
+ *    - Keine Dienste für Aktive, welche auch eine Jugend trainieren.
+ *    - Arbeitsdienste auch für C+D-Jugend planen (dort eltern rein)
  *    
  * Alternative:
  * - Planung Dienste nur über Team
@@ -114,7 +117,7 @@ import scala.Tuple3;
  *   Gesonderte Markierung im Personenimport erlaubt doppelte Zugehörigkeit und Behandlung aller Konstellationen.
  *
  * - Nur festgelegte Teams haben Hallendienste.
- *   Alle Teams im Personenimport werden importiert, aber {@link Person#isValid()} prüft ob diese auch für
+ *   Alle Teams im Personenimport werden importiert, aber {@link Person#mayWork()} prüft ob diese auch für
  *   die Arbeitsdienste in Frage kommt. Maßgeblich ist die Liste {@link Person#WORKING_TEAMS}.
  *   Konvertierung der Teamnamen (mit Hilfe der Staffel) in M1, F1, F2, etc
  *
@@ -145,10 +148,7 @@ public class HSGApp {
 	public static final String CSV_DELIM = ";";
 	public static final HSGDate START_DATE = new HSGDate(2019, 11, 1); // HSGDate.TODAY.nextDay(1);
 	public static final HSGDate END_DATE = new HSGDate(2119, 12, 31); // HSGDate.TODAY.nextDay(1);
-	/*
-	 * Sonderregelung für F1 - Kassenzeiten beginnen eine halbe stunde eher.
-	 */
-	public static final Team F1 = new Team("F1");
+
 	public static Logger logger = Logger.getLogger(HSGApp.class);
 
 	public static void main(final String[] args) throws IOException, ParseException {
@@ -177,7 +177,7 @@ public class HSGApp {
 		JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
 		// Personen einlesen
-		JavaRDD<Person> personen = jsc.textFile(spielerCSVUTF8.toString()).map(Person::parse).filter(Person::isValid);
+		JavaRDD<Person> personen = jsc.textFile(spielerCSVUTF8.toString()).map(Person::parse).filter(Person::mayWork);
 
 		// Spiele einlesen
 		JavaRDD<Game> games = jsc.textFile(spieleCSVUTF8.toString()).map(Game::parse).filter(
@@ -205,6 +205,11 @@ public class HSGApp {
 				logger.info(p + " hat mit " + p.getGearbeitetM() / 60.0
 						+ "h mehr (oder ist hinreichend nah dran) als der erforderliche Durchschnitt von "
 						+ avgZeitProTeam.get(p.getTeam()) / 60.0 + "h gearbeitet und wird nicht mehr eingeteilt.");
+			}
+			if (res && !p.getTeam().isAktive() && p.getTrainerVon() != null && p.getTrainerVon().isJugend()) {
+				logger.info(p + " ist von den Arbeitsdiensten ausgeschlossen, weil aktiv bei " + p.getTeam()
+						+ " und Jugendtrainer von " + p.getTrainerVon());
+				res = false;
 			}
 			return res;
 		}).cache();
@@ -272,7 +277,7 @@ public class HSGApp {
 		logger.info("Gesamtvorleistung " + gesamtVorleistung / 60.0 + "h");
 
 		double gesamtEffektivPersonen = vorleistungProTeam.entrySet().stream().mapToDouble(
-				e -> e.getKey().leistungsFaktor() * e.getValue()._1).sum();
+				e -> e.getKey().getLeistungsFaktor() * e.getValue()._1).sum();
 		int zeitKasseVerkauf = zeitenNachTyp.get(Typ.Kasse) + zeitenNachTyp.get(Typ.Verkauf);
 
 		final double zeitProPerson = (zeitKasseVerkauf + gesamtVorleistung) / gesamtEffektivPersonen;
@@ -280,7 +285,7 @@ public class HSGApp {
 				+ "min (" + zeitProPerson / 60.0 + ")");
 		Map<Team, Double> res = new HashMap<>(
 				vorleistungProTeam.entrySet().stream().collect(Collectors.toMap(e -> e.getKey(), e -> {
-					double zeitMitVorleistung = e.getKey().leistungsFaktor() * e.getValue()._1 * zeitProPerson;
+					double zeitMitVorleistung = e.getKey().getLeistungsFaktor() * e.getValue()._1 * zeitProPerson;
 					double schnittProSpieler = zeitMitVorleistung / (double) e.getValue()._1;
 					logger.info("Team " + e.getKey() + " muss die Saison " + zeitMitVorleistung / 60.0
 							+ "h arbeiten und hat schon " + e.getValue()._2 / 60.0 + "h geleistet. Bleiben "
@@ -295,7 +300,7 @@ public class HSGApp {
 		logger.info("Gesamtvorleistung Aufsicht: " + vorarbeitAufsicht / 60.0 + "h");
 
 		// TODO
-		res.put(Team.AUFSICHT, 0.0);
+		res.put(Team.Aufsicht, 0.0);
 //		double gesamtEffektivPersonen = vorleistungProTeam.entrySet().stream().mapToDouble(
 //				e -> e.getKey().leistungsFaktor() * e.getValue()._1).sum();
 //		int zeitKasseVerkauf = zeitenNachTyp.get(Typ.Kasse) + zeitenNachTyp.get(Typ.Verkauf);
@@ -440,7 +445,7 @@ public class HSGApp {
 				if (i < t._2._1.size()) {
 					Tuple2<Dienst, List<Zuordnung>> d = t._2._1.get(i);
 					elems.add(d._1.toCSV()); // 3 columns (von, bis, was)
-					elems.add(d._2.get(0).getPerson().getTeam().getId()); // team
+					elems.add(d._2.get(0).getPerson().getTeam().name()); // team
 					int np = d._2.get(0).getDienst().getTyp().getPersonen();
 					elems.add(Integer.toString(np)); // anzahl
 					// Personenliste - immer 5 Personen (einheitliches Format in der Helferliste)
@@ -516,9 +521,9 @@ public class HSGApp {
 		 * stunde nach vorne gelegt, damit die Kassenschicht früher anfängt.
 		 */
 		JavaPairRDD<HSGDate, List<Dienst>> kassenZeiten = games.filter(
-				g -> g.isHeimspiel() && g.getTeam().mitKasse()).keyBy(g -> g.getDate()).aggregateByKey(
+				g -> g.isHeimspiel() && g.getTeam().isMitKasse()).keyBy(g -> g.getDate()).aggregateByKey(
 						HSGInterval.MAXMIN,
-						(ex, g) -> g.getTeam().equals(F1) && g.getZeit().compareTo(ex.getStart()) <= 0
+						(ex, g) -> g.getTeam().equals(Team.F1) && g.getZeit().compareTo(ex.getStart()) <= 0
 								? ex.stretch(g.getZeit().minusMinutes(30))
 								: ex.stretch(g.getZeit()),
 						(a, b) -> a.merge(b)).mapValues(v -> berechneGesamtzeit(v, Typ.Kasse)).mapValues(

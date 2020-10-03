@@ -38,6 +38,9 @@ public class HSGInterval implements Serializable {
 
 	public static final HSGInterval MAXMIN = new HSGInterval(LocalTime.MAX, LocalTime.MIN);
 	public static final HSGInterval ALL_DAY = new HSGInterval(LocalTime.MIN, LocalTime.MAX);
+	public static final HSGInterval BIS_15 = new HSGInterval(LocalTime.MIN, LocalTime.of(15, 00));
+	public static final HSGInterval BIS_17 = new HSGInterval(LocalTime.MIN, LocalTime.of(17, 00));
+	public static final HSGInterval EMPTY = new HSGInterval(LocalTime.MIN, LocalTime.MIN);
 
 	private final LocalTime start;
 	private final LocalTime end;
@@ -58,6 +61,10 @@ public class HSGInterval implements Serializable {
 	@Override
 	public String toString() {
 		return start + " - " + end;
+	}
+
+	public boolean isEmpty() {
+		return start == null || end == null || start.equals(end) || end.isBefore(start);
 	}
 
 	public boolean contains(final LocalTime date) {

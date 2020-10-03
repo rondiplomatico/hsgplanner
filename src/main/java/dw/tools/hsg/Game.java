@@ -86,7 +86,7 @@ public class Game implements Serializable, Comparable<Game> {
 			/*
 			 * MXXX -> M[1-N] FXXX -> F[1-N] XJYZ -> XYZ[1-N]
 			 */
-			res.team = new Team(res.staffel.startsWith("M") ? "M" + nr
+			res.team = Team.valueOf(res.staffel.startsWith("M") ? "M" + nr
 					: res.staffel.startsWith("F") ? "F" + nr
 							: res.staffel.contains("-")
 									? res.staffel.substring(0, res.staffel.lastIndexOf("-")).replace("J", "") + nr

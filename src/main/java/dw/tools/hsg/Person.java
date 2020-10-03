@@ -59,19 +59,19 @@ public class Person implements Serializable {
 
 	public Person(final String name, final String teamId, final int worked, final boolean aufsicht,
 			final String trainerVon) {
-		this(name, createShort(name), new Team(teamId), worked, aufsicht, new Team(trainerVon));
+		this(name, createShort(name), Team.valueOf(teamId), worked, aufsicht, Team.valueOf(trainerVon));
 	}
 
 	public Person(final String name, final String teamId, final int worked) {
-		this(name, new Team(teamId), worked, false, null);
+		this(name, Team.valueOf(teamId), worked, false, null);
 	}
 
 	/*
 	 * Jemand ist zulässig für Arbeitsdienste wenn ihr Team in der Liste der
 	 * arbeitenden Teams ist oder sie als Aufsicht markiert ist.
 	 */
-	public boolean isValid() {
-		return team.mayWork() || aufsicht;
+	public boolean mayWork() {
+		return (team.mayWork()) || aufsicht;
 	}
 
 	public boolean mayWorkAt(final Dienst d) {
@@ -88,17 +88,20 @@ public class Person implements Serializable {
 	}
 
 	/**
-	 * CSV-Struktur:
-	 * Name, Team, TrainerVon, Aufsicht, Arbeitsstd
+	 * CSV-Struktur: Name, Team, TrainerVon, Aufsicht, Arbeitsstd
+	 * 
 	 * @param line
 	 * @return
 	 */
 	public static Person parse(final String line) {
 		String[] elems = line.split(";");
 		try {
-			Team team = new Team(elems[1]);
-			Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? new Team(elems[2]) : null;
+			Team team = !Strings.isNullOrEmpty(elems[1]) ? Team.valueOf(elems[1]) : Team.None;
+			Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? Team.valueOf(elems[2]) : null;
 			boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
+			if (team == null && trainerVon == null && !aufsicht) {
+				throw new IllegalArgumentException("Ungültige Person:" + line);
+			}
 			int worked = (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60);
 			return new Person(elems[0].trim(), team, worked, aufsicht, trainerVon);
 		} catch (Exception e) {
@@ -109,7 +112,7 @@ public class Person implements Serializable {
 
 	@Override
 	public String toString() {
-		return name + "@" + team.getId() + (aufsicht ? "/!" : "");
+		return name + "@" + team + (aufsicht ? "/!" : "");
 	}
 
 }

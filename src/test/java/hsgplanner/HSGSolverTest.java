@@ -117,10 +117,10 @@ public class HSGSolverTest {
     Dienst V1300_1600 = new Dienst(date, i1300_1600, Typ.Verkauf);
     Dienst K1200_1600 = new Dienst(date, i1200_1600, Typ.Kasse);
 
-    Game F21 = new Game(date, LocalTime.of(16, 00), HSGApp.GA, "F2", new Team("F2"), "Foobars", true, "LL");
-    Game F11 = new Game(date, LocalTime.of(18, 00), HSGApp.GA, "F1", new Team("F1"), "Foobars", true, "BWOL");
-    Game M11 = new Game(date, LocalTime.of(20, 00), HSGApp.GA, "M1", new Team("M1"), "Foobars", true, "BK");
-    Game M21 = new Game(date, LocalTime.of(14, 00), HSGApp.GA, "M2", new Team("M2"), "Foobars", true, "BK");
+    Game F21 = new Game(date, LocalTime.of(16, 00), HSGApp.GA, "F2", Team.F2, "Foobars", true, "LL");
+    Game F11 = new Game(date, LocalTime.of(18, 00), HSGApp.GA, "F1", Team.F1, "Foobars", true, "BWOL");
+    Game M11 = new Game(date, LocalTime.of(20, 00), HSGApp.GA, "M1", Team.M1, "Foobars", true, "BK");
+    Game M21 = new Game(date, LocalTime.of(14, 00), HSGApp.GA, "M2", Team.M2, "Foobars", true, "BK");
     List<Game> noGames = Collections.emptyList();
     // Game F22 = new Game(date, i1300_1600.getStart(), HSGApp.GA, "F2", new Team("F1"), "Foobars", true, "BK");
 
