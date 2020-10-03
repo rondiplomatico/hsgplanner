@@ -200,16 +200,19 @@ public class HSGApp {
 		// Alle Spieler rauswerfen, die schon genug gearbeitet haben (reduziert die
 		// Problemkomplexität)
 		personen = personen.filter(p -> {
-			boolean res = p.isAufsicht() || (p.getGearbeitetM() < avgZeitProTeam.get(p.getTeam()) - kürzesterDienst);
+			if (p.isAufsicht()) {
+				return true;
+			}
+			boolean res = p.getGearbeitetM() < avgZeitProTeam.get(p.getTeam()) - kürzesterDienst;
 			if (!res) {
 				logger.info(p + " hat mit " + p.getGearbeitetM() / 60.0
 						+ "h mehr (oder ist hinreichend nah dran) als der erforderliche Durchschnitt von "
 						+ avgZeitProTeam.get(p.getTeam()) / 60.0 + "h gearbeitet und wird nicht mehr eingeteilt.");
 			}
-			if (res && !p.getTeam().isAktive() && p.getTrainerVon() != null && p.getTrainerVon().isJugend()) {
+			res &= !(p.getTeam().isAktive() && p.getTrainerVon() != null && p.getTrainerVon().isJugend());
+			if (!res) {
 				logger.info(p + " ist von den Arbeitsdiensten ausgeschlossen, weil aktiv bei " + p.getTeam()
 						+ " und Jugendtrainer von " + p.getTrainerVon());
-				res = false;
 			}
 			return res;
 		}).cache();
