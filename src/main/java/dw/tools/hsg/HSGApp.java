@@ -1,6 +1,11 @@
 package dw.tools.hsg;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -29,6 +34,8 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+
+import com.google.common.base.Charsets;
 
 import dw.tools.hsg.Dienst.Typ;
 import scala.Tuple2;
@@ -149,53 +156,17 @@ public class HSGApp {
 	public static Logger logger = Logger.getLogger(HSGApp.class);
 
 	public static void main(final String[] args) throws IOException, ParseException {
-		// Options options = new Options();
-		//
-		// Option option = new Option("s", "schema", false, "print the schema");
-		// option.setRequired(false);
-		// options.addOption(option);
-		//
-		// option = new Option("o", "out", true, "sets the output file");
-		// option.setRequired(false);
-		// options.addOption(option);
-		//
-		// option = new Option("a", "all", false, "flatten all non-array fields");
-		// option.setRequired(false);
-		// options.addOption(option);
-		//
-		// option = new Option("f", "fields", true, "sets the field selection, separated
-		// by comma");
-		// option.setRequired(false);
-		// options.addOption(option);
-		//
-		// option = new Option("r", "repartition", true, "repartitions the parquet
-		// file");
-		// option.setRequired(false);
-		// options.addOption(option);
-		//
-		// option = new Option("ro", "repartition_object", true, "repartitions and
-		// object file");
-		// option.setRequired(false);
-		// options.addOption(option);
+		Path spieleCSVLatin1 = new Path(args[0]);
+		Path spielerCSVLatin1 = new Path(args[1]);
 
-		// CommandLineParser parser = new PosixParser();
-		// CommandLine cmd = parser.parse(options, args);
-		// if (args.length == 0 || cmd.getArgs().length == 0) {
-		// HelpFormatter formatter = new HelpFormatter();
-		// formatter.printHelp("<options> <input path>", options);
-		// System.exit(0);
-		// }
+		/*
+		 * Convert to UTF8
+		 */
+		Path spielerCSVUTF8 = toUTF8(spieleCSVLatin1);
+		Path spieleCSVUTF8 = toUTF8(spielerCSVLatin1);
 
-		// Path in = new Path(cmd.getArgs()[0]);
-		// Path out = new Path(in.getParent(), "converted" + (cmd.hasOption("f") ||
-		// cmd.hasOption("a") ? ".csv" :
-		// ".json"));
-		// if (cmd.hasOption("o")) {
-		// out = new Path(cmd.getOptionValue("o"));
-		// }
+		Path outbase = args.length > 2 ? new Path(args[2]) : spielerCSVUTF8.getParent();
 
-		Path in = new Path(args[1]);
-		Path outbase = args.length > 2 ? new Path(args[2]) : in.getParent();
 		FileAppender fa = new FileAppender();
 		fa.setFile(new Path(outbase, "convert.log").toString());
 		fa.setLayout(new PatternLayout("%d %-5p [%c{1}] %m%n"));
@@ -210,16 +181,12 @@ public class HSGApp {
 		JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
 		// Personen einlesen
-		JavaRDD<Person> personen = jsc.textFile(in.toString())
-				// .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.UTF_8))
-				.map(Person::parse).filter(Person::isValid);
+		JavaRDD<Person> personen = jsc.textFile(spielerCSVUTF8.toString()).map(Person::parse).filter(Person::isValid);
 
 		// Spiele einlesen
-		in = new Path(args[0]);
-		JavaRDD<Game> games = jsc.textFile(in.toString())
-				// .map(s -> new String(s.getBytes(Charsets.ISO_8859_1), Charsets.ISO_8859_1))
-				.map(Game::parse).filter(
-						g -> g != null && g.getDate().after(START_DATE) && g.getDate().before(END_DATE)).cache();
+
+		JavaRDD<Game> games = jsc.textFile(spieleCSVUTF8.toString()).map(Game::parse).filter(
+				g -> g != null && g.getDate().after(START_DATE) && g.getDate().before(END_DATE)).cache();
 		games.foreach(g -> logger.info("Spiel:" + g));
 
 		JavaPairRDD<HSGDate, Spieltag> spieltage = berechneSpieltage(games, personen);
@@ -233,15 +200,16 @@ public class HSGApp {
 
 		final Map<Team, Double> avgZeitProTeam = berechneSpielerArbeitszeit(personen, zeitenNachTyp);
 
-		int kürzesterDienst = Arrays.asList(Dienst.Typ.values()).stream().mapToInt(t -> t.getTimesHS()[0]).min().getAsInt() * 30;
+		int kürzesterDienst = Arrays.asList(Dienst.Typ.values()).stream().mapToInt(
+				t -> t.getTimesHS()[0]).min().getAsInt() * 30;
 		// Alle Spieler rauswerfen, die schon genug gearbeitet haben (reduziert die
 		// Problemkomplexität)
 		personen = personen.filter(p -> {
-			boolean res = p.isAufsicht() || (p.getGearbeitetM() < avgZeitProTeam.get(p.getTeam())-kürzesterDienst);
+			boolean res = p.isAufsicht() || (p.getGearbeitetM() < avgZeitProTeam.get(p.getTeam()) - kürzesterDienst);
 			if (!res) {
 				logger.info(p + " hat mit " + p.getGearbeitetM() / 60.0
-						+ "h mehr (oder ist hinreichend nah dran) als der erforderliche Durchschnitt von " + avgZeitProTeam.get(p.getTeam()) / 60.0
-						+ "h gearbeitet und wird nicht mehr eingeteilt.");
+						+ "h mehr (oder ist hinreichend nah dran) als der erforderliche Durchschnitt von "
+						+ avgZeitProTeam.get(p.getTeam()) / 60.0 + "h gearbeitet und wird nicht mehr eingeteilt.");
 			}
 			return res;
 		}).cache();
@@ -279,6 +247,19 @@ public class HSGApp {
 
 		jsc.close();
 
+	}
+
+	private static Path toUTF8(Path in) {
+		Path res = new Path(in.getParent(), "utf8-" + in.getName());
+		try {
+			String str = new String(Files.readAllBytes(Paths.get(in.toString())), Charsets.ISO_8859_1);
+			Files.write(Paths.get(res.toString()), str.getBytes(Charsets.UTF_8), StandardOpenOption.CREATE,
+					StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+		return res;
 	}
 
 	private static Map<Team, Double> berechneSpielerArbeitszeit(JavaRDD<Person> personen,

@@ -87,6 +87,12 @@ public class Person implements Serializable {
 		return name;
 	}
 
+	/**
+	 * CSV-Struktur:
+	 * Name, Team, TrainerVon, Aufsicht, Arbeitsstd
+	 * @param line
+	 * @return
+	 */
 	public static Person parse(final String line) {
 		String[] elems = line.split(";");
 		try {
