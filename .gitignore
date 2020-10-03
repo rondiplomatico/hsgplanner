@@ -8,3 +8,4 @@ cplex_problem.txt
 *.xlsx
 bin/
 HD1819/
+lib/cplex*
