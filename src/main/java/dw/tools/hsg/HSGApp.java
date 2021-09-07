@@ -172,31 +172,45 @@ public class HSGApp {
 		Logger.getRootLogger().addAppender(fa);
 
 		SparkConf sparkConf = new SparkConf();
-		sparkConf.setAppName("HSG Tool").set("spark.ui.enabled", "false").set("spark.eventLog.enabled",
-				"false").setMaster("local[*]");
+		sparkConf	.setAppName("HSG Tool")
+					.set("spark.ui.enabled", "false")
+					.set("spark.eventLog.enabled", "false")
+					.setMaster("local[*]");
 		JavaSparkContext jsc = new JavaSparkContext(sparkConf);
 
 		// Personen einlesen
 		JavaRDD<Person> personen = jsc.textFile(spielerCSVUTF8.toString()).map(Person::parse).filter(Person::mayWork);
 
+//		personen = personen.filter(p -> !p.isAufsicht()).map(p -> {
+//			return new Person(p.getTeam().name(), p.getTeam(), 0, p.isAufsicht(), null);
+//		}).distinct().cache();
+//		personen.foreach(p -> System.out.println(p));
+
 		// Spiele einlesen
-		JavaRDD<Game> games = jsc.textFile(spieleCSVUTF8.toString()).map(Game::parse).filter(
-				g -> g != null && g.getDate().after(START_DATE) && g.getDate().before(END_DATE)).cache();
+		JavaRDD<Game> games = jsc	.textFile(spieleCSVUTF8.toString())
+									.map(Game::parse)
+									.filter(g -> g != null
+											&& g.getDate().after(START_DATE) && g.getDate().before(END_DATE))
+									.cache();
 		games.foreach(g -> logger.info("Spiel:" + g));
 
 		JavaPairRDD<HSGDate, Spieltag> spieltage = berechneSpieltage(games, personen);
 
 		final Map<Typ, Integer> zeitenNachTyp = new HashMap<>(
-				spieltage.flatMap(s -> s._2.getDienste().iterator()).distinct().keyBy(d -> d.getTyp()).aggregateByKey(0,
-						(ex, n) -> ex + n.zeit.dauerInMin() * n.getTyp().getPersonen(),
-						(a, b) -> a + b).collectAsMap());
-		zeitenNachTyp.forEach(
-				(t, z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + (z / 60.0) + "h)"));
+				spieltage	.flatMap(s -> s._2.getDienste().iterator())
+							.distinct()
+							.keyBy(d -> d.getTyp())
+							.aggregateByKey(0, (
+									ex, n) -> ex + n.zeit.dauerInMin() * n.getTyp().getPersonen(), (a, b) -> a + b)
+							.collectAsMap());
+		zeitenNachTyp.forEach((t,
+				z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + (z / 60.0) + "h)"));
 
 		final Map<Team, Double> avgZeitProTeam = berechneSpielerArbeitszeit(personen, zeitenNachTyp);
 
-		int kürzesterDienst = Arrays.asList(Dienst.Typ.values()).stream().mapToInt(
-				t -> t.getTimesHS()[0]).min().getAsInt() * 30;
+		int kürzesterDienst =
+				Arrays.asList(Dienst.Typ.values()).stream().mapToInt(t -> t.getTimesHS()[0]).min().getAsInt()
+						* 30;
 		// Alle Spieler rauswerfen, die schon genug gearbeitet haben (reduziert die
 		// Problemkomplexität)
 		personen = personen.filter(p -> {
@@ -219,8 +233,28 @@ public class HSGApp {
 
 		JavaRDD<Zuordnung> alleMöglichenZuordunungen = erzeugeZuordnungen(personen, spieltage);
 
-		JavaRDD<Zuordnung> gültigeZuordnungen = entferneDiensteAnNichtspieltagen(games, alleMöglichenZuordunungen,
-				spieltage);
+		JavaRDD<Zuordnung> gültigeZuordnungen =
+				entferneDiensteAnNichtspieltagen(games, alleMöglichenZuordunungen, spieltage);
+//		JavaRDD<Zuordnung> gültigeZuordnungen = alleMöglichenZuordunungen;
+
+		if (!checkAlleNotwendigenZuordnungenSindVorhanden(spieltage, gültigeZuordnungen).isEmpty()) {
+			jsc.close();
+			throw new RuntimeException("Zu wenige Zuordnungen generiert!");
+		}
+
+//		JavaRDD<Zuordnung> teamZuordnungen =
+//				gültigeZuordnungen	.filter(z -> !z.getDienst().getTyp().equals(Typ.Aufsicht))
+//									.map(z -> {
+//										Person p = new Person(z.getPerson().getTeam().name(), z.getPerson().getTeam(),
+//												0, z.getPerson()
+//													.isAufsicht(),
+//												null);
+//										return new Zuordnung(p, z.getDienst(), z.getNr(), 0);
+//									})
+//									.distinct()
+//									.cache();
+//		teamZuordnungen.sortBy(z -> z.toString(), true, 1).foreach(z -> System.out.println(z));
+//		gültigeZuordnungen = teamZuordnungen;
 
 		/*
 		 * Fixierte Zuordnungen einlesen und rausrechnen
@@ -240,7 +274,7 @@ public class HSGApp {
 //		zeitenNachTyp.forEach(
 //				(t, z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + (z / 60.0) + "h)"));
 
-		JavaRDD<Zuordnung> zu = jsc.parallelize(HSGSolver.solve(gültigeZuordnungen, games, avgZeitProTeam));
+		JavaRDD<Zuordnung> zu = jsc.parallelize(HSGSolver.solve(gültigeZuordnungen, games, avgZeitProTeam)).cache();
 
 		content = toCSV(games, zu);
 		out = new Path(outbase, "dienste.csv");
@@ -257,8 +291,8 @@ public class HSGApp {
 		try {
 			String str = new String(Files.readAllBytes(Paths.get(in.toString())), Charsets.ISO_8859_1);
 			str = str.replace(",", ";");
-			Files.write(Paths.get(res.toString()), str.getBytes(Charsets.UTF_8), StandardOpenOption.CREATE,
-					StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+			Files.write(Paths.get(res.toString()), str
+														.getBytes(Charsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;
@@ -270,17 +304,23 @@ public class HSGApp {
 			Map<Typ, Integer> zeitenNachTyp) {
 
 		final Map<Team, Tuple2<Integer, Double>> vorleistungProTeam = new HashMap<>(
-				personen.filter(p -> !p.isAufsicht()).keyBy(p -> p.getTeam()).aggregateByKey(
-						new Tuple2<Integer, Double>(0, 0.0),
-						(ex, n) -> new Tuple2<>(ex._1 + 1, ex._2 + n.getGearbeitetM()),
-						(a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2)).collectAsMap());
-		vorleistungProTeam.forEach((t, v) -> logger.info(
-				"Vorleistung von Team " + t + " mit " + v._1 + " Spielern: " + v._2 + " (" + (v._2 / 60.0) + "h)"));
+				personen.filter(p -> !p.isAufsicht())
+						.keyBy(p -> p.getTeam())
+						.aggregateByKey(new Tuple2<Integer, Double>(
+								0, 0.0), (ex, n) -> new Tuple2<>(ex._1 + 1, ex._2 + n.getGearbeitetM()), (a,
+										b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2))
+						.collectAsMap());
+		vorleistungProTeam.forEach((t, v) -> logger.info("Vorleistung von Team " + t + " mit " + v._1 + " Spielern: "
+				+ v._2 + " (" + (v._2 / 60.0) + "h)"));
 		final double gesamtVorleistung = vorleistungProTeam.values().stream().mapToDouble(v -> v._2).sum();
 		logger.info("Gesamtvorleistung " + gesamtVorleistung / 60.0 + "h");
 
-		double gesamtEffektivPersonen = vorleistungProTeam.entrySet().stream().mapToDouble(
-				e -> e.getKey().getLeistungsFaktor() * e.getValue()._1).sum();
+		double gesamtEffektivPersonen =
+				vorleistungProTeam	.entrySet()
+									.stream()
+									.mapToDouble(e -> e.getKey().getLeistungsFaktor()
+											* e.getValue()._1)
+									.sum();
 		int zeitKasseVerkauf = zeitenNachTyp.get(Typ.Kasse) + zeitenNachTyp.get(Typ.Verkauf);
 
 		final double zeitProPerson = (zeitKasseVerkauf + gesamtVorleistung) / gesamtEffektivPersonen;
@@ -328,33 +368,46 @@ public class HSGApp {
 			JavaRDD<Zuordnung> allzu) {
 		Path in;
 		in = new Path(args[3]);
-		JavaRDD<Zuordnung> fixed = jsc.textFile(in.toString()).flatMap(l -> Zuordnung.read(l).iterator()).keyBy(
-				z -> new Tuple2<>(z.getPerson().getName(), z.getPerson().getTeam())).leftOuterJoin(
-						personen.keyBy(p -> new Tuple2<>(p.getName(), p.getTeam()))).map(d -> {
-							if (d._2._2.isPresent()) {
-								return new Zuordnung(d._2._2.get(), d._2._1.getDienst(), d._2._1.getNr());
-							} else {
-								logger.warn("nicht gefunden: " + d._1 + " in " + d._2._1);
-								return null;
-							}
-						}).filter(d -> d != null).cache();
+		JavaRDD<Zuordnung> fixed =
+				jsc	.textFile(in.toString())
+					.flatMap(l -> Zuordnung.read(l).iterator())
+					.keyBy(z -> new Tuple2<>(
+							z.getPerson().getName(),
+							z.getPerson().getTeam()))
+					.leftOuterJoin(personen.keyBy(p -> new Tuple2<>(
+							p.getName(), p.getTeam())))
+					.map(d -> {
+						if (d._2._2.isPresent()) {
+							return new Zuordnung(d._2._2.get(), d._2._1.getDienst(), d._2._1.getNr());
+						} else {
+							logger.warn("nicht gefunden: " + d._1 + " in " + d._2._1);
+							return null;
+						}
+					})
+					.filter(d -> d != null)
+					.cache();
 		fixed.foreach(f -> logger.info("Festgelegt: " + f));
 
-		allzu = allzu.keyBy(z -> new Tuple3<>(z.getDienst(), z.getPerson(), z.getNr())).fullOuterJoin(
-				fixed.keyBy(z -> new Tuple3<>(z.getDienst(), z.getPerson(), z.getNr()))).map(d -> {
-					if (d._2._1.isPresent()) {
-						Zuordnung z = d._2._1.get();
-						z.setFixed(d._2._2.isPresent());
-						if (d._2._2.isPresent()) {
-							logger.warn("Zuordnung fixiert: " + z);
-						}
-						return z;
-					} else {
-						logger.warn("Keine Zuordnung für Fixierung: " + d._2._2.get().getDienst().getDatum() + ", "
-								+ d._2._2.get());
-						return null;
-					}
-				}).filter(d -> d != null);
+		allzu = allzu	.keyBy(z -> new Tuple3<>(z.getDienst(), z.getPerson(),
+				z.getNr()))
+						.fullOuterJoin(fixed.keyBy(z -> new Tuple3<>(z.getDienst(), z.getPerson(),
+								z.getNr())))
+						.map(d -> {
+							if (d._2._1.isPresent()) {
+								Zuordnung z = d._2._1.get();
+								z.setFixed(d._2._2.isPresent());
+								if (d._2._2.isPresent()) {
+									logger.warn("Zuordnung fixiert: " + z);
+								}
+								return z;
+							} else {
+								logger.warn("Keine Zuordnung für Fixierung: " + d._2._2.get().getDienst().getDatum()
+										+ ", "
+										+ d._2._2.get());
+								return null;
+							}
+						})
+						.filter(d -> d != null);
 		return allzu;
 	}
 
@@ -365,20 +418,35 @@ public class HSGApp {
 	 * @param personen
 	 */
 	private static void exportStats(final Path out, final JavaRDD<Zuordnung> zu, final JavaRDD<Person> personen) {
-		JavaPairRDD<Person, Integer> effectiveWorkTime = zu.mapToPair(
-				z -> new Tuple2<>(z.getPerson(), z.getDienst().getZeit().dauerInMin())).reduceByKey(
-						(a, b) -> a + b).cache();
-		final Tuple2<Integer, Integer> avgAufsichtT = effectiveWorkTime.filter(z -> z._1.isAufsicht()).isEmpty()
-				? new Tuple2<>(0, 1)
-				: effectiveWorkTime.filter(z -> z._1.isAufsicht()).map(z -> new Tuple2<>(z._2, 1)).reduce(
-						(a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2));
-		final Tuple2<Integer, Integer> avgDienstT = effectiveWorkTime.filter(z -> !z._1.isAufsicht()).isEmpty()
-				? new Tuple2<>(0, 1)
-				: effectiveWorkTime.filter(z -> !z._1.isAufsicht()).map(z -> new Tuple2<>(z._2, 1)).reduce(
-						(a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2));
-		Map<Team, Integer> teamGröße = new HashMap<>(
-				zu.map(z -> z.getPerson()).filter(p -> !p.isAufsicht()).distinct().mapToPair(
-						p -> new Tuple2<>(p.getTeam(), 1)).reduceByKey((a, b) -> a + b).collectAsMap());
+		JavaPairRDD<Person, Integer> effectiveWorkTime =
+				zu	.mapToPair(z -> new Tuple2<>(z.getPerson(), z.getDienst()
+																.getZeit()
+																.dauerInMin()))
+					.reduceByKey((a, b) -> a + b)
+					.cache();
+		final Tuple2<Integer, Integer> avgAufsichtT =
+				effectiveWorkTime	.filter(z -> z._1.isAufsicht())
+									.isEmpty()
+											? new Tuple2<>(0, 1)
+											: effectiveWorkTime	.filter(z -> z._1.isAufsicht())
+																.map(z -> new Tuple2<>(z._2, 1))
+																.reduce((a, b) -> new Tuple2<>(a._1 + b._1, a._2
+																		+ b._2));
+		final Tuple2<Integer, Integer> avgDienstT =
+				effectiveWorkTime	.filter(z -> !z._1.isAufsicht())
+									.isEmpty()
+											? new Tuple2<>(0, 1)
+											: effectiveWorkTime	.filter(z -> !z._1.isAufsicht())
+																.map(z -> new Tuple2<>(z._2, 1))
+																.reduce((a, b) -> new Tuple2<>(a._1 + b._1, a._2
+																		+ b._2));
+		Map<Team, Integer> teamGröße =
+				new HashMap<>(zu.map(z -> z.getPerson())
+								.filter(p -> !p.isAufsicht())
+								.distinct()
+								.mapToPair(p -> new Tuple2<>(p.getTeam(), 1))
+								.reduceByKey((a, b) -> a + b)
+								.collectAsMap());
 		final double avgAufsicht = avgAufsichtT._1 / (double) avgAufsichtT._2;
 		final double avgDienst = avgDienstT._1 / (double) avgDienstT._2;
 		logger.warn("Durchschn. Arbeitszeit Normal: " + avgDienst + ", Aufsicht:" + avgAufsicht);
@@ -388,90 +456,115 @@ public class HSGApp {
 		 */
 		JavaRDD<String> stats1 = effectiveWorkTime.map(t -> {
 			int total = t._1.getGearbeitetM() + t._2;
-			return String.join(HSGApp.CSV_DELIM, t._1.getName() + (t._1.isAufsicht() ? " (A)" : ""),
-					t._1.getTeam().toString(), "" + t._1.getGearbeitetM(), "" + t._2, Integer.toString(total),
-					Double.toString(total - (t._1.isAufsicht() ? avgAufsicht : avgDienst)).replace('.', ','));
+			return String.join(HSGApp.CSV_DELIM, t._1.getName()
+					+ (t._1.isAufsicht() ? " (A)" : ""), t._1.getTeam().toString(), "" + t._1.getGearbeitetM(), ""
+							+ t._2, Integer.toString(total), Double	.toString(total
+									- (t._1.isAufsicht() ? avgAufsicht : avgDienst))
+																	.replace('.', ','));
 		}).sortBy(s -> s, true, 1);
 
 		/*
 		 * Zeiten pro Team
 		 */
-		JavaRDD<String> stats2 = effectiveWorkTime.filter(z -> !z._1.isAufsicht()).mapToPair(
-				z -> new Tuple2<>(z._1.getTeam(), new Tuple2<>(z._1.getGearbeitetM(), z._2))).reduceByKey(
-						(a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2)).map(
-								t -> String.join(HSGApp.CSV_DELIM, "Gesamtsumme Team", t._1.toString(),
-										Integer.toString(t._2._1), Integer.toString(t._2._2),
-										Integer.toString(t._2._1 + t._2._2), Integer.toString(teamGröße.get(t._1)),
-										Double.toString((t._2._1 + t._2._2) / (double) teamGröße.get(t._1)).replace('.',
-												','))).sortBy(s -> s, true, 1);
+		JavaRDD<String> stats2 =
+				effectiveWorkTime	.filter(z -> !z._1.isAufsicht())
+									.mapToPair(z -> new Tuple2<>(
+											z._1.getTeam(), new Tuple2<>(z._1.getGearbeitetM(), z._2)))
+									.reduceByKey((a, b) -> new Tuple2<>(
+											a._1 + b._1,
+											a._2 + b._2))
+									.map(t -> String.join(HSGApp.CSV_DELIM, "Gesamtsumme Team", t._1.toString(), Integer.toString(t._2._1), Integer.toString(t._2._2), Integer.toString(t._2._1
+											+ t._2._2), Integer.toString(teamGröße.get(t._1)), Double
+																										.toString((t._2._1
+																												+ t._2._2)
+																												/ (double) teamGröße.get(t._1))
+																										.replace('.', ',')))
+									.sortBy(s -> s, true, 1);
 		;
 
 		/*
 		 * Personen ohne Arbeitsdienste
 		 */
-		JavaRDD<String> stats3 = personen.keyBy(p -> p).leftOuterJoin(
-				zu.mapToPair(z -> new Tuple2<>(z.getPerson(), 1))).map(d -> {
-					if (!d._2._2.isPresent()) {
-						return String.join(HSGApp.CSV_DELIM, "Kein Dienst",
-								d._1.getName() + (d._1.isAufsicht() ? " (A)" : ""), d._1.getTeam().toString(),
-								Integer.toString(d._1.getGearbeitetM()),
-								Double.toString(
-										d._1.getGearbeitetM() - (d._1.isAufsicht() ? avgAufsicht : avgDienst)).replace(
-												'.', ','));
-					} else {
-						return null;
-					}
-				}).filter(s -> s != null).sortBy(s -> s, true, 1);
+		JavaRDD<String> stats3 =
+				personen.keyBy(p -> p)
+						.leftOuterJoin(zu.mapToPair(z -> new Tuple2<>(z.getPerson(),
+								1)))
+						.map(d -> {
+							if (!d._2._2.isPresent()) {
+								return String.join(HSGApp.CSV_DELIM, "Kein Dienst", d._1.getName()
+										+ (d._1.isAufsicht() ? " (A)"
+												: ""), d._1	.getTeam()
+															.toString(), Integer.toString(d._1.getGearbeitetM()), Double
+																														.toString(d._1.getGearbeitetM()
+																																- (d._1.isAufsicht()
+																																		? avgAufsicht
+																																		: avgDienst))
+																														.replace('.', ','));
+							} else {
+								return null;
+							}
+						})
+						.filter(s -> s != null)
+						.sortBy(s -> s, true, 1);
 		saveAsFile(stats1.union(stats2).union(stats3), new Path(out, "stats.csv"));
 	}
 
 	public static JavaRDD<String> toCSV(final JavaRDD<Game> games, final JavaRDD<Zuordnung> zu) {
-		return zu.keyBy(z -> z.getDienst().getDatum()).groupByKey().mapValues(t -> {
-			List<Tuple2<Dienst, List<Zuordnung>>> hlp = new ArrayList<>(
-					StreamSupport.stream(t.spliterator(), false).collect(
-							Collectors.groupingBy(z -> z.getDienst())).entrySet().stream().map(
-									e -> new Tuple2<>(e.getKey(), e.getValue())).collect(Collectors.toList()));
-			Collections.sort(hlp, (a, b) -> a._1.compareTo(b._1));
-			return hlp;
-		}).join(games.keyBy(g -> g.getDate()).groupByKey().mapValues(v -> {
-			List<Game> res = IterableUtil.toList(v);
-			Collections.sort(res);
-			return res;
-		})).sortByKey().flatMap(t -> {
-			// Spielinfo (4 spalten) Datum Von Bis Was Team Anzahl Helfer 1 Helfer 2
-			List<String> res = new ArrayList<>();
-			int max = Math.max(t._2._1.size(), t._2._2.size());
-			for (int i = 0; i < max; i++) {
-				List<String> elems = new ArrayList<>(14);
-				// @@@@ Dienst
-				elems.add(t._1.toddMMyyyy()); // Datum
-				if (i < t._2._1.size()) {
-					Tuple2<Dienst, List<Zuordnung>> d = t._2._1.get(i);
-					elems.add(d._1.toCSV()); // 3 columns (von, bis, was)
-					elems.add(d._2.get(0).getPerson().getTeam().name()); // team
-					int np = d._2.get(0).getDienst().getTyp().getPersonen();
-					elems.add(Integer.toString(np)); // anzahl
-					// Personenliste - immer 5 Personen (einheitliches Format in der Helferliste)
-					d._2.subList(0, np).stream().map(z -> z.getPerson().getName()).forEach(elems::add);
-					// Leere Felder für die 3-4 restlichen slots
-					for (int zz = 0; zz < ANZ_HELFER_SPALTEN - np; zz++) {
-						elems.add("");
-					}
-				} else { // oder eine leere Zeile
-					elems.add(HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM
-							+ HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM
-							+ HSGApp.CSV_DELIM + HSGApp.CSV_DELIM);
-				}
-				// Add 3 columns for time bookkeeping (";;" -> ";;;;"
-				elems.add(HSGApp.CSV_DELIM + HSGApp.CSV_DELIM);
-				// @@@@ Spiel
-				// Entweder die Spieldaten, oder eine leere Zeile
-				elems.add(i < t._2._2.size() ? t._2._2.get(i).toCSV()
-						: HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM);
-				res.add(String.join(HSGApp.CSV_DELIM, elems));
-			}
-			return res.iterator();
-		});
+		return zu	.keyBy(z -> z.getDienst().getDatum())
+					.groupByKey()
+					.mapValues(t -> {
+						List<Tuple2<Dienst, List<Zuordnung>>> hlp = new ArrayList<>(
+								StreamSupport	.stream(t.spliterator(), false)
+												.collect(Collectors.groupingBy(z -> z.getDienst()))
+												.entrySet()
+												.stream()
+												.map(e -> new Tuple2<>(
+														e.getKey(), e.getValue()))
+												.collect(Collectors.toList()));
+						Collections.sort(hlp, (a, b) -> a._1.compareTo(b._1));
+						return hlp;
+					})
+					.join(games.keyBy(g -> g.getDate()).groupByKey().mapValues(v -> {
+						List<Game> res = IterableUtil.toList(v);
+						Collections.sort(res);
+						return res;
+					}))
+					.sortByKey()
+					.flatMap(t -> {
+						// Spielinfo (4 spalten) Datum Von Bis Was Team Anzahl Helfer 1 Helfer 2
+						List<String> res = new ArrayList<>();
+						int max = Math.max(t._2._1.size(), t._2._2.size());
+						for (int i = 0; i < max; i++) {
+							List<String> elems = new ArrayList<>(14);
+							// @@@@ Dienst
+							elems.add(t._1.toddMMyyyy()); // Datum
+							if (i < t._2._1.size()) {
+								Tuple2<Dienst, List<Zuordnung>> d = t._2._1.get(i);
+								elems.add(d._1.toCSV()); // 3 columns (von, bis, was)
+								elems.add(d._2.get(0).getPerson().getTeam().name()); // team
+								int np = d._2.get(0).getDienst().getTyp().getPersonen();
+								elems.add(Integer.toString(np)); // anzahl
+								// Personenliste - immer 5 Personen (einheitliches Format in der Helferliste)
+								d._2.subList(0, np).stream().map(z -> z.getPerson().getName()).forEach(elems::add);
+								// Leere Felder für die 3-4 restlichen slots
+								for (int zz = 0; zz < ANZ_HELFER_SPALTEN - np; zz++) {
+									elems.add("");
+								}
+							} else { // oder eine leere Zeile
+								elems.add(HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM
+										+ HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM
+										+ HSGApp.CSV_DELIM + HSGApp.CSV_DELIM);
+							}
+							// Add 3 columns for time bookkeeping (";;" -> ";;;;"
+							elems.add(HSGApp.CSV_DELIM + HSGApp.CSV_DELIM);
+							// @@@@ Spiel
+							// Entweder die Spieldaten, oder eine leere Zeile
+							elems.add(i < t._2._2.size() ? t._2._2.get(i).toCSV()
+									: HSGApp.CSV_DELIM + HSGApp.CSV_DELIM + HSGApp.CSV_DELIM);
+							res.add(String.join(HSGApp.CSV_DELIM, elems));
+						}
+						return res.iterator();
+					});
 	}
 
 	public static JavaPairRDD<HSGDate, Spieltag> berechneSpieltage(final JavaRDD<Game> games,
@@ -480,19 +573,25 @@ public class HSGApp {
 		HashMap<Team, List<Person>> teams = new HashMap<>(
 				personen.keyBy(p -> p.getTeam()).groupByKey().mapValues(IterableUtil::toList).collectAsMap());
 		// System.out.println(teams);
-		JavaPairRDD<HSGDate, Iterable<Tuple2<Person, HSGInterval>>> blockierteTrainer = personen.filter(
-				t -> t.getTrainerVon() != null).keyBy(Person::getTrainerVon).join(games.keyBy(Game::getTeam)).mapToPair(
-						t -> new Tuple2<>(t._2._2.getDate(),
-								new Tuple2<>(t._2._1, t._2._2.getDienstSperrenZeitraum()))).groupByKey();
+		JavaPairRDD<HSGDate, Iterable<Tuple2<Person, HSGInterval>>> blockierteTrainer =
+				personen.filter(t -> t.getTrainerVon() != null)
+						.keyBy(Person::getTrainerVon)
+						.join(games.keyBy(Game::getTeam))
+						.mapToPair(t -> new Tuple2<>(
+								t._2._2.getDate(),
+								new Tuple2<>(t._2._1, t._2._2.getDienstSperrenZeitraum())))
+						.groupByKey();
 		// System.out.println("Blockierte Trainer:");
 		// blockierteTrainer.foreach(System.out::println);
 
 		/*
 		 * Spielzeiten
 		 */
-		JavaPairRDD<HSGDate, HSGInterval> spielZeiten = games.filter(g -> g.isHeimspiel()).keyBy(
-				g -> g.getDate()).aggregateByKey(HSGInterval.MAXMIN, (ex, g) -> ex.stretch(g.getZeit()),
-						(a, b) -> a.merge(b));
+		JavaPairRDD<HSGDate, HSGInterval> spielZeiten =
+				games	.filter(g -> g.isHeimspiel())
+						.keyBy(g -> g.getDate())
+						.aggregateByKey(HSGInterval.MAXMIN, (
+								ex, g) -> ex.stretch(g.getZeit()), (a, b) -> a.merge(b));
 		// System.out.println("Spielzeiten:");
 		// spielZeiten.foreach(s -> System.out.println(s));
 
@@ -514,8 +613,9 @@ public class HSGApp {
 		/*
 		 * Aufsicht
 		 */
-		JavaPairRDD<HSGDate, List<Dienst>> aufsichtsZeiten = spielZeiten.mapValues(
-				v -> berechneGesamtzeit(v, Typ.Aufsicht)).mapValues(v -> verteileDienste(v, Typ.Aufsicht));
+		JavaPairRDD<HSGDate, List<Dienst>> aufsichtsZeiten =
+				spielZeiten	.mapValues(v -> berechneGesamtzeit(v, Typ.Aufsicht))
+							.mapValues(v -> verteileDienste(v, Typ.Aufsicht));
 		// System.out.println("Aufsichtszeiten:");
 		// aufsichtsZeiten.foreach(System.out::println);
 
@@ -523,22 +623,28 @@ public class HSGApp {
 		 * Kasse Sonderlocke F1: Der Start der Spielzeit wird dann künstlich eine halbe
 		 * stunde nach vorne gelegt, damit die Kassenschicht früher anfängt.
 		 */
-		JavaPairRDD<HSGDate, List<Dienst>> kassenZeiten = games.filter(
-				g -> g.isHeimspiel() && g.getTeam().isMitKasse()).keyBy(g -> g.getDate()).aggregateByKey(
-						HSGInterval.MAXMIN,
-						(ex, g) -> g.getTeam().equals(Team.F1) && g.getZeit().compareTo(ex.getStart()) <= 0
-								? ex.stretch(g.getZeit().minusMinutes(30))
-								: ex.stretch(g.getZeit()),
-						(a, b) -> a.merge(b)).mapValues(v -> berechneGesamtzeit(v, Typ.Kasse)).mapValues(
-								v -> verteileDienste(v, Typ.Kasse));
+		JavaPairRDD<HSGDate, List<Dienst>> kassenZeiten = games	.filter(g -> g.isHeimspiel()
+				&& g.getTeam().isMitKasse())
+																.keyBy(g -> g.getDate())
+																.aggregateByKey(HSGInterval.MAXMIN, (ex,
+																		g) -> g.getTeam().equals(Team.F1)
+																				&& g.getZeit()
+																					.compareTo(ex.getStart()) <= 0
+																							? ex.stretch(g	.getZeit()
+																											.minusMinutes(30))
+																							: ex.stretch(g.getZeit()), (
+																									a,
+																									b) -> a.merge(b))
+																.mapValues(v -> berechneGesamtzeit(v, Typ.Kasse))
+																.mapValues(v -> verteileDienste(v, Typ.Kasse));
 		// System.out.println("Spieltage mit Kasse:");
 		// kassenZeiten.foreach(System.out::println);
 
 		/*
 		 * Alle Dienste
 		 */
-		JavaPairRDD<HSGDate, Spieltag> dienste = verkauf.join(aufsichtsZeiten).leftOuterJoin(kassenZeiten).mapValues(
-				v -> {
+		JavaPairRDD<HSGDate, Spieltag> dienste =
+				verkauf.join(aufsichtsZeiten).leftOuterJoin(kassenZeiten).mapValues(v -> {
 					v._1._1.getDienste().addAll(v._1._2);
 					if (v._2.isPresent()) {
 						v._1._1.getDienste().addAll(v._2.get());
@@ -552,26 +658,30 @@ public class HSGApp {
 		 * Spielzeiten +- Puffer berechnen, um zu wissen welches Team wann keinen
 		 * Arbeitsdienst haben sollte
 		 */
-		JavaPairRDD<HSGDate, Iterable<Tuple2<Team, HSGInterval>>> spieltSelber = games.filter(
-				g -> teams.containsKey(g.getTeam())).mapToPair(
-						g -> new Tuple2<>(g.getDate(),
-								new Tuple2<>(g.getTeam(), g.getDienstSperrenZeitraum()))).groupByKey();
+		JavaPairRDD<HSGDate, Iterable<Tuple2<Team, HSGInterval>>> spieltSelber =
+				games	.filter(g -> teams.containsKey(g.getTeam()))
+						.mapToPair(g -> new Tuple2<>(
+								g.getDate(),
+								new Tuple2<>(g.getTeam(), g.getDienstSperrenZeitraum())))
+						.groupByKey();
 
 		// System.out.println("Eigene Spielzeit:");
 		// spieltSelber.foreach(r -> System.out.println(r));
 
-		JavaPairRDD<HSGDate, Spieltag> spieltage = dienste.leftOuterJoin(spieltSelber).leftOuterJoin(
-				blockierteTrainer).mapValues(v -> {
-					Spieltag st = v._1._1;
-					if (v._1._2.isPresent()) {
-						st.getAuswärtsSpielZeiten().addAll(IterableUtil.toList(v._1._2.get()));
-					}
-					if (v._2.isPresent()) {
-						st.getBlockiertePersonen().addAll(IterableUtil.toList(v._2.get()));
-					}
-					st.dienste.forEach(d -> d.setDatum(st.datum));
-					return st;
-				});
+		JavaPairRDD<HSGDate, Spieltag> spieltage =
+				dienste	.leftOuterJoin(spieltSelber)
+						.leftOuterJoin(blockierteTrainer)
+						.mapValues(v -> {
+							Spieltag st = v._1._1;
+							if (v._1._2.isPresent()) {
+								st.getAuswärtsSpielZeiten().addAll(IterableUtil.toList(v._1._2.get()));
+							}
+							if (v._2.isPresent()) {
+								st.getBlockiertePersonen().addAll(IterableUtil.toList(v._2.get()));
+							}
+							st.dienste.forEach(d -> d.setDatum(st.datum));
+							return st;
+						});
 		// System.out.println("Spieltage mit eigenen (parallelen) Spielen:");
 		// spieltage.foreach(s -> System.out.println(s));
 		return spieltage.cache();
@@ -579,54 +689,62 @@ public class HSGApp {
 
 	public static JavaRDD<Zuordnung> entferneDiensteAnNichtspieltagen(final JavaRDD<Game> games,
 			JavaRDD<Zuordnung> zuordnungenAll, JavaPairRDD<HSGDate, Spieltag> spieltage) {
-		JavaPairRDD<HSGDate, Iterable<Tuple2<HSGDate, Team>>> gamesByWE = games.mapToPair(
-				g -> new Tuple2<>(g.getDate().getWeekend(), new Tuple2<>(g.getDate(), g.getTeam()))).groupByKey();
+		JavaPairRDD<HSGDate, Iterable<Tuple2<HSGDate, Team>>> gamesByWE = games	.mapToPair(g -> new Tuple2<>(
+				g.getDate().getWeekend(), new Tuple2<>(g.getDate(), g.getTeam())))
+																				.groupByKey();
 
 		logger.info("Zuordnungen vor Wochenendfilter: " + zuordnungenAll.count());
 		// Experimentell: Alle Zurordnungen rauswerfen bei denen ein Spieler am jeweils
 		// anderen Tag spielt
-		JavaRDD<Zuordnung> zuordnungen = zuordnungenAll.groupBy(
-				z -> z.getDienst().getDatum().getWeekend()).leftOuterJoin(gamesByWE).flatMap(d -> {
-					// Kein Filtern wenn keine
-					if (d._1 == null || !d._2._2.isPresent()) {
-						return d._2._1.iterator();
-					}
-					// List<Zuordnung> l = IterableUtil.toList(d._2._1);
-					final Set<Team> sa = StreamSupport.stream(d._2._2.get().spliterator(), false).filter(
-							t -> t._1.isSaturday()).map(t -> t._2).collect(Collectors.toSet());
-					final Set<Team> so = StreamSupport.stream(d._2._2.get().spliterator(), false).filter(
-							t -> t._1.isSunday()).map(t -> t._2).collect(Collectors.toSet());
-					if (sa.isEmpty() || so.isEmpty()) {
-						return d._2._1.iterator();
-					}
+		JavaRDD<Zuordnung> zuordnungen =
+				zuordnungenAll	.groupBy(z -> z.getDienst().getDatum().getWeekend())
+								.leftOuterJoin(gamesByWE)
+								.flatMap(d -> {
+									// Kein Filtern wenn keine
+									if (d._1 == null || !d._2._2.isPresent()) {
+										return d._2._1.iterator();
+									}
+									// List<Zuordnung> l = IterableUtil.toList(d._2._1);
+									final Set<Team> sa =
+											StreamSupport	.stream(d._2._2.get().spliterator(), false)
+															.filter(t -> t._1.isSaturday())
+															.map(t -> t._2)
+															.collect(Collectors.toSet());
+									final Set<Team> so =
+											StreamSupport	.stream(d._2._2.get().spliterator(), false)
+															.filter(t -> t._1.isSunday())
+															.map(t -> t._2)
+															.collect(Collectors.toSet());
+									if (sa.isEmpty() || so.isEmpty()) {
+										return d._2._1.iterator();
+									}
 
-					List<Zuordnung> res = new ArrayList<>();
-					for (Zuordnung z : d._2._1) {
-						if (z.getPerson().getTeam() != null && z.getDienst().getDatum().isSaturday()
-								&& so.contains(z.getPerson().getTeam())) {
-							logger.info(z.getPerson() + " wird am Samstag den " + z.getDienst().getDatum()
-									+ " nicht arbeiten weil er/sie Sonntag spielt.");
-							continue;
-						}
-						if (z.getPerson().getTeam() != null && z.getDienst().getDatum().isSunday()
-								&& sa.contains(z.getPerson().getTeam())) {
-							logger.info(z.getPerson() + " wird am Sonntag den " + z.getDienst().getDatum()
-									+ " nicht arbeiten weil er/sie Samstag spielt.");
-							continue;
-						}
-						res.add(z);
-					}
-					return res.iterator();
-				});
+									List<Zuordnung> res = new ArrayList<>();
+									for (Zuordnung z : d._2._1) {
+										if (z.getPerson().getTeam() != null && z.getDienst().getDatum().isSaturday()
+												&& so.contains(z.getPerson().getTeam())) {
+											logger.info(z.getPerson() + " wird am Samstag den "
+													+ z.getDienst().getDatum()
+													+ " nicht arbeiten weil er/sie Sonntag spielt.");
+											continue;
+										}
+										if (z.getPerson().getTeam() != null && z.getDienst().getDatum().isSunday()
+												&& sa.contains(z.getPerson().getTeam())) {
+											logger.info(z.getPerson() + " wird am Sonntag den "
+													+ z.getDienst().getDatum()
+													+ " nicht arbeiten weil er/sie Samstag spielt.");
+											continue;
+										}
+										res.add(z);
+									}
+									return res.iterator();
+								})
+								.cache();
 		final List<Dienst> missing = checkAlleNotwendigenZuordnungenSindVorhanden(spieltage, zuordnungen);
 		JavaRDD<Zuordnung> reAdded = zuordnungenAll.filter(z -> missing.contains(z.getDienst()));
 		logger.warn("Zuviel entfernte Zuordnungen (wieder hinzugefügt): " + reAdded.count());
 		zuordnungen = zuordnungen.union(reAdded);
 		logger.info("Zuordnungen nach Wochenendfilter: " + zuordnungen.count());
-
-		if (!checkAlleNotwendigenZuordnungenSindVorhanden(spieltage, zuordnungen).isEmpty()) {
-			throw new RuntimeException("Zu wenige Zuordnungen generiert!");
-		}
 
 		return zuordnungen.cache();
 	}
@@ -639,9 +757,14 @@ public class HSGApp {
 	 */
 	private static List<Dienst> checkAlleNotwendigenZuordnungenSindVorhanden(
 			final JavaPairRDD<HSGDate, Spieltag> spieltage, final JavaRDD<Zuordnung> zuordnungen) {
-		List<Dienst> ohneZuordnung = spieltage.flatMap(s -> s._2.getDienste().iterator()).distinct().keyBy(
-				d -> d).leftOuterJoin(zuordnungen.map(z -> z.getDienst()).distinct().keyBy(d -> d)).filter(
-						t -> !t._2._2.isPresent()).keys().collect();
+		List<Dienst> ohneZuordnung =
+				spieltage	.flatMap(s -> s._2.getDienste().iterator())
+							.distinct()
+							.keyBy(d -> d)
+							.leftOuterJoin(zuordnungen.map(z -> z.getDienst()).distinct().keyBy(d -> d))
+							.filter(t -> !t._2._2.isPresent())
+							.keys()
+							.collect();
 		ohneZuordnung.forEach(d -> logger.error(d + ": Keine Personen zugeordnet"));
 		return ohneZuordnung;
 	}
@@ -659,10 +782,18 @@ public class HSGApp {
 		JavaRDD<Zuordnung> zuordnungen = spieltage.flatMap(t -> {
 			List<Zuordnung> res = new ArrayList<>();
 			for (Dienst d : t._2.getDienste()) {
-				Set<Team> playsConcurrently = t._2.getAuswärtsSpielZeiten().stream().filter(
-						v -> v._2.intersects(d.zeit)).map(v -> v._1).collect(Collectors.toSet());
-				Set<Person> personIsBlocked = t._2.getBlockiertePersonen().stream().filter(
-						v -> v._2.intersects(d.zeit)).map(v -> v._1).collect(Collectors.toSet());
+				Set<Team> playsConcurrently =
+						t._2.getAuswärtsSpielZeiten()
+							.stream()
+							.filter(v -> v._2.intersects(d.zeit))
+							.map(v -> v._1)
+							.collect(Collectors.toSet());
+				Set<Person> personIsBlocked =
+						t._2.getBlockiertePersonen()
+							.stream()
+							.filter(v -> v._2.intersects(d.zeit))
+							.map(v -> v._1)
+							.collect(Collectors.toSet());
 				for (Person p : personenList) {
 					/*
 					 * Nur Zuordnungen erlauben, deren: - Team nicht gerade selber spielt - Person

@@ -38,8 +38,9 @@ public class HSGInterval implements Serializable {
 
 	public static final HSGInterval MAXMIN = new HSGInterval(LocalTime.MAX, LocalTime.MIN);
 	public static final HSGInterval ALL_DAY = new HSGInterval(LocalTime.MIN, LocalTime.MAX);
-	public static final HSGInterval BIS_15 = new HSGInterval(LocalTime.MIN, LocalTime.of(15, 00));
-	public static final HSGInterval BIS_17 = new HSGInterval(LocalTime.MIN, LocalTime.of(17, 00));
+	public static final HSGInterval BIS_16 = new HSGInterval(LocalTime.MIN, LocalTime.of(16, 00));
+	public static final HSGInterval BIS_18 = new HSGInterval(LocalTime.MIN, LocalTime.of(18, 00));
+	public static final HSGInterval BIS_20 = new HSGInterval(LocalTime.MIN, LocalTime.of(20, 00));
 	public static final HSGInterval EMPTY = new HSGInterval(LocalTime.MIN, LocalTime.MIN);
 
 	private final LocalTime start;

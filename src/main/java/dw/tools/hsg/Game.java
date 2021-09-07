@@ -65,9 +65,9 @@ public class Game implements Serializable, Comparable<Game> {
 
 	public static Game parse(final String l) {
 		/*
-		 * Skip first header line, which begins with "Nummer" 
+		 * Skip first header line, which begins with "Nummer"
 		 */
-		if (l.startsWith("Nummer")) {
+		if (l.startsWith("\"Nummer\"")) {
 			return null;
 		}
 		try {
@@ -93,17 +93,17 @@ public class Game implements Serializable, Comparable<Game> {
 									: res.staffel);
 			return res;
 		} catch (Exception e) {
-			HSGApp.logger.error("Import für Spiel '" + l + "' fehlgeschlagen", e);
+			HSGApp.logger.error("Import für Spiel '" + l + "' fehlgeschlagen:" + e.getMessage());
 			return null;
 		}
 	}
 
 	public HSGInterval getDienstSperrenZeitraum() {
 		return new HSGInterval(
-				getZeit().minus(isHeimspiel() ? SPERRSTD_VORLAUF_HEIMSPIEL : SPERRSTD_VORLAUF_AUSWÄRTSSPIEL,
-						ChronoUnit.HOURS),
-				getZeit().plus(isHeimspiel() ? SPERRSTD_NACHLAUF_HEIMSPIEL : SPERRSTD_NACHLAUF_AUSWÄRTSSPIEL,
-						ChronoUnit.HOURS));
+				getZeit().minus(isHeimspiel() ? SPERRSTD_VORLAUF_HEIMSPIEL
+						: SPERRSTD_VORLAUF_AUSWÄRTSSPIEL, ChronoUnit.HOURS),
+				getZeit().plus(isHeimspiel() ? SPERRSTD_NACHLAUF_HEIMSPIEL
+						: SPERRSTD_NACHLAUF_AUSWÄRTSSPIEL, ChronoUnit.HOURS));
 	}
 
 	@Override

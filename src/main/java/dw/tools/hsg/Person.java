@@ -99,7 +99,7 @@ public class Person implements Serializable {
 			Team team = !Strings.isNullOrEmpty(elems[1]) ? Team.valueOf(elems[1]) : Team.None;
 			Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? Team.valueOf(elems[2]) : null;
 			boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
-			if (team == null && trainerVon == null && !aufsicht) {
+			if (team == null && !aufsicht) {
 				throw new IllegalArgumentException("Ungültige Person:" + line);
 			}
 			int worked = (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60);

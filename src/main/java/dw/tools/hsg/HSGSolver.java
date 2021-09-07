@@ -79,13 +79,14 @@ public class HSGSolver {
 			Map<Team, Double> avgZeitProTeam) {
 		// Aufsicht
 //    	Problem aufsicht = assembleAufsicht(all.filter(z -> z.getDienst().getTyp().equals(Typ.Aufsicht)), games, avgZeitProTeam);
-		Problem kasseVerkauf = assembleVerkaufKasse(all.filter(z -> !z.getDienst().getTyp().equals(Typ.Aufsicht)),
-				games, avgZeitProTeam);
+		Problem kasseVerkauf = assembleVerkaufKasse(all.filter(z -> !z	.getDienst()
+																		.getTyp()
+																		.equals(Typ.Aufsicht)), games, avgZeitProTeam);
 
 		List<Zuordnung> res = new ArrayList<>();
 //    	res.addAll(solveProblem(aufsicht, all, 60*4));
 		// Kasse, Verkauf
-		res.addAll(solveProblem(kasseVerkauf, all, 60 * 60 * 7));//60 * 12
+		res.addAll(solveProblem(kasseVerkauf, all, 60 * 45));// 60 * 12
 
 		return res;
 	}
@@ -249,8 +250,10 @@ public class HSGSolver {
 			logger.info("Ergebnis:");
 			selected = all.collect().stream().filter(z -> result.getBoolean(z.varName())).collect(Collectors.toList());
 
-			//logger.info("Durchschnittliche Arbeitszeit:" + result.getPrimalValue(AVERAGE_WORK_TIME));
-			//logger.info("Durchschnittliche Arbeitszeit Aufsicht:" + result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
+			// logger.info("Durchschnittliche Arbeitszeit:" +
+			// result.getPrimalValue(AVERAGE_WORK_TIME));
+			// logger.info("Durchschnittliche Arbeitszeit Aufsicht:" +
+			// result.getPrimalValue(AVERAGE_WORK_TIME_AUFSICHT));
 		} else {
 			logger.info("Solve fehlgeschlagen.");
 			problem.print();
@@ -268,69 +271,91 @@ public class HSGSolver {
 
 	private static void addZ2DienstNahBeiEigenemSpiel(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
 			final Problem problem, final Linear target) {
-		JavaRDD<Tuple3<Person, Integer, String>> tmp = all.keyBy(z -> z.getDienst().getDatum()).groupByKey().mapValues(
-				IterableUtil::toList).join(
-						games.keyBy(g -> g.getDate()).groupByKey().mapValues(IterableUtil::toList)).flatMap(d -> {
-							List<Tuple3<Person, Integer, String>> präferierteDienste = new ArrayList<>();
-							Set<Zuordnung> processed = new HashSet<>();
-							for (Game g : d._2._2) {
-								for (Zuordnung z : d._2._1) {
-									if (g.isHeimspiel() && g.getTeam().equals(z.getPerson().getTeam())) {
-										int weight = z.getDienst().getZeit().minuteDistance(
-												g.getDienstSperrenZeitraum());
-										if (weight <= CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN) {
-											// int weight = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN - diff;
-											// weight = z.getPerson().isAufsicht() ? weight * ARBEITSDIENST_FAKTOR :
-											// weight;
-											logger.info(z.getPerson() + " kann geschickt vor/nach Spiel " + g
-													+ " den Dienst " + z.getDienst() + " machen. Faktor:" + weight);
-											präferierteDienste.add(new Tuple3<>(z.getPerson(), weight, z.varName()));
-											processed.add(z);
-										}
+		JavaRDD<Tuple3<Person, Integer, String>> tmp =
+				all	.keyBy(z -> z.getDienst().getDatum())
+					.groupByKey()
+					.mapValues(IterableUtil::toList)
+					.join(games	.keyBy(g -> g.getDate())
+								.groupByKey()
+								.mapValues(IterableUtil::toList))
+					.flatMap(d -> {
+						List<Tuple3<Person, Integer, String>> präferierteDienste =
+								new ArrayList<>();
+						Set<Zuordnung> processed = new HashSet<>();
+						for (Game g : d._2._2) {
+							for (Zuordnung z : d._2._1) {
+								if (g.isHeimspiel() && g.getTeam()
+														.equals(z	.getPerson()
+																	.getTeam())) {
+									int weight = z	.getDienst()
+													.getZeit()
+													.minuteDistance(g.getDienstSperrenZeitraum());
+									if (weight <= CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN) {
+										// int weight =
+										// CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN -
+										// diff;
+										// weight = z.getPerson().isAufsicht() ?
+										// weight * ARBEITSDIENST_FAKTOR :
+										// weight;
+										logger.info(z.getPerson()
+												+ " kann geschickt vor/nach Spiel "
+												+ g
+												+ " den Dienst " + z.getDienst()
+												+ " machen. Faktor:" + weight);
+										präferierteDienste.add(new Tuple3<>(z
+																				.getPerson(),
+												weight, z.varName()));
+										processed.add(z);
 									}
 								}
 							}
-							for (Zuordnung z : d._2._1) {
-								if (!processed.contains(z)) {
-									präferierteDienste.add(
-											new Tuple3<>(z.getPerson(), DEFAULT_ZUORDNUNG_WEIGHT, z.varName()));
-								}
+						}
+						for (Zuordnung z : d._2._1) {
+							if (!processed.contains(z)) {
+								präferierteDienste.add(new Tuple3<>(z
+																		.getPerson(),
+										DEFAULT_ZUORDNUNG_WEIGHT, z.varName()));
 							}
-							return präferierteDienste.iterator();
-						});
+						}
+						return präferierteDienste.iterator();
+					});
 		tmp.collect().forEach(t -> {
 			target.add(t._2(), t._3());
 		});
 	}
 
 	private static void addN3NurGleicheTeamsInGleichenDiensten(final JavaRDD<Zuordnung> all, final Problem problem) {
-		all.mapToPair(z -> new Tuple2<>(new Tuple2<>(z.getDienst(), z.getPerson().getTeam()), z)).aggregateByKey(
-				new ArrayList<Zuordnung>(), (ex, n) -> {
-					ex.add(n);
-					return ex;
-				}, (a, b) -> {
-					a.addAll(b);
-					return a;
-				}).values().filter(d -> d.size() > 1).collect().forEach(l -> {
-					for (Zuordnung lead : l) {
-						Linear li = new Linear();
-						li.add(-1, lead.varName());
-						for (Zuordnung added : l) {
-							if (!added.getPerson().equals(lead.getPerson()) && added.getNr() != lead.getNr()
-									&& !added.varName().equals(lead.varName())) {
-								li.add(1, added.varName());
-							}
-						}
-						if (li.size() > 1) {
-							problem.add(new Constraint("N3:" + lead.getPerson().getName() + "@"
-									+ lead.getDienst().getZeit() + "/" + lead.getNr(), li, Operator.GE, 0));
+		all	.mapToPair(z -> new Tuple2<>(new Tuple2<>(z.getDienst(), z.getPerson().getTeam()), z))
+			.aggregateByKey(new ArrayList<Zuordnung>(), (ex, n) -> {
+				ex.add(n);
+				return ex;
+			}, (a, b) -> {
+				a.addAll(b);
+				return a;
+			})
+			.values()
+			.filter(d -> d.size() > 1)
+			.collect()
+			.forEach(l -> {
+				for (Zuordnung lead : l) {
+					Linear li = new Linear();
+					li.add(-1, lead.varName());
+					for (Zuordnung added : l) {
+						if (!added.getPerson().equals(lead.getPerson()) && added.getNr() != lead.getNr()
+								&& !added.varName().equals(lead.varName())) {
+							li.add(1, added.varName());
 						}
 					}
-				});
+					if (li.size() > 1) {
+						problem.add(new Constraint("N3:" + lead.getPerson().getName() + "@"
+								+ lead.getDienst().getZeit() + "/" + lead.getNr(), li, Operator.GE, 0));
+					}
+				}
+			});
 	}
 
 	private static void addN2KeineParallelenDienste(final JavaRDD<Zuordnung> all, final Problem problem) {
-		all.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getPerson(), t.getDienst().getDatum()),
+		all	.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getPerson(), t.getDienst().getDatum()),
 				new Tuple2<>(t.varName(), t.getDienst().getZeit()))).groupByKey().mapValues(v -> {
 					Map<HSGInterval, List<String>> idsPerTime = new HashMap<>();
 					for (Tuple2<String, HSGInterval> s : v) {
@@ -343,31 +368,38 @@ public class HSGSolver {
 					List<List<String>> res = new ArrayList<>();
 					for (List<HSGInterval> s : disj.values()) {
 						List<String> res1 = new ArrayList<>();
-						s.stream().flatMap(i -> idsPerTime.get(i).stream()).forEach(res1::add);
+						s	.stream()
+							.flatMap(i -> idsPerTime.get(i).stream())
+							.forEach(res1::add);
 						res.add(res1);
 					}
 					return res;
-				}).collect().forEach(t -> {
-					int num = 0;
-					for (List<String> timedata : t._2) {
-						if (timedata.size() > 1) {
-							Linear l = new Linear();
-							timedata.forEach(id -> l.add(1, id));
-							problem.add(new Constraint("N2:" + t._1._1.getName() + "@" + t._1._2 + "#" + num++, l,
-									Operator.LE, 1));
-						}
+				})
+			.collect()
+			.forEach(t -> {
+				int num = 0;
+				for (List<String> timedata : t._2) {
+					if (timedata.size() > 1) {
+						Linear l = new Linear();
+						timedata.forEach(id -> l.add(1, id));
+						problem.add(new Constraint("N2:" + t._1._1.getName() + "@" + t._1._2 + "#" + num++, l,
+								Operator.LE, 1));
 					}
-				});
+				}
+			});
 	}
 
 	private static void addN1EinePersonProDienst(final JavaRDD<Zuordnung> all, final Problem problem) {
-		all.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getDienst(), t.getNr()), t.varName())).groupByKey().mapValues(
-				IterableUtil::toList).collectAsMap().forEach((d, zall) -> {
-					Linear l = new Linear();
-					zall.forEach(z -> l.add(1, z));
-					problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
-					// problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
-				});
+		all	.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getDienst(), t.getNr()), t.varName()))
+			.groupByKey()
+			.mapValues(IterableUtil::toList)
+			.collectAsMap()
+			.forEach((d, zall) -> {
+				Linear l = new Linear();
+				zall.forEach(z -> l.add(1, z));
+				problem.add(new SOS("N1:" + d._1 + "/" + d._2, l, SOSType.SOS1));
+				// problem.add(new Constraint("N1:" + d._1 + "/" + d._2, l, Operator.EQ, 1));
+			});
 	}
 
 	private static void addZ1GleichVielArbeitsZeit(final JavaRDD<Zuordnung> all, final Problem problem,
@@ -377,36 +409,40 @@ public class HSGSolver {
 		 * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
 		 */
 //		final List<Tuple2<String, Double>> allTotalTimesPerPerson = new ArrayList<>();
-		all.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp()
-				: Typ.Aufsicht != z.getDienst().getTyp()).mapToPair(z -> new Tuple2<>(z.getPerson(),
-						new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin()))).groupByKey().mapValues(
-								IterableUtil::toList).collect().forEach(d -> {
-									Linear linear = new Linear();
-									d._2.forEach(t -> linear.add(t._2, t._1));
+		all	.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp()
+				: Typ.Aufsicht != z.getDienst().getTyp())
+			.mapToPair(z -> new Tuple2<>(z.getPerson(),
+					new Tuple2<>(z.varName(), z.getDienst().getZeit().dauerInMin())))
+			.groupByKey()
+			.mapValues(IterableUtil::toList)
+			.collect()
+			.forEach(d -> {
+				Linear linear = new Linear();
+				d._2.forEach(t -> linear.add(t._2, t._1));
 
-									String sumVarName = "TotalZeit" + d._1.getName();
-									linear.add(-1, sumVarName);
-									problem.setVarType(sumVarName, VarType.INT);
-									problem.setVarLowerBound(sumVarName, 0);
-									Constraint c = new Constraint(sumVarName, linear, Operator.EQ, 0);
-									logger.debug("Adding total time variable for " + d._1.getName() + ": " + c);
-									problem.add(c);
+				String sumVarName = "TotalZeit" + d._1.getName() + "@" + d._1.getTeam().name();
+				linear.add(-1, sumVarName);
+				problem.setVarType(sumVarName, VarType.INT);
+				problem.setVarLowerBound(sumVarName, 0);
+				Constraint c = new Constraint(sumVarName, linear, Operator.EQ, 0);
+				logger.debug("Adding total time variable for " + d._1.getName() + ": " + c);
+				problem.add(c);
 
-									Linear l = new Linear();
-									String plus = sumVarName + "+";
-									String minus = sumVarName + "-";
-									l.add(new Term(sumVarName, 1), new Term(plus, -1), new Term(minus, 1));
-									c = new Constraint(sumVarName + "Slack", l, Operator.EQ,
-											avgZeitProTeam.get(d._1.getTeam()) - d._1.getGearbeitetM());
-									logger.debug("Adding slacked constraint " + c);
-									problem.add(c);
-									problem.setVarType(plus, VarType.REAL);
-									problem.setVarType(minus, VarType.REAL);
-									problem.setVarLowerBound(plus, 0);
-									problem.setVarLowerBound(minus, 0);
-									target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
-									logger.debug(sumVarName + ": " + d._1.getGearbeitetM());
-								});
+				Linear l = new Linear();
+				String plus = sumVarName + "+";
+				String minus = sumVarName + "-";
+				l.add(new Term(sumVarName, 1), new Term(plus, -1), new Term(minus, 1));
+				c = new Constraint(sumVarName + "Slack", l, Operator.EQ,
+						avgZeitProTeam.get(d._1.getTeam()) - d._1.getGearbeitetM());
+				logger.debug("Adding slacked constraint " + c);
+				problem.add(c);
+				problem.setVarType(plus, VarType.REAL);
+				problem.setVarType(minus, VarType.REAL);
+				problem.setVarLowerBound(plus, 0);
+				problem.setVarLowerBound(minus, 0);
+				target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
+				logger.debug(sumVarName + ": " + d._1.getGearbeitetM());
+			});
 
 //		Linear avg = new Linear();
 //		double numPInv = 1 / (double) allTotalTimesPerPerson.size();

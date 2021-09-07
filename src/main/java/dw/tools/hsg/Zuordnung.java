@@ -23,17 +23,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dw.tools.hsg.Dienst.Typ;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 /**
  * @version $Revision$
  * @author wirtzd
  * @since 05.09.2018
  */
-@Getter
+@Data
 @EqualsAndHashCode
+@RequiredArgsConstructor
 public class Zuordnung implements Serializable {
 
 	private static final long serialVersionUID = 6500267604562155991L;
@@ -42,9 +43,7 @@ public class Zuordnung implements Serializable {
 	private final Person person;
 	private final Dienst dienst;
 	private final int nr;
-	// private final UUID id;
 	private final int id;
-	@Setter
 	private boolean fixed = false;
 
 	public String varName() {
