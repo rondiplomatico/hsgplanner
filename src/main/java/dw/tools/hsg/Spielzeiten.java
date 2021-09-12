@@ -18,29 +18,36 @@
 package dw.tools.hsg;
 
 import java.io.Serializable;
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import lombok.Data;
-import scala.Tuple2;
+import lombok.ToString;
 
 /**
- * TODO Replace with class description.
+ * Enthält aufgeschlüsselte Informationen über bestimmte Zeitabschnitte eines
+ * Heimspieltages.
  *
- * @version $Revision$
  * @author wirtzd
  * @since 05.09.2018
  */
 @Data
-public class Spieltag implements Serializable {
+@ToString
+public class Spielzeiten implements Serializable {
 
 	private static final long serialVersionUID = -2000124935112267942L;
 
-	HSGDate datum;
-
-	List<Tuple2<Team, HSGInterval>> auswärtsSpielZeiten = new ArrayList<>();
-	List<Tuple2<Person, HSGInterval>> blockiertePersonen = new ArrayList<>();
-	List<Dienst> dienste = new ArrayList<>();
+	/**
+	 * Zeit vom ersten bis zum letzten Anpfiff des Spieltages
+	 */
+	HSGInterval gesamtZeit;
+	/**
+	 * Zeit vom ersten bis zum letzten Anpfiff des Spieltages für alles Spiele, bei
+	 * denen spieler/aktive Verkaufsdienst machen.
+	 */
+	HSGInterval spielerVerkaufsZeit;
+	/**
+	 * Eine Map aus Zeiten für den Elternverkaufsdienst der jeweiligen Teams
+	 */
+	Map<Team, HSGInterval> elternVerkaufsZeiten;
 
 }

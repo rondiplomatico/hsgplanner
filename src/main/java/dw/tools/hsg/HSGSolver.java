@@ -56,37 +56,32 @@ import scala.Tuple3;
  */
 public class HSGSolver {
 
-	private static final String AVERAGE_WORK_TIME = "AverageWorkTime";
-	private static final String AVERAGE_WORK_TIME_AUFSICHT = "AverageWorkTimeOverseer";
 	private static int substCnt = 1;
 	public static final int CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN = 60;
 	public static final int DEFAULT_ZUORDNUNG_WEIGHT = CLEVERE_DIENSTE_MAX_ABSTAND_MINUTEN + 30;
 	public static final int ÜBERZEIT_STRAFE = 5;
 	public static final int UNTERZEIT_STRAFE = 1;
+	public static final int AUFSICHT_SOLVE_MINUTES = 3;
+	public static final int KV_SOLVE_MINUTES = 10;
 
 	public static Logger logger = Logger.getLogger(HSGSolver.class);
 
-//    public static class CplexCallback extends OptimizationCallback {
-//
-//		@Override
-//		protected void main() throws IloException {
-//			//getModel().
-//		}
-//    	
-//    }
-
 	public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
 			Map<Team, Double> avgZeitProTeam) {
+
+		List<Zuordnung> res = new ArrayList<>();
+
 		// Aufsicht
-//    	Problem aufsicht = assembleAufsicht(all.filter(z -> z.getDienst().getTyp().equals(Typ.Aufsicht)), games, avgZeitProTeam);
+		Problem aufsicht = assembleAufsicht(all.filter(z -> z	.getDienst()
+																.getTyp()
+																.equals(Typ.Aufsicht)), games, avgZeitProTeam);
+		res.addAll(solveProblem(aufsicht, all, 60 * AUFSICHT_SOLVE_MINUTES));
+
+		// Kasse, Verkauf
 		Problem kasseVerkauf = assembleVerkaufKasse(all.filter(z -> !z	.getDienst()
 																		.getTyp()
 																		.equals(Typ.Aufsicht)), games, avgZeitProTeam);
-
-		List<Zuordnung> res = new ArrayList<>();
-//    	res.addAll(solveProblem(aufsicht, all, 60*4));
-		// Kasse, Verkauf
-		res.addAll(solveProblem(kasseVerkauf, all, 60 * 45));// 60 * 12
+		res.addAll(solveProblem(kasseVerkauf, all, 60 * KV_SOLVE_MINUTES));
 
 		return res;
 	}
@@ -231,25 +226,15 @@ public class HSGSolver {
 		solver.setParameter(SolverParameter.ADVANCED_START_SWITCH, 0);
 		solver.setParameter(SolverParameter.VERBOSE, 5);
 
-//        if (solver instanceof SolverCPLEX) {
-//        	((SolverCPLEX)solver).addHook(new Hook() {
-//
-//				@Override
-//				public void call(IloCplex cplex, Map<Object, IloNumVar> varToNum) {
-//					cplex.use(new CplexCallback());
-//				}
-//        		
-//        	});
-//        }
-
 		List<Zuordnung> selected = Collections.emptyList();
 		Result result = solver.solve(problem);
 		if (result != null) {
 			logger.info(result);
 
-			logger.info("Ergebnis:");
+			logger.info("Ergebnis: ");
 			selected = all.collect().stream().filter(z -> result.getBoolean(z.varName())).collect(Collectors.toList());
 
+//			selected.forEach(z -> logger.info(z));
 			// logger.info("Durchschnittliche Arbeitszeit:" +
 			// result.getPrimalValue(AVERAGE_WORK_TIME));
 			// logger.info("Durchschnittliche Arbeitszeit Aufsicht:" +
@@ -297,7 +282,7 @@ public class HSGSolver {
 										// weight = z.getPerson().isAufsicht() ?
 										// weight * ARBEITSDIENST_FAKTOR :
 										// weight;
-										logger.info(z.getPerson()
+										logger.debug(z.getPerson()
 												+ " kann geschickt vor/nach Spiel "
 												+ g
 												+ " den Dienst " + z.getDienst()
@@ -408,7 +393,6 @@ public class HSGSolver {
 		 * Alle gleich viel Arbeitszeit. Die gesamtarbeitszeit soll pro person nicht von
 		 * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
 		 */
-//		final List<Tuple2<String, Double>> allTotalTimesPerPerson = new ArrayList<>();
 		all	.filter(z -> isAufsicht ? Typ.Aufsicht == z.getDienst().getTyp()
 				: Typ.Aufsicht != z.getDienst().getTyp())
 			.mapToPair(z -> new Tuple2<>(z.getPerson(),
@@ -433,7 +417,7 @@ public class HSGSolver {
 				String minus = sumVarName + "-";
 				l.add(new Term(sumVarName, 1), new Term(plus, -1), new Term(minus, 1));
 				c = new Constraint(sumVarName + "Slack", l, Operator.EQ,
-						avgZeitProTeam.get(d._1.getTeam()) - d._1.getGearbeitetM());
+						avgZeitProTeam.getOrDefault(d._1.getTeam(), 0.0) - d._1.getGearbeitetM());
 				logger.debug("Adding slacked constraint " + c);
 				problem.add(c);
 				problem.setVarType(plus, VarType.REAL);

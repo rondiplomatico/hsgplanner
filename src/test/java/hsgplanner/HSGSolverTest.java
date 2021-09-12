@@ -113,9 +113,9 @@ public class HSGSolverTest {
     Person A1 = new Person("A1", "M1", 0, true, null);
     Person A2 = new Person("A1", "F1", 0, true, null);
     Person A3 = new Person("A2", "HA", 0, true, null);
-    Dienst V1100_1300 = new Dienst(date, i1100_1300, Typ.Verkauf);
-    Dienst V1300_1600 = new Dienst(date, i1300_1600, Typ.Verkauf);
-    Dienst K1200_1600 = new Dienst(date, i1200_1600, Typ.Kasse);
+    Dienst V1100_1300 = new Dienst(date, i1100_1300, Typ.Verkauf, Team.None);
+    Dienst V1300_1600 = new Dienst(date, i1300_1600, Typ.Verkauf, Team.None);
+    Dienst K1200_1600 = new Dienst(date, i1200_1600, Typ.Kasse, Team.None);
 
     Game F21 = new Game(date, LocalTime.of(16, 00), HSGApp.GA, "F2", Team.F2, "Foobars", true, "LL");
     Game F11 = new Game(date, LocalTime.of(18, 00), HSGApp.GA, "F1", Team.F1, "Foobars", true, "BWOL");

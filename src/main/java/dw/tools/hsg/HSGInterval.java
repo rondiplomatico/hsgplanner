@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.time.LocalTime;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -31,6 +32,7 @@ import lombok.RequiredArgsConstructor;
  * @since 05.09.2018
  */
 @Data
+@EqualsAndHashCode
 @RequiredArgsConstructor
 public class HSGInterval implements Serializable {
 

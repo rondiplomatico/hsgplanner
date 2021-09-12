@@ -54,7 +54,6 @@ public class Zuordnung implements Serializable {
 		person = p;
 		dienst = d;
 		this.nr = nr;
-		// id = UUID.randomUUID();
 		id = ID++;
 	}
 
@@ -74,7 +73,8 @@ public class Zuordnung implements Serializable {
 		Dienst d = new Dienst(HSGDate.fromDDMMYY(elems[0].substring(4)),
 				new HSGInterval(LocalTime.parse(elems[1], HSGDate.TIME_FORMATTER),
 						LocalTime.parse(elems[2], HSGDate.TIME_FORMATTER)),
-				Typ.valueOf(elems[3]));
+				Typ.valueOf(elems[3]),
+				Team.None); // TODO parsing of Elterndienst not implemented yet.
 		List<Zuordnung> res = new ArrayList<>();
 		res.add(new Zuordnung(p, d));
 		if (elems.length > 6) {

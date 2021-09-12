@@ -80,17 +80,23 @@ public class Game implements Serializable, Comparable<Game> {
 			res.heim = elems[5].trim();
 			res.gast = elems[6].trim();
 			res.heimspiel = HSGApp.GA.equals(res.halle);
-			String team = res.heimspiel ? res.heim : res.gast;
-			String snr = team.length() > 27 ? team.substring(team.length() - 1, team.length()) : null;
+			boolean hsglefirst = res.heim.contains(HSGApp.HSGLE);
+			// Extract number from team name (1,2,3,..)
+			String team = hsglefirst ? res.heim : res.gast;
+			String snr = team.length() > HSGApp.HSGLE.length() ? team.substring(team.length() - 1, team.length())
+					: null;
 			int nr = Strings.isNullOrEmpty(snr) ? 1 : Integer.parseInt(snr);
 			/*
-			 * MXXX -> M[1-N] FXXX -> F[1-N] XJYZ -> XYZ[1-N]
+			 * <kuerzel>-<staffel>
 			 */
-			res.team = Team.valueOf(res.staffel.startsWith("M") ? "M" + nr
-					: res.staffel.startsWith("F") ? "F" + nr
-							: res.staffel.contains("-")
-									? res.staffel.substring(0, res.staffel.lastIndexOf("-")).replace("J", "") + nr
-									: res.staffel);
+			String tk = res.staffel.split("-")[0].replace("J", "");
+			res.team = Team.valueOf(tk + nr);
+
+			if (hsglefirst && !res.isHeimspiel()) {
+				HSGApp.logger.warn("Spiel mit Erstnennung HSG ausserhalb der Goldäcker gefunden: "
+						+ res + " (" + res.getHalle()
+						+ "/" + elems[7] + ")");
+			}
 			return res;
 		} catch (Exception e) {
 			HSGApp.logger.error("Import für Spiel '" + l + "' fehlgeschlagen:" + e.getMessage());

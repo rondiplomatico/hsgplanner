@@ -74,6 +74,16 @@ public class Person implements Serializable {
 		return (team.mayWork()) || aufsicht;
 	}
 
+	/**
+	 * Prüft ob eine Person an einem Dienst arbeiten kann.
+	 * 
+	 * Kriterien:
+	 * - Der Dienst ist Aufsicht und die Person ist Aufsicht
+	 * - Der Typ ist nicht Aufsicht und das Team darf dort arbeiten.
+	 * 
+	 * @param d
+	 * @return
+	 */
 	public boolean mayWorkAt(final Dienst d) {
 		return Typ.Aufsicht == d.getTyp() && isAufsicht()
 				|| team.mayWorkAt(d) && Typ.Aufsicht != d.getTyp() && !isAufsicht();
@@ -96,9 +106,9 @@ public class Person implements Serializable {
 	public static Person parse(final String line) {
 		String[] elems = line.split(";");
 		try {
-			Team team = !Strings.isNullOrEmpty(elems[1]) ? Team.valueOf(elems[1]) : Team.None;
-			Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? Team.valueOf(elems[2]) : null;
 			boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
+			Team team = aufsicht ? Team.Aufsicht : (!Strings.isNullOrEmpty(elems[1]) ? Team.valueOf(elems[1]) : null);
+			Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? Team.valueOf(elems[2]) : null;
 			if (team == null && !aufsicht) {
 				throw new IllegalArgumentException("Ungültige Person:" + line);
 			}
