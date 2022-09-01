@@ -46,7 +46,7 @@ public class HSGDate implements Serializable, Comparable<HSGDate>, KryoSerializa
 	 */
 	private static final DateTimeFormatter MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyyMM");
 
-	private static final DateTimeFormatter DD_MM_YY_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yy");
+	private static final DateTimeFormatter DD_MM_YY_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
 	public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 

@@ -67,7 +67,7 @@ public class Game implements Serializable, Comparable<Game> {
 		/*
 		 * Skip first header line, which begins with "Nummer"
 		 */
-		if (l.startsWith("\"Nummer\"")) {
+		if (l.startsWith("\"Nummer\"") || l.startsWith("Nummer")) {
 			return null;
 		}
 		try {

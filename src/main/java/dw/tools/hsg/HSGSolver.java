@@ -78,15 +78,15 @@ public class HSGSolver {
 		res.addAll(solveProblem(aufsicht, all, 60 * AUFSICHT_SOLVE_MINUTES));
 
 		// Kasse, Verkauf
-		Problem kasseVerkauf = assembleVerkaufKasse(all.filter(z -> !z	.getDienst()
+		Problem kasseVerkaufWischer = assembleVerkaufKasseWischer(all.filter(z -> !z	.getDienst()
 																		.getTyp()
 																		.equals(Typ.Aufsicht)), games, avgZeitProTeam);
-		res.addAll(solveProblem(kasseVerkauf, all, 60 * KV_SOLVE_MINUTES));
+		res.addAll(solveProblem(kasseVerkaufWischer, all, 60 * KV_SOLVE_MINUTES));
 
 		return res;
 	}
 
-	private static Problem assembleVerkaufKasse(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
+	private static Problem assembleVerkaufKasseWischer(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
 			Map<Team, Double> avgZeitProTeam) {
 		final Problem problem = new Problem();
 
@@ -133,10 +133,12 @@ public class HSGSolver {
 		 * können, muss man vorher disjunkt aufteilen.
 		 */
 		logger.info("Erstelle N2: Keine parallelen Dienste pro Person");
-		addN2KeineParallelenDienste(all, problem);
+		if (!HSGApp.TEAMS_ONLY) {
+			addN2KeineParallelenDienste(all, problem);
 
-		logger.info("Erstelle N3: Nur gleiche Teams in gleichen Diensten");
-		addN3NurGleicheTeamsInGleichenDiensten(all, problem);
+			logger.info("Erstelle N3: Nur gleiche Teams in gleichen Diensten");
+			addN3NurGleicheTeamsInGleichenDiensten(all, problem);
+		}
 
 		logger.info("Erstelle N4: Schon fixierte Zuordnungen");
 		addN4FixierteZuordnungen(allList, problem);
@@ -341,25 +343,27 @@ public class HSGSolver {
 
 	private static void addN2KeineParallelenDienste(final JavaRDD<Zuordnung> all, final Problem problem) {
 		all	.mapToPair(t -> new Tuple2<>(new Tuple2<>(t.getPerson(), t.getDienst().getDatum()),
-				new Tuple2<>(t.varName(), t.getDienst().getZeit()))).groupByKey().mapValues(v -> {
-					Map<HSGInterval, List<String>> idsPerTime = new HashMap<>();
-					for (Tuple2<String, HSGInterval> s : v) {
-						if (!idsPerTime.containsKey(s._2)) {
-							idsPerTime.put(s._2, new ArrayList<>());
-						}
-						idsPerTime.get(s._2).add(s._1);
+				new Tuple2<>(t.varName(), t.getDienst().getZeit())))
+			.groupByKey()
+			.mapValues(v -> {
+				Map<HSGInterval, List<String>> idsPerTime = new HashMap<>();
+				for (Tuple2<String, HSGInterval> s : v) {
+					if (!idsPerTime.containsKey(s._2)) {
+						idsPerTime.put(s._2, new ArrayList<>());
 					}
-					Map<HSGInterval, List<HSGInterval>> disj = IntervalDisjoiner.disjoin(idsPerTime.keySet());
-					List<List<String>> res = new ArrayList<>();
-					for (List<HSGInterval> s : disj.values()) {
-						List<String> res1 = new ArrayList<>();
-						s	.stream()
-							.flatMap(i -> idsPerTime.get(i).stream())
-							.forEach(res1::add);
-						res.add(res1);
-					}
-					return res;
-				})
+					idsPerTime.get(s._2).add(s._1);
+				}
+				Map<HSGInterval, List<HSGInterval>> disj = IntervalDisjoiner.disjoin(idsPerTime.keySet());
+				List<List<String>> res = new ArrayList<>();
+				for (List<HSGInterval> s : disj.values()) {
+					List<String> res1 = new ArrayList<>();
+					s	.stream()
+						.flatMap(i -> idsPerTime.get(i).stream())
+						.forEach(res1::add);
+					res.add(res1);
+				}
+				return res;
+			})
 			.collect()
 			.forEach(t -> {
 				int num = 0;

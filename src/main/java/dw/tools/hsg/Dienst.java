@@ -46,7 +46,8 @@ public class Dienst implements Serializable, Comparable<Dienst> {
 	public enum Typ {
 		Verkauf('V', 2, 2, 4, new int[] { 5, 6, 7, 8 }),
 		Kasse('K', 1, 2, 1, new int[] { 3, 4, 5, 6 }),
-		Aufsicht('A', 1, 2, 6, new int[] { 6, 7, 8, 9, 10 });
+		Aufsicht('A', 1, 2, 6, new int[] { 6, 7, 8, 9, 10 }),
+		Wischen('W', 2, 0, 0, new int[] { 2 });
 
 		@Getter
 		private final char kurz;

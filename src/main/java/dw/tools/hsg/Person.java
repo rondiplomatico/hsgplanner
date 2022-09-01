@@ -85,8 +85,11 @@ public class Person implements Serializable {
 	 * @return
 	 */
 	public boolean mayWorkAt(final Dienst d) {
-		return Typ.Aufsicht == d.getTyp() && isAufsicht()
-				|| team.mayWorkAt(d) && Typ.Aufsicht != d.getTyp() && !isAufsicht();
+		return team.mayWorkAtTimesOf(d)
+				&& (Typ.Wischen != d.getTyp() || HSGApp.WISCHER_DIENSTE.contains(getTeam()))
+				&& (Typ.Wischen == d.getTyp() || !HSGApp.WISCHER_DIENSTE.contains(getTeam()))
+				&& (Typ.Aufsicht != d.getTyp() || isAufsicht()) // Spieler machen keine Aufsicht
+				&& (Typ.Aufsicht == d.getTyp() || !isAufsicht()); // Aufsicht macht keine anderen Dienste
 	}
 
 	private static String createShort(final String name) {
@@ -103,14 +106,19 @@ public class Person implements Serializable {
 	 * @param line
 	 * @return
 	 */
-	public static Person parse(final String line) {
+	public static Person parse(String line) {
+		// Google drive seems to export the whole line quoted in ", so we remove that.
+		if (line.startsWith("\"")) {
+			line = line.substring(1, line.length() - 1);
+		}
 		String[] elems = line.split(";");
 		try {
 			boolean aufsicht = !Strings.isNullOrEmpty(elems[3]) && AUFSICHT_MARKER.equalsIgnoreCase(elems[3]);
 			Team team = aufsicht ? Team.Aufsicht : (!Strings.isNullOrEmpty(elems[1]) ? Team.valueOf(elems[1]) : null);
 			Team trainerVon = !Strings.isNullOrEmpty(elems[2]) ? Team.valueOf(elems[2]) : null;
 			if (team == null && !aufsicht) {
-				throw new IllegalArgumentException("Ungültige Person:" + line);
+				logger.warn("Nicht berechnungsrelevante Person gefunden: " + line);
+				return null;
 			}
 			int worked = (int) Math.round(Double.parseDouble(elems[4].replace(",", ".")) * 60);
 			return new Person(elems[0].trim(), team, worked, aufsicht, trainerVon);
@@ -123,6 +131,10 @@ public class Person implements Serializable {
 	@Override
 	public String toString() {
 		return name + "@" + team + (aufsicht ? "/!" : "");
+	}
+
+	public Person teamRepresentant() {
+		return team == Team.Aufsicht ? this : new Person(team.name(), team.name(), team, 0, false, null);
 	}
 
 }
