@@ -67,27 +67,27 @@ public class HSGSolver {
 	public static Logger logger = Logger.getLogger(HSGSolver.class);
 
 	public static List<Zuordnung> solve(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
-			Map<Team, Double> avgZeitProTeam) {
+			Map<Team, Double> zielArbeitszeitProPersonJeTeam) {
 
 		List<Zuordnung> res = new ArrayList<>();
 
-		// Aufsicht
-		Problem aufsicht = assembleAufsicht(all.filter(z -> z	.getDienst()
-																.getTyp()
-																.equals(Typ.Aufsicht)), games, avgZeitProTeam);
-		res.addAll(solveProblem(aufsicht, all, 60 * AUFSICHT_SOLVE_MINUTES));
+//		// Aufsicht
+//		Problem aufsicht = assembleAufsicht(all.filter(z -> z	.getDienst()
+//																.getTyp()
+//																.equals(Typ.Aufsicht)), games, zielArbeitszeitProPersonJeTeam);
+//		res.addAll(solveProblem(aufsicht, all, 60 * AUFSICHT_SOLVE_MINUTES));
 
 		// Kasse, Verkauf
-		Problem kasseVerkaufWischer = assembleVerkaufKasseWischer(all.filter(z -> !z	.getDienst()
-																		.getTyp()
-																		.equals(Typ.Aufsicht)), games, avgZeitProTeam);
+		Problem kasseVerkaufWischer = assembleVerkaufKasseWischer(all.filter(z -> !z.getDienst()
+																					.getTyp()
+																					.equals(Typ.Aufsicht)), games, zielArbeitszeitProPersonJeTeam);
 		res.addAll(solveProblem(kasseVerkaufWischer, all, 60 * KV_SOLVE_MINUTES));
 
 		return res;
 	}
 
 	private static Problem assembleVerkaufKasseWischer(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
-			Map<Team, Double> avgZeitProTeam) {
+			Map<Team, Double> zielArbeitszeitProPersonJeTeam) {
 		final Problem problem = new Problem();
 
 		List<Zuordnung> allList = all.collect();
@@ -111,7 +111,7 @@ public class HSGSolver {
 		logger.info("Z1: Gleiche mittlere Arbeitszeiten");
 
 		// Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
-		addZ1GleichVielArbeitsZeit(all, problem, target, false, avgZeitProTeam);
+		addZ1GleichVielArbeitsZeit(all, problem, target, false, zielArbeitszeitProPersonJeTeam);
 
 		logger.info("Z2: Geschickte Dienste um eigene Spiele");
 		addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
@@ -147,7 +147,7 @@ public class HSGSolver {
 	}
 
 	public static Problem assembleAufsicht(final JavaRDD<Zuordnung> all, final JavaRDD<Game> games,
-			Map<Team, Double> avgZeitProTeam) {
+			Map<Team, Double> zielArbeitszeitProPersonJeTeam) {
 		final Problem problem = new Problem();
 
 		List<Zuordnung> allList = all.collect();
@@ -168,7 +168,7 @@ public class HSGSolver {
 		}
 		logger.info("Z1: Gleiche mittlere Arbeitszeiten");
 		// Aufsicht und Verkauf/Kasse haben eigene mittlere Arbeitszeiten
-		addZ1GleichVielArbeitsZeit(all, problem, target, true, avgZeitProTeam);
+		addZ1GleichVielArbeitsZeit(all, problem, target, true, zielArbeitszeitProPersonJeTeam);
 
 		logger.info("Z2: Geschickte Dienste um eigene Spiele");
 		addZ2DienstNahBeiEigenemSpiel(all, games, problem, target);
@@ -392,7 +392,7 @@ public class HSGSolver {
 	}
 
 	private static void addZ1GleichVielArbeitsZeit(final JavaRDD<Zuordnung> all, final Problem problem,
-			final Linear target, final boolean isAufsicht, final Map<Team, Double> avgZeitProTeam) {
+			final Linear target, final boolean isAufsicht, final Map<Team, Double> zielArbeitszeitProPersonJeTeam) {
 		/*
 		 * Alle gleich viel Arbeitszeit. Die gesamtarbeitszeit soll pro person nicht von
 		 * der (aktuellen) durchschnittlichen arbeitszeit abweichen.
@@ -420,8 +420,8 @@ public class HSGSolver {
 				String plus = sumVarName + "+";
 				String minus = sumVarName + "-";
 				l.add(new Term(sumVarName, 1), new Term(plus, -1), new Term(minus, 1));
-				c = new Constraint(sumVarName + "Slack", l, Operator.EQ,
-						avgZeitProTeam.getOrDefault(d._1.getTeam(), 0.0) - d._1.getGearbeitetM());
+				double rhs = zielArbeitszeitProPersonJeTeam.getOrDefault(d._1.getTeam(), 0.0) - d._1.getGearbeitetM();
+				c = new Constraint(sumVarName + "Slack", l, Operator.EQ, rhs);
 				logger.debug("Adding slacked constraint " + c);
 				problem.add(c);
 				problem.setVarType(plus, VarType.REAL);
@@ -429,7 +429,10 @@ public class HSGSolver {
 				problem.setVarLowerBound(plus, 0);
 				problem.setVarLowerBound(minus, 0);
 				target.add(new Term(plus, ÜBERZEIT_STRAFE), new Term(minus, UNTERZEIT_STRAFE));
-				logger.debug(sumVarName + ": " + d._1.getGearbeitetM());
+				logger.info(sumVarName + ": " + HSGApp.DEC_FORMAT.format(zielArbeitszeitProPersonJeTeam
+																										.getOrDefault(d._1.getTeam(), 0.0))
+						+ " - " + d._1.getGearbeitetM() + " = " + HSGApp.DEC_FORMAT.format(rhs) + " Zielarbeitszeit ("
+						+ HSGApp.DEC_FORMAT.format(rhs / 60) + "h)");
 			});
 
 //		Linear avg = new Linear();

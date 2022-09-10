@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.Optional;
+import org.spark_project.guava.collect.Lists;
 
 import com.google.common.base.Charsets;
 
@@ -255,7 +257,7 @@ public class HSGApp {
 				z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + DEC_FORMAT.format(z / 60.0)
 						+ "h)"));
 
-		final Map<Team, Double> avgZeitProTeam = berechneSpielerArbeitszeit(personen, zeitenNachTyp);
+		final Map<Team, Double> zielArbeitszeitProPersonJeTeam = berechneSpielerArbeitszeit(personen, zeitenNachTyp);
 
 		int kürzesterDienst =
 				Arrays.asList(Dienst.Typ.values()).stream().mapToInt(t -> t.getTimesHS()[0]).min().getAsInt()
@@ -270,19 +272,25 @@ public class HSGApp {
 					personen.keyBy(p -> p.getTeam())
 							.aggregateByKey(0, (ex, n) -> ex + n.getGearbeitetM(), (a, b) -> a + b)
 							.collectAsMap());
-			personen = personen.map(Person::teamRepresentant).distinct().map(p -> {
-				p.setGearbeitetM(vorleistungProTeam.get(p.getTeam()));
-				return p;
-			}).cache();
+			personen = personen	.map(p -> p.isAufsicht() ? p : p.teamRepresentant())
+								.distinct()
+								.map(p -> {
+									if (!p.isAufsicht()) {
+										p.setGearbeitetM(vorleistungProTeam.get(p.getTeam()));
+									}
+									return p;
+								})
+								.cache();
 		} else {
 			// Alle Spieler rauswerfen, die schon genug gearbeitet haben (reduziert die
 			// Problemkomplexität)
 			personen = personen.filter(p -> {
-				boolean valid = p.getGearbeitetM() < avgZeitProTeam.get(p.getTeam()) - kürzesterDienst / 2;
+				boolean valid = p.getGearbeitetM() < zielArbeitszeitProPersonJeTeam.get(p.getTeam()) - kürzesterDienst
+						/ 2;
 				if (!valid) {
 					logger.info(p + " hat mit " + DEC_FORMAT.format(p.getGearbeitetM() / 60.0)
 							+ "h mehr (oder ist hinreichend nah dran) als der erforderliche Durchschnitt von "
-							+ DEC_FORMAT.format(avgZeitProTeam.get(p.getTeam()) / 60.0)
+							+ DEC_FORMAT.format(zielArbeitszeitProPersonJeTeam.get(p.getTeam()) / 60.0)
 							+ "h gearbeitet und wird nicht mehr eingeteilt.");
 					return false;
 				}
@@ -312,20 +320,6 @@ public class HSGApp {
 			throw new RuntimeException("Zu wenige Zuordnungen generiert!");
 		}
 
-//		JavaRDD<Zuordnung> teamZuordnungen =
-//				gültigeZuordnungen	.filter(z -> !z.getDienst().getTyp().equals(Typ.Aufsicht))
-//									.map(z -> {
-//										Person p = new Person(z.getPerson().getTeam().name(), z.getPerson().getTeam(),
-//												0, z.getPerson()
-//													.isAufsicht(),
-//												null);
-//										return new Zuordnung(p, z.getDienst(), z.getNr(), 0);
-//									})
-//									.distinct()
-//									.cache();
-//		teamZuordnungen.sortBy(z -> z.toString(), true, 1).foreach(z -> System.out.println(z));
-//		gültigeZuordnungen = teamZuordnungen;
-
 		/*
 		 * Fixierte Zuordnungen einlesen und rausrechnen
 		 */
@@ -333,9 +327,10 @@ public class HSGApp {
 //			gültigeZuordnungen = processFixed(args, jsc, personen, gültigeZuordnungen);
 //		}
 
+		// Gibt den Diensterahmen ohne Zuordnungen aus
 		JavaRDD<String> content = toCSV(games, gültigeZuordnungen.union(elternDienste));
 		Path out = new Path(outbase, "dienste_rahmen.csv");
-		saveAsFile(content, out);
+//		saveAsFile(content, out);
 
 //		final Map<Typ, Integer> zeitenNachTyp = new HashMap<>(
 //				spieltage.flatMap(s -> s._2.dienste.iterator()).distinct().keyBy(d -> d.getTyp()).aggregateByKey(0,
@@ -344,27 +339,21 @@ public class HSGApp {
 //		zeitenNachTyp.forEach(
 //				(t, z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + (z / 60.0) + "h)"));
 
-		JavaRDD<Zuordnung> zu = jsc	.parallelize(HSGSolver.solve(gültigeZuordnungen, games, avgZeitProTeam))
+		JavaRDD<Zuordnung> zu = jsc	.parallelize(HSGSolver
+															.solve(gültigeZuordnungen, games, zielArbeitszeitProPersonJeTeam))
 									.union(elternDienste)
 									.cache();
 
-//		if (TEAMS_ONLY) {
-//			zu.flatMap(z -> {
-//				
-//				z.getDienst().getTyp().getPersonen();
-//			});
-//		}
-
-		zu	.filter(z -> z.getPerson().isAufsicht())
-			.keyBy(z -> z.getPerson())
-			.aggregateByKey(0, (ex, n) -> ex + n.getDienst().getZeit().dauerInMin(), (a, b) -> a + b)
-			.foreach(v -> logger.warn(v._1 + ": " + v._2));
+//		zu	.filter(z -> z.getPerson().isAufsicht())
+//			.keyBy(z -> z.getPerson())
+//			.aggregateByKey(0, (ex, n) -> ex + n.getDienst().getZeit().dauerInMin(), (a, b) -> a + b)
+//			.foreach(v -> logger.warn(v._1 + ": " + v._2));
 
 		content = toCSV(games, zu);
 		out = new Path(outbase, "dienste.csv");
 		saveAsFile(content, out);
 
-		exportStats(outbase, zu, personen);
+		exportStats(jsc, outbase, zu, personen, zielArbeitszeitProPersonJeTeam);
 
 		jsc.close();
 
@@ -423,16 +412,27 @@ public class HSGApp {
 											.filter(t -> !Team.Aufsicht.equals(t.getKey()))
 											.mapToDouble(e -> e.getKey().getLeistungsFaktor() * e.getValue()._1)
 											.sum();
-		final double zeitProPerson = (zeitenNachTyp.get(Typ.Kasse) + zeitenNachTyp.get(Typ.Verkauf) + zeitenNachTyp
-																													.get(Typ.Wischen))
+		double zeitProPerson = (zeitenNachTyp.get(Typ.Kasse)
+				+ zeitenNachTyp.get(Typ.Verkauf)
+				+ zeitenNachTyp.get(Typ.Wischen)
+				+ anzahlUndVorleistungProTeam	.entrySet()
+												.stream()
+												.filter(e -> !Team.Aufsicht.equals(e.getKey()))
+												.mapToDouble(e -> e.getValue()._2)
+												.sum())
 				/ gesamtEffektivPersonen;
 		logger.info("Arbeitszeit für " + gesamtEffektivPersonen
 				+ " volle Personen an Kasse, Verkauf und Wischern im Schnitt "
 				+ zeitProPerson
 				+ "min (" + DEC_FORMAT.format(zeitProPerson / 60.0) + "h)");
-		final double zeitProAufsicht = (zeitenNachTyp.get(Typ.Aufsicht)) / anzahlUndVorleistungProTeam
-																										.get(Team.Aufsicht)._1;
-		logger.info("Arbeitszeit für " + anzahlUndVorleistungProTeam.get(Team.Aufsicht)._1
+		double numAufsicht = anzahlUndVorleistungProTeam.get(Team.Aufsicht)._1;
+		double zeitProAufsicht = (zeitenNachTyp.get(Typ.Aufsicht)
+				+ anzahlUndVorleistungProTeam	.entrySet()
+												.stream()
+												.filter(e -> Team.Aufsicht.equals(e.getKey()))
+												.mapToDouble(e -> e.getValue()._2)
+												.sum()) / numAufsicht;
+		logger.info("Arbeitszeit für " + numAufsicht
 				+ " Aufsichtsmitglieder im Schnitt " + zeitProAufsicht
 				+ "min (" + DEC_FORMAT.format(zeitProAufsicht / 60.0) + "h)");
 
@@ -455,7 +455,14 @@ public class HSGApp {
 														+ "h im Schnitt für "
 														+ e.getValue()._1
 														+ " Spieler");
-												return schnittProSpieler;
+												/*
+												 * Bei "nur Team" Berechnungen gibt es einen repräsentativen Spieler pro
+												 * Team (ungleich Aufsicht). Der muss dann natürlich auch die Gesamtzeit
+												 * des Teams leisten statt nur den Durchschnitt.
+												 */
+												return TEAMS_ONLY && !Team.Aufsicht.equals(e.getKey())
+														? gesamtZeit
+														: schnittProSpieler;
 											})));
 		return res;
 	}
@@ -508,12 +515,16 @@ public class HSGApp {
 	}
 
 	/**
+	 * @param jsc
 	 * @param in
 	 * @param zu
 	 * @param personen
 	 * @param personen
+	 * @param zielArbeitszeitProPersonJeTeam
 	 */
-	private static void exportStats(final Path out, final JavaRDD<Zuordnung> zu, final JavaRDD<Person> personen) {
+	private static void exportStats(JavaSparkContext jsc, final Path out, final JavaRDD<Zuordnung> zu,
+			final JavaRDD<Person> personen,
+			Map<Team, Double> zielArbeitszeitProPersonJeTeam) {
 		JavaPairRDD<Person, Integer> effectiveWorkTime =
 				zu	.mapToPair(z -> new Tuple2<>(z.getPerson(), z.getDienst()
 																.getZeit()
@@ -553,12 +564,31 @@ public class HSGApp {
 		 */
 		JavaRDD<String> stats1 = effectiveWorkTime.map(t -> {
 			int total = t._1.getGearbeitetM() + t._2;
-			return String.join(HSGApp.CSV_DELIM, t._1.getName()
-					+ (t._1.isAufsicht() ? " (A)" : ""), t._1.getTeam().toString(), "" + t._1.getGearbeitetM(), ""
-							+ t._2, Integer.toString(total), Double	.toString(total
-									- (t._1.isAufsicht() ? avgAufsicht : avgDienst))
-																	.replace('.', ','));
+
+			List<String> cols = new ArrayList<>();
+			// Name
+			cols.add(t._1.getName() + (t._1.isAufsicht() ? " (A)" : ""));
+			// Team
+			cols.add(t._1.getTeam().toString());
+			// Gearbeitet
+			cols.add(Integer.toString(t._1.getGearbeitetM()));
+			// Geplant
+			cols.add(Integer.toString(t._2));
+			// Gesamt
+			cols.add(Integer.toString(total));
+			// Sollzeit
+			cols.add(Double	.toString(zielArbeitszeitProPersonJeTeam.getOrDefault(t._1.getTeam(), 0.0))
+							.replace('.', ','));
+			// Abweichung sollzeit
+			cols.add(Double	.toString(total - (zielArbeitszeitProPersonJeTeam.getOrDefault(t._1
+																								.getTeam(), (double) total)))
+							.replace('.', ','));
+			// Abweichung effektiver Durchschnitt
+			cols.add(Double.toString(total - (t._1.isAufsicht() ? avgAufsicht : avgDienst)).replace('.', ','));
+			return String.join(HSGApp.CSV_DELIM, cols);
 		}).sortBy(s -> s, true, 1);
+		stats1 = jsc.parallelize(Lists.newArrayList("Name;Team;Gearbeitet;Geplant;Gesamt;Sollzeit;Abweichung Sollzeit;Abweichung effektiver Durchschnitt"))
+					.union(stats1);
 
 		/*
 		 * Zeiten pro Team
@@ -864,12 +894,15 @@ public class HSGApp {
 										.filter(g -> HSGApp.ELTERN_DIENSTE.contains(g.getTeam()))
 										.sorted()
 										.collect(Collectors.toList());
+
 		Map<Team, HSGInterval> elternDienste = new HashMap<>();
 		LocalTime current = null;
 		if (!elternGames.isEmpty()) {
-			current = elternGames.get(0).getZeit().minusMinutes(30);
-			for (Game g : elternGames) {
-				LocalTime end = g.getZeit().plusMinutes(90);
+			current = elternGames.get(0).getZeit().minusMinutes(Typ.Verkauf.getVorlaufHS() * 30);
+			for (int i = 0; i < elternGames.size(); i++) {
+				Game g = elternGames.get(i);
+				Game next = i + 1 < elternGames.size() ? elternGames.get(i + 1) : null;
+				LocalTime end = next != null ? next.getZeit().minusMinutes(30) : g.getZeit().plusMinutes(60);
 				elternDienste.put(g.getTeam(), new HSGInterval(current, end));
 				current = end;
 			}
