@@ -15,10 +15,11 @@
  * Copyright: (C) Daimler AG 2018, all rights reserved
  * _____________________________________________________________________________
  */
-package dw.tools.hsg;
+package dw.tools.hsg.data;
 
 import java.io.Serializable;
 
+import dw.tools.hsg.HSGApp;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -98,5 +99,4 @@ public class Dienst implements Serializable, Comparable<Dienst> {
 	public String toCSV() {
 		return String.join(HSGApp.CSV_DELIM, zeit.getStart().toString(), zeit.getEnd().toString(), typ.toString());
 	}
-
 }

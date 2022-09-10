@@ -10,4 +10,8 @@ Achtung, die Hallenbezeichnung muss auch auf "4066" angepasst werden!
 ## Import von Spielerlisten
 1. Aktuelle Arbeitsdienstzeiten je Spieler aus der Saisonvorzeit in den "Export" Reiter der Stammdaten kopieren, Spalte I
 2. Den Reiter "Export" als csv herunterladen.
-3. In der CSV schauen, dass unten keine "leeren" Einträge ohne Namen vorn sind  
+3. In der CSV schauen, dass unten keine "leeren" Einträge ohne Namen vorn sind 
+
+## Generelle ToDos
+1. Wischerdienste: Die Leistungsfaktoren der C1-Jugenden sind manuell auf 0.27 angepasst, um in der Gesamtkonstellation jeweils ~600 min arbeitslast zu bekommen, was
+den Stunden für Wischerdienste in 22/23 entspricht. (Automatisches "Cap" der Zeiten auf die leistbaren zeiten ist eine etwas schwierigere Angelegenheit..)

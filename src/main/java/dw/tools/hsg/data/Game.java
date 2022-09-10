@@ -1,4 +1,4 @@
-package dw.tools.hsg;
+package dw.tools.hsg.data;
 /* _____________________________________________________________________________
  *
  * Project: PBK AP Hadoop
@@ -24,6 +24,7 @@ import java.time.temporal.ChronoUnit;
 
 import org.spark_project.guava.base.Strings;
 
+import dw.tools.hsg.HSGApp;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

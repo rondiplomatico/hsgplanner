@@ -1,4 +1,4 @@
-package dw.tools.hsg;
+package dw.tools.hsg.data;
 
 import java.io.Serializable;
 import java.sql.Date;

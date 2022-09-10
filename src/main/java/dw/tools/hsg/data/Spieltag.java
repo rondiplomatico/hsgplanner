@@ -15,10 +15,9 @@
  * Copyright: (C) Daimler AG 2018, all rights reserved
  * _____________________________________________________________________________
  */
-package dw.tools.hsg;
+package dw.tools.hsg.data;
 
 import java.io.Serializable;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 

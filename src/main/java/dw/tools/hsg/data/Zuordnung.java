@@ -15,14 +15,14 @@
  * Copyright: (C) Daimler AG 2018, all rights reserved
  * _____________________________________________________________________________
  */
-package dw.tools.hsg;
+package dw.tools.hsg.data;
 
 import java.io.Serializable;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import dw.tools.hsg.Dienst.Typ;
+import dw.tools.hsg.data.Dienst.Typ;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;

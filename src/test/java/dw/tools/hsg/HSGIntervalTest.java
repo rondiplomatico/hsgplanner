@@ -15,7 +15,7 @@
  * Copyright: (C) Daimler AG 2018, all rights reserved
  * _____________________________________________________________________________
  */
-package hsgplanner;
+package dw.tools.hsg;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,7 +24,7 @@ import java.time.temporal.ChronoUnit;
 
 import org.junit.Test;
 
-import dw.tools.hsg.HSGInterval;
+import dw.tools.hsg.data.HSGInterval;
 
 /**
  * @author wirtzd

@@ -15,14 +15,15 @@
  * Copyright: (C) Daimler AG 2018, all rights reserved
  * _____________________________________________________________________________
  */
-package dw.tools.hsg;
+package dw.tools.hsg.data;
 
 import java.io.Serializable;
 
 import org.apache.log4j.Logger;
 import org.apache.parquet.Strings;
 
-import dw.tools.hsg.Dienst.Typ;
+import dw.tools.hsg.HSGApp;
+import dw.tools.hsg.data.Dienst.Typ;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -30,9 +31,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 /**
- * TODO Replace with class description.
  *
- * @version $Revision$
  * @author wirtzd
  * @since 05.09.2018
  */
@@ -44,6 +43,7 @@ public class Person implements Serializable {
 
 	private static final long serialVersionUID = 3556391185364393215L;
 	private static final String AUFSICHT_MARKER = "x";
+	public static final String ELTERN_PREFIX = "Eltern ";
 	public static Logger logger = Logger.getRootLogger();
 
 	private String name;
@@ -58,7 +58,7 @@ public class Person implements Serializable {
 	}
 
 	public Person(final String name, final String teamId, final int worked, final boolean aufsicht,
-			final String trainerVon) {
+		final String trainerVon) {
 		this(name, createShort(name), Team.valueOf(teamId), worked, aufsicht, Team.valueOf(trainerVon));
 	}
 
@@ -74,6 +74,10 @@ public class Person implements Serializable {
 		return (team.mayWork()) || aufsicht;
 	}
 
+	public boolean isEltern() {
+		return name.startsWith(ELTERN_PREFIX);
+	}
+
 	/**
 	 * Prüft ob eine Person an einem Dienst arbeiten kann.
 	 * 
@@ -86,10 +90,10 @@ public class Person implements Serializable {
 	 */
 	public boolean mayWorkAt(final Dienst d) {
 		return team.mayWorkAtTimesOf(d)
-				&& (Typ.Wischen != d.getTyp() || HSGApp.WISCHER_DIENSTE.contains(getTeam()))
-				&& (Typ.Wischen == d.getTyp() || !HSGApp.WISCHER_DIENSTE.contains(getTeam()))
-				&& (Typ.Aufsicht != d.getTyp() || isAufsicht()) // Spieler machen keine Aufsicht
-				&& (Typ.Aufsicht == d.getTyp() || !isAufsicht()); // Aufsicht macht keine anderen Dienste
+			&& (Typ.Wischen != d.getTyp() || HSGApp.WISCHER_DIENSTE.contains(getTeam()))
+			&& (Typ.Wischen == d.getTyp() || !HSGApp.WISCHER_DIENSTE.contains(getTeam()))
+			&& (Typ.Aufsicht != d.getTyp() || isAufsicht()) // Spieler machen keine Aufsicht
+			&& (Typ.Aufsicht == d.getTyp() || !isAufsicht()); // Aufsicht macht keine anderen Dienste
 	}
 
 	private static String createShort(final String name) {
@@ -134,7 +138,7 @@ public class Person implements Serializable {
 	}
 
 	public Person teamRepresentant() {
-		return team == Team.Aufsicht ? this : new Person(team.name(), team.name(), team, 0, false, null);
+		return team == Team.Aufsicht ? this : new Person("Platzhalter " + team.name(), team.name(), team, 0, false, null);
 	}
 
 }

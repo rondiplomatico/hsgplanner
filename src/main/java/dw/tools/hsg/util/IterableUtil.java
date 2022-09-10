@@ -6,7 +6,7 @@
  * Copyright: (C) Daimler AG 2016, all rights reserved
  * _____________________________________________________________________________
  */
-package dw.tools.hsg;
+package dw.tools.hsg.util;
 
 import java.util.ArrayList;
 import java.util.Collection;

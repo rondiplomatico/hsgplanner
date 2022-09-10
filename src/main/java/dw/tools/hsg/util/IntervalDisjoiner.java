@@ -15,7 +15,7 @@
  * Copyright: (C) Daimler AG 2017, all rights reserved
  * _____________________________________________________________________________
  */
-package dw.tools.hsg;
+package dw.tools.hsg.util;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import dw.tools.hsg.data.HSGInterval;
 
 /**
  * Helper class to compute disjoined validities from a set of validity atoms or
@@ -44,7 +46,7 @@ public final class IntervalDisjoiner {
 	/*
 	 * Package vis for unit testing.
 	 */
-	static Map<HSGInterval, List<HSGInterval>> disjoin(final Collection<HSGInterval> intervals) {
+	public static Map<HSGInterval, List<HSGInterval>> disjoin(final Collection<HSGInterval> intervals) {
 		Set<LocalTime> dateSet = new HashSet<>();
 		for (HSGInterval i : intervals) {
 			dateSet.add(i.getStart());

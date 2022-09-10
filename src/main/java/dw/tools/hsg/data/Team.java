@@ -15,7 +15,7 @@
  * Copyright: (C) Daimler AG 2018, all rights reserved
  * _____________________________________________________________________________
  */
-package dw.tools.hsg;
+package dw.tools.hsg.data;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +40,10 @@ public enum Team {
 	wA1(0.85, HSGInterval.BIS_20), wA2(0.85, HSGInterval.BIS_20),
 	mB1(0.75, HSGInterval.BIS_18), mB2(0.75, HSGInterval.BIS_18),
 	wB1(0.75, HSGInterval.BIS_18), wB2(0.75, HSGInterval.BIS_18),
-	mC1(0.75, HSGInterval.BIS_20), wC1(0.75, HSGInterval.BIS_20), // Bis 20:00 Uhr wegen Wischerdiensten.
+	/*
+	 * Achtung! Die "Arbeitsfaktoren" für C-Jugend sind hier manuell angepasst, um dem gesamtziel von 600min für die Saison 22/23 zu entsprechen.
+	 */
+	mC1(0.27, HSGInterval.BIS_20), wC1(0.27, HSGInterval.BIS_20), // Bis 20:00 Uhr wegen Wischerdiensten.
 	mC2(0.75, HSGInterval.BIS_20), wC2(0.75, HSGInterval.BIS_20),
 	gD1(0.0, HSGInterval.EMPTY), wD1(0.0, HSGInterval.EMPTY),
 	gD2(0.0, HSGInterval.EMPTY), wD2(0.0, HSGInterval.EMPTY),
@@ -55,6 +58,7 @@ public enum Team {
 	private final HSGInterval workTime;
 	private final boolean mitKasse;
 	private final boolean mitWischer;
+	private final Person eltern = new Person(Person.ELTERN_PREFIX + name(), this, 0, false, null);
 
 	private Team(double leistungsfaktor, HSGInterval workTime, boolean mitKasse) {
 		this(leistungsfaktor, workTime, mitKasse, false);
@@ -78,10 +82,6 @@ public enum Team {
 
 	public boolean isAktive() {
 		return !isJugend() && !Aufsicht.equals(this);
-	}
-
-	public Person getEltern() {
-		return new Person("Eltern " + name(), this, 0, false, null);
 	}
 
 }

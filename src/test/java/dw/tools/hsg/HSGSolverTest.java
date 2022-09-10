@@ -15,7 +15,7 @@
  * Copyright: (C) Daimler AG 2018, all rights reserved
  * _____________________________________________________________________________
  */
-package hsgplanner;
+package dw.tools.hsg;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -40,16 +40,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import dw.tools.hsg.Dienst;
-import dw.tools.hsg.Dienst.Typ;
-import dw.tools.hsg.Game;
+import dw.tools.hsg.Dienste;
 import dw.tools.hsg.HSGApp;
-import dw.tools.hsg.HSGDate;
-import dw.tools.hsg.HSGInterval;
 import dw.tools.hsg.HSGSolver;
-import dw.tools.hsg.Person;
-import dw.tools.hsg.Team;
-import dw.tools.hsg.Zuordnung;
+import dw.tools.hsg.IO;
+import dw.tools.hsg.data.Dienst;
+import dw.tools.hsg.data.Dienst.Typ;
+import dw.tools.hsg.data.Game;
+import dw.tools.hsg.data.HSGDate;
+import dw.tools.hsg.data.HSGInterval;
+import dw.tools.hsg.data.Person;
+import dw.tools.hsg.data.Team;
+import dw.tools.hsg.data.Zuordnung;
 
 /**
  * @author wirtzd
@@ -137,7 +139,7 @@ public class HSGSolverTest {
         List<Dienst> ds = Arrays.asList(V1100_1300, V1300_1600);
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
-        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).size());
+        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).collect().size());
     }
 
     @Test
@@ -146,7 +148,7 @@ public class HSGSolverTest {
         List<Dienst> ds = Arrays.asList(V1100_1300, V1300_1600, K1200_1600);
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
-        assertEquals(3, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).size());
+        assertEquals(3, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).collect().size());
     }
 
     @Test
@@ -156,7 +158,7 @@ public class HSGSolverTest {
         List<Zuordnung> all = new ArrayList<>();
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d))));
         ps.forEach(p -> ds.forEach(d -> all.add(new Zuordnung(p, d, 2))));
-        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).size());
+        assertEquals(2, HSGSolver.solve(jsc.parallelize(all), jsc.parallelize(noGames), null).collect().size());
     }
 
     @Test
@@ -167,7 +169,7 @@ public class HSGSolverTest {
         JavaRDD<Game> gsRDD = jsc.parallelize(gs);
         List<Zuordnung> res = Collections.EMPTY_LIST;// HSGSolver.solve(erzeugeZuordnungen(HSGApp.berechneSpieltage(gsRDD, jsc.parallelize(ps)), gsRDD);
         assertTrue(res.size() > 0);
-        List<String> csv = HSGApp.toCSV(gsRDD, jsc.parallelize(res)).collect();
+        List<String> csv = IO.toCSV(gsRDD, jsc.parallelize(res)).collect();
         System.out.println(csv);
     }
 
@@ -179,7 +181,7 @@ public class HSGSolverTest {
         JavaRDD<Game> gsRDD = jsc.parallelize(gs);
         List<Zuordnung> res = Collections.EMPTY_LIST;// HSGSolver.solve(HSGApp.berechneSpieltage(gsRDD, jsc.parallelize(ps)), gsRDD);
         assertTrue(res.size() > 0);
-        List<String> csv = HSGApp.toCSV(gsRDD, jsc.parallelize(res)).collect();
+        List<String> csv = IO.toCSV(gsRDD, jsc.parallelize(res)).collect();
         System.out.println(csv);
     }
 
@@ -200,8 +202,8 @@ public class HSGSolverTest {
     
     @Test
     public void testDienstLänge() {
-    	System.out.println(HSGApp.optimaleDienstlänge(LocalTime.of(14, 0), LocalTime.of(20, 0), Typ.Aufsicht));
-    	System.out.println(HSGApp.verteileDienste(new HSGInterval(LocalTime.of(14, 0), LocalTime.of(20, 0)), Typ.Aufsicht));
+    	System.out.println(Dienste.optimaleDienstlänge(LocalTime.of(14, 0), LocalTime.of(20, 0), Typ.Aufsicht));
+    	System.out.println(Dienste.verteileDienste(new HSGInterval(LocalTime.of(14, 0), LocalTime.of(20, 0)), Typ.Aufsicht));
     }
 
 }
