@@ -34,7 +34,7 @@ public class IO {
 
 	public static Logger logger = Logger.getLogger(IO.class);
 
-	public static final HSGDate START_DATE = new HSGDate(2022, 9, 20);
+	public static final HSGDate START_DATE = null; //new HSGDate(2022, 9, 20);
 	public static final HSGDate END_DATE = null; // new HSGDate(2119, 12, 31); // HSGDate.TODAY.nextDay(1);
 	/**
 	 * Anzahl der Spalten, in denen im HelferlisteHallendienste Helfer eingetragen

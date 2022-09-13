@@ -25,6 +25,7 @@ import dw.tools.hsg.data.Spieltag;
 import dw.tools.hsg.data.Team;
 import dw.tools.hsg.data.Zuordnung;
 import scala.Tuple2;
+import scala.Tuple3;
 
 /**
  * Aufrufparameter: <spielliste_hvw> <spielerexport>
@@ -188,7 +189,7 @@ public class HSGApp {
 		 */
 		JavaPairRDD<HSGDate, List<Dienst>> dienste = Dienste.berechneDienste(games);
 
-		Map<Team, Tuple2<Integer, Double>> anzUndVorl = Personen.anzahlUndVorleistungJeTeam(personen);
+		Map<Team, Tuple3<Integer, Double, Integer>> anzUndVorl = Personen.anzahlUndVorleistungJeTeam(personen);
 		if (TEAMS_ONLY) {
 			personen = Personen.reduziereAufTeamRepräsentanten(personen);
 		}

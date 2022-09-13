@@ -158,6 +158,8 @@ public class Dienste {
 					Game g = wl.get(0);
 					LocalTime bis = g.getZeit().plus(60, ChronoUnit.MINUTES);
 					HSGInterval time = new HSGInterval(g.getZeit(), bis);
+					// Vor- Nachlauf einrechnen
+					time = berechneGesamtzeit(time, Typ.Wischen);
 					Dienst d = new Dienst(g.getDate(), time, Typ.Wischen, Team.None);
 					return Collections.singletonList(d);
 				}
@@ -169,7 +171,7 @@ public class Dienste {
 		}
 		return wischerDienst;
 	}
-	
+
 	private static Spielzeiten berechneDienstzeiten(Iterable<Game> gamesIt) {
 		List<Game> games = IterableUtil.toList(gamesIt);
 		games.sort(Game::compareTo);
@@ -189,7 +191,7 @@ public class Dienste {
 		Map<Team, HSGInterval> elternDienste = new HashMap<>();
 		LocalTime current = null;
 		if (!elternGames.isEmpty()) {
-			current = elternGames.get(0).getZeit().minusMinutes(Typ.Verkauf.getVorlaufHS() * 30);
+			current = elternGames.get(0).getZeit().minusMinutes(Typ.Verkauf.getVorlaufMin());
 			for (int i = 0; i < elternGames.size(); i++) {
 				Game g = elternGames.get(i);
 				Game next = i + 1 < elternGames.size() ? elternGames.get(i + 1) : null;
@@ -212,7 +214,7 @@ public class Dienste {
 		 * Hier gilt "elternzeit first", d.h. die eltern arbeiten immer bis 90 min nach
 		 * dem spiel ihrer kleinen, und der spielerverkaufsdienst beginnt danach.
 		 */
-		LocalTime sstart = current != null ? current.plusMinutes(Typ.Verkauf.getVorlaufHS() * 30)
+		LocalTime sstart = current != null ? current.plusMinutes(Typ.Verkauf.getVorlaufMin())
 			: spielerGames.get(0).getZeit();
 		HSGInterval spielerVerkaufsZeit = spielerGames.isEmpty() ? HSGInterval.EMPTY
 			: new HSGInterval(sstart, spielerGames.get(spielerGames.size() - 1).getZeit());
@@ -272,10 +274,8 @@ public class Dienste {
 	}
 
 	private static HSGInterval berechneGesamtzeit(final HSGInterval minMax, final Typ typ) {
-		return new HSGInterval(minMax.getStart().minus(typ.getVorlaufHS() * 30, ChronoUnit.MINUTES), minMax
-			.getEnd()
-			.plus(typ.getNachlaufHS()
-				* 30, ChronoUnit.MINUTES));
+		return new HSGInterval(minMax.getStart().minus(typ.getVorlaufMin(), ChronoUnit.MINUTES), minMax.getEnd()
+			.plus(typ.getNachlaufMin(), ChronoUnit.MINUTES));
 	}
 
 	private static List<Dienst> erstelleElternDienste(HSGDate date, Map<Team, HSGInterval> elternVerkaufsZeiten) {

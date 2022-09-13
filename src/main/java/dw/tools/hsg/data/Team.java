@@ -41,9 +41,10 @@ public enum Team {
 	mB1(0.75, HSGInterval.BIS_18), mB2(0.75, HSGInterval.BIS_18),
 	wB1(0.75, HSGInterval.BIS_18), wB2(0.75, HSGInterval.BIS_18),
 	/*
-	 * Achtung! Die "Arbeitsfaktoren" für C-Jugend sind hier manuell angepasst, um dem gesamtziel von 600min für die Saison 22/23 zu entsprechen.
+	 * Achtung! Die "Arbeitsfaktoren" für C-Jugend sind hier manuell angepasst, um
+	 * dem gesamtziel von 900min für die Saison 22/23 zu entsprechen.
 	 */
-	mC1(0.27, HSGInterval.BIS_20), wC1(0.27, HSGInterval.BIS_20), // Bis 20:00 Uhr wegen Wischerdiensten.
+	mC1(0.31, HSGInterval.BIS_20), wC1(0.31, HSGInterval.BIS_20), // Bis 20:00 Uhr wegen Wischerdiensten.
 	mC2(0.75, HSGInterval.BIS_20), wC2(0.75, HSGInterval.BIS_20),
 	gD1(0.0, HSGInterval.EMPTY), wD1(0.0, HSGInterval.EMPTY),
 	gD2(0.0, HSGInterval.EMPTY), wD2(0.0, HSGInterval.EMPTY),
@@ -77,7 +78,7 @@ public enum Team {
 	}
 
 	public boolean isJugend() {
-		return !name().startsWith("M") && !name().startsWith("F");
+		return !(name().startsWith("M") || name().startsWith("F") || Aufsicht.equals(this));
 	}
 
 	public boolean isAktive() {

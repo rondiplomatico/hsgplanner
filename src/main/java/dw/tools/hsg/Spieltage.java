@@ -21,6 +21,7 @@ import dw.tools.hsg.data.Spieltag;
 import dw.tools.hsg.data.Team;
 import dw.tools.hsg.util.IterableUtil;
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class Spieltage {
 
@@ -85,7 +86,7 @@ public class Spieltage {
 		return blockierteTrainer;
 	}
 
-	public static Map<Team, Double> berechneZielarbeitszeiten(Map<Team, Tuple2<Integer, Double>> anzahlUndVorleistungProTeam, JavaPairRDD<HSGDate, Spieltag> spieltage) {
+	public static Map<Team, Double> berechneZielarbeitszeiten(Map<Team, Tuple3<Integer, Double, Integer>> anzUndVorl, JavaPairRDD<HSGDate, Spieltag> spieltage) {
 
 		final Map<Typ, Integer> zeitenNachTyp = new HashMap<>(spieltage
 			.flatMap(s -> s._2.getDienste().iterator())
@@ -99,9 +100,9 @@ public class Spieltage {
 		zeitenNachTyp
 			.forEach((t, z) -> logger.info("Gesamt zu leistende Zeit für " + t + ": " + z + " (" + DEC_FORMAT.format(z / 60.0) + "h, Eltern ausgeschlossen)"));
 
-		final double gesamtVorleistung = anzahlUndVorleistungProTeam.values()
+		final double gesamtVorleistung = anzUndVorl.values()
 			.stream()
-			.mapToDouble(v -> v._2)
+			.mapToDouble(v -> v._2())
 			.sum();
 		logger.info("Gesamtvorleistung " + gesamtVorleistung / 60.0 + "h");
 
@@ -109,15 +110,15 @@ public class Spieltage {
 		 * Zähle die Gesamtanzahl effektiver Personen (manche Teams haben einen
 		 * Leistungsfaktor)
 		 */
-		double gesamtEffektivPersonen = anzahlUndVorleistungProTeam.entrySet()
+		double gesamtEffektivPersonen = anzUndVorl.entrySet()
 			.stream()
 			.filter(t -> !Team.Aufsicht.equals(t.getKey()))
-			.mapToDouble(e -> e.getKey().getLeistungsFaktor() * e.getValue()._1)
+			.mapToDouble(e -> getTeamEffektivPersonen(e.getKey(), e.getValue()))
 			.sum();
-		double vorleistung = anzahlUndVorleistungProTeam.entrySet()
+		double vorleistung = anzUndVorl.entrySet()
 			.stream()
 			.filter(e -> !Team.Aufsicht.equals(e.getKey()))
-			.mapToDouble(e -> e.getValue()._2)
+			.mapToDouble(e -> e.getValue()._2())
 			.sum();
 		double planzeit = zeitenNachTyp.get(Typ.Kasse) + zeitenNachTyp.get(Typ.Verkauf) + zeitenNachTyp.get(Typ.Wischen);
 		double zeitProPerson = (planzeit + vorleistung) / gesamtEffektivPersonen;
@@ -128,32 +129,32 @@ public class Spieltage {
 			+ DEC_FORMAT.format(zeitProPerson)
 			+ "min (" + DEC_FORMAT.format(zeitProPerson / 60.0) + "h) je Person");
 
-		gesamtEffektivPersonen = anzahlUndVorleistungProTeam.get(Team.Aufsicht)._1;
-		vorleistung = anzahlUndVorleistungProTeam.entrySet().stream().filter(e -> Team.Aufsicht.equals(e.getKey())).mapToDouble(e -> e.getValue()._2).sum();
+		gesamtEffektivPersonen = anzUndVorl.get(Team.Aufsicht)._1();
+		vorleistung = anzUndVorl.entrySet().stream().filter(e -> Team.Aufsicht.equals(e.getKey())).mapToDouble(e -> e.getValue()._2()).sum();
 		planzeit = zeitenNachTyp.get(Typ.Aufsicht);
 		double zeitProAufsicht = (planzeit + vorleistung) / gesamtEffektivPersonen;
-		logger.info("Arbeitszeit für " + gesamtEffektivPersonen
-			+ " Aufsichtsmitglieder im Schnitt " +
+		logger.info("Arbeitszeit für " + gesamtEffektivPersonen + " Aufsichtsmitglieder (inkl. "
+			+ anzUndVorl.get(Team.Aufsicht)._3() + " Trainer) im Schnitt " +
 			DEC_FORMAT.format((planzeit + vorleistung) / 60) + "h [" + DEC_FORMAT.format(planzeit / 60) + "h plan, "
 			+ DEC_FORMAT.format(vorleistung / 60) + "h vorgeleistet], im Schnitt "
 			+ DEC_FORMAT.format(zeitProAufsicht)
 			+ "min (" + DEC_FORMAT.format(zeitProAufsicht / 60.0) + "h) je Person");
 
-		Map<Team, Double> res = new HashMap<>(anzahlUndVorleistungProTeam.entrySet()
+		Map<Team, Double> res = new HashMap<>(anzUndVorl.entrySet()
 			.stream()
 			.collect(Collectors.toMap(e -> e.getKey(), e -> {
-				double gesamtZeit = e.getKey().getLeistungsFaktor() * e.getValue()._1 * (Team.Aufsicht.equals(e.getKey()) ? zeitProAufsicht : zeitProPerson);
-				double schnittProSpieler = gesamtZeit / (double) e.getValue()._1;
+				double gesamtZeit = getTeamEffektivPersonen(e.getKey(), e.getValue()) * (Team.Aufsicht.equals(e.getKey()) ? zeitProAufsicht : zeitProPerson);
+				double schnittProSpieler = gesamtZeit / (double) e.getValue()._1();
 				logger.info("Team " + e.getKey() + " muss die Saison "
 					+ DEC_FORMAT.format(gesamtZeit / 60.0)
 					+ "h arbeiten und hat schon "
-					+ DEC_FORMAT.format(e.getValue()._2 / 60.0)
+					+ DEC_FORMAT.format(e.getValue()._2() / 60.0)
 					+ "h geleistet. Bleiben "
-					+ DEC_FORMAT.format((gesamtZeit - e.getValue()._2) / 60.0)
+					+ DEC_FORMAT.format((gesamtZeit - e.getValue()._2()) / 60.0)
 					+ "h, macht "
 					+ DEC_FORMAT.format(schnittProSpieler / 60.0)
 					+ "h im Schnitt für "
-					+ e.getValue()._1
+					+ e.getValue()._1()
 					+ " Spieler");
 				/*
 				 * Bei "nur Team" Berechnungen gibt es einen repräsentativen Spieler pro
@@ -165,5 +166,18 @@ public class Spieltage {
 					: schnittProSpieler;
 			})));
 		return res;
+	}
+
+	/**
+	 * Value _1 = Anzahl Spieler, Value_3 = Anzahl Trainer
+	 * Trainer müssen nicht mitarbeiten, daher werden sie hier nicht eingerechnet.
+	 * Trainer in der Aufsicht machen trotzdem vollen Aufsichtsdienst.
+	 * 
+	 * @param t
+	 * @param anzUndVorl
+	 * @return
+	 */
+	private static double getTeamEffektivPersonen(Team t, Tuple3<Integer, Double, Integer> anzUndVorl) {
+		return t.getLeistungsFaktor() * (anzUndVorl._1() - (Team.Aufsicht.equals(t) ? 0 : anzUndVorl._3()));
 	}
 }

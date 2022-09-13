@@ -11,6 +11,7 @@ import dw.tools.hsg.data.Dienst;
 import dw.tools.hsg.data.Person;
 import dw.tools.hsg.data.Team;
 import scala.Tuple2;
+import scala.Tuple3;
 
 public class Personen {
 
@@ -69,25 +70,25 @@ public class Personen {
 		}).cache();
 	}
 
-	public static Map<Team, Tuple2<Integer, Double>> anzahlUndVorleistungJeTeam(JavaRDD<Person> personen) {
-		final Map<Team, Tuple2<Integer, Double>> anzahlUndVorleistungProTeam = new HashMap<>(personen
+	public static Map<Team, Tuple3<Integer, Double, Integer>> anzahlUndVorleistungJeTeam(JavaRDD<Person> personen) {
+		final Map<Team, Tuple3<Integer, Double, Integer>> anzahlUndVorleistungProTeam = new HashMap<>(personen
 			.keyBy(p -> p.getTeam())
-			.aggregateByKey(new Tuple2<Integer, Double>(0, 0.0),
-				(ex, n) -> new Tuple2<>(ex._1 + 1, ex._2
-					+ n.getGearbeitetM()),
-				(a, b) -> new Tuple2<>(a._1 + b._1, a._2 + b._2))
+			.aggregateByKey(new Tuple3<Integer, Double, Integer>(0, 0.0, 0),
+				(ex, n) -> new Tuple3<>(ex._1() + 1, ex._2() + n.getGearbeitetM(), ex._3() + (n.getTrainerVon() != null ? 1 : 0)),
+				(a, b) -> new Tuple3<>(a._1() + b._1(), a._2() + b._2(), a._3() + b._3()))
 			/*
-			 * We assume each team has at least MIN_TEAM_SIZE members (they might not be
+			 * We assume each Jungendteam has at least MIN_TEAM_SIZE members (they might not
+			 * be
 			 * included in the import, as the team might not be assigned for especially
-			 * youth teams. Exception for Aufsicht.
+			 * youth teams.
 			 */
-			.mapToPair(t -> Team.Aufsicht.equals(t._1) ? t : new Tuple2<>(t._1, new Tuple2<>(Math.max(t._2._1, HSGApp.MIN_TEAM_SIZE), t._2._2)))
+			.mapToPair(t -> !t._1.isJugend() ? t : new Tuple2<>(t._1, new Tuple3<>(Math.max(t._2._1(), HSGApp.MIN_TEAM_SIZE), t._2._2(), t._2._3())))
 			.collectAsMap());
 
 		anzahlUndVorleistungProTeam.forEach((t, v) -> logger
-			.info("Vorleistung von Team " + t + " mit " + v._1
-				+ " Spielern: "
-				+ v._2 + " (" + (v._2 / 60.0) + "h)"));
+			.info("Vorleistung von Team " + t + " mit " + v._1()
+				+ " Spielern (davon " + v._3() + " Trainer): "
+				+ v._2() + " (" + (v._2() / 60.0) + "h)"));
 		return anzahlUndVorleistungProTeam;
 	}
 

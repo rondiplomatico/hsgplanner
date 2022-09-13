@@ -83,10 +83,10 @@ public class HSGSolver {
 		// Kasse, Verkauf, Wischer
 		Problem kasseVerkaufWischer
 			= assembleVerkaufKasseWischer(all.filter(z -> !z.getDienst().getTyp().equals(Typ.Aufsicht)), games, zielArbeitszeitProPersonJeTeam);
-		
+
 		JavaRDD<Zuordnung> restlicheZurordnungen = solveProblem(kasseVerkaufWischer, all, 60 * KV_SOLVE_MINUTES);
 
-		 return aufsichtsZurordnungen.union(restlicheZurordnungen);
+		return aufsichtsZurordnungen.union(restlicheZurordnungen);
 //		return restlicheZurordnungen;
 	}
 
@@ -222,9 +222,18 @@ public class HSGSolver {
 		solver.setParameter(SolverParameter.RAND_SEED, 1);
 		solver.setParameter(SolverParameter.NUMBER_OF_THREADS, 8);
 		solver.setParameter(SolverParameter.WORK_DIRECTORY, ".");
-		solver.setParameter(SolverParameter.WORKING_MEMORY, 1024 * 10);
-		solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH, 3);
-		solver.setParameter(SolverParameter.MEMORY_EMPHASIS, true);
+		solver.setParameter(SolverParameter.WORKING_MEMORY, 1024.0 * 10);
+		solver.setParameter(SolverParameter.NODE_STORAGE_FILE_SWITCH, 1);
+		/*
+		 * 0 false CPX_OFF no Off; do not conserve memory; default
+		 * 1 true CPX_ON yes On; conserve memory where possible
+		 */
+		solver.setParameter(SolverParameter.MEMORY_EMPHASIS, false);
+		/*
+		 * 0 Do not use advanced start information
+		 * 1 Use an advanced basis supplied by the user; default
+		 * 2 Crush an advanced basis or starting vector supplied by the user
+		 */
 		solver.setParameter(SolverParameter.ADVANCED_START_SWITCH, 0);
 		solver.setParameter(SolverParameter.VERBOSE, 5);
 

@@ -30,6 +30,7 @@ import ilog.concert.IloNumVar;
 import ilog.concert.IloNumVarType;
 import ilog.cplex.IloCplex;
 import ilog.cplex.IloCplex.DoubleParam;
+import ilog.cplex.IloCplex.IntParam;
 
 /**
  * The {@code SolverCPLEX} is the {@code Solver} CPLEX.
@@ -214,6 +215,9 @@ public class SolverCPLEX extends AbstractSolver {
 		return null;
 	}
 
+	/*
+	 * https://www.ibm.com/docs/en/icos/20.1.0
+	 */
 	protected void initWithParameters(final IloCplex cplex) throws IloException {
 		Object timeout = parameters.get(Solver.TIMEOUT);
 		Object verbose = parameters.get(Solver.VERBOSE);
@@ -231,11 +235,44 @@ public class SolverCPLEX extends AbstractSolver {
 				cplex.setOut(null);
 			}
 		}
-
+		if (parameters.containsKey(SolverParameter.NUMBER_OF_THREADS)) {
+			cplex.setParam(IntParam.Threads, (int) parameters.get(SolverParameter.NUMBER_OF_THREADS));
+		}
+		/*
+		 * 0 Do not use advanced start information
+		 * 1 Use an advanced basis supplied by the user; default
+		 * 2 Crush an advanced basis or starting vector supplied by the user
+		 */
+		if (parameters.containsKey(SolverParameter.ADVANCED_START_SWITCH)) {
+			cplex.setParam(IloCplex.Param.Advance, (int) parameters.get(SolverParameter.ADVANCED_START_SWITCH));
+		}
+		if (parameters.containsKey(SolverParameter.MEMORY_EMPHASIS)) {
+			cplex.setParam(IloCplex.Param.Emphasis.Memory, (boolean) parameters.get(SolverParameter.MEMORY_EMPHASIS));
+		}
+		if (parameters.containsKey(SolverParameter.WORKING_MEMORY)) {
+			cplex.setParam(IloCplex.Param.WorkMem, (double) parameters.get(SolverParameter.WORKING_MEMORY));
+		}
+		if (parameters.containsKey(SolverParameter.RAND_SEED)) {
+			cplex.setParam(IloCplex.Param.RandomSeed, (int) parameters.get(SolverParameter.RAND_SEED));
+		}
+		if (parameters.containsKey(SolverParameter.NODE_STORAGE_FILE_SWITCH)) {
+			cplex.setParam(IloCplex.Param.MIP.Strategy.File, (int) parameters.get(SolverParameter.NODE_STORAGE_FILE_SWITCH));
+		}
+		/*
+		 * 0 CPX_MIPEMPHASIS_BALANCED Balance optimality and feasibility; default
+		 * 1 CPX_MIPEMPHASIS_FEASIBILITY Emphasize feasibility over optimality
+		 * 2 CPX_MIPEMPHASIS_OPTIMALITY Emphasize optimality over feasibility
+		 * 3 CPX_MIPEMPHASIS_BESTBOUND Emphasize moving best bound
+		 * 4 CPX_MIPEMPHASIS_HIDDENFEAS Emphasize finding hidden feasible solutions
+		 * 5 CPX_MIPEMPHASIS_HEURISTIC Emphasize finding high quality feasible solutions
+		 * earlier
+		 */
+		cplex.setParam(IloCplex.Param.Emphasis.MIP, 0);
+		cplex.setParam(IloCplex.Param.MIP.Interval, 100);
 	}
 
 	protected void convert(final Linear linear, final IloLinearNumExpr lin, final Map<Object, IloNumVar> varToNum)
-			throws IloException {
+		throws IloException {
 		for (Term term : linear) {
 			Number coeff = term.getCoefficient();
 			Object variable = term.getVariable();
